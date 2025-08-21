@@ -88,6 +88,13 @@ export function GameDashboard() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* FOREST BACKGROUND TEST - VISIBLE CHANGE */}
+      <div className="fixed top-0 left-0 bg-red-500 text-white p-2 z-50 font-bold text-lg">
+        🌲 FOREST BACKGROUND TEST - COMPONENT UPDATED! 🌲
+      </div>
+      <div className="fixed top-12 left-0 bg-blue-500 text-white p-2 z-50 font-bold text-lg">
+        🔥 CACHE BUSTER - IF YOU SEE THIS, CHANGES ARE WORKING! 🔥
+      </div>
       <AssetTest />
       {/* Background Forest Scene */}
       <div className="absolute inset-0 z-0">

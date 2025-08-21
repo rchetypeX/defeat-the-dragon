@@ -34,7 +34,13 @@ export function AssetTest() {
 
   return (
     <div className="fixed top-4 right-4 bg-black bg-opacity-90 text-white p-4 rounded z-50 max-w-xs border-2 border-red-500">
-      <h3 className="font-bold mb-2 text-red-400">🔍 ASSET TEST PANEL</h3>
+      <h3 className="font-bold mb-2 text-red-400">🔍 ASSET TEST PANEL - UPDATED!</h3>
+      <div className="bg-yellow-500 text-black p-1 text-xs font-bold mb-2">
+        🔥 COMPONENT UPDATED! 🔥
+      </div>
+      <div className="bg-green-500 text-white p-1 text-xs font-bold mb-2">
+        🎯 CACHE BUSTER - ASSET TEST UPDATED! 🎯
+      </div>
       
       <div className="mb-2">
         <strong>✅ Loaded ({loadedAssets.length}):</strong>
