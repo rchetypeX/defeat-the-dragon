@@ -1,0 +1,16 @@
+{
+  "name": "@defeat-the-dragon/ui-tokens",
+  "version": "1.0.0",
+  "description": "Design tokens and UI constants for Defeat the Dragon",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

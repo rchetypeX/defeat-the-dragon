@@ -1,0 +1,37 @@
+{
+  "name": "defeat-the-dragon",
+  "version": "1.0.0",
+  "description": "A pixel-art, ad-free, Pomodoro-style Focus RPG PWA",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "e2e": "turbo run e2e",
+    "analyze": "turbo run analyze",
+    "prepare": "husky install",
+    "db:migrate": "cd apps/web && npm run db:migrate",
+    "db:seed": "cd apps/web && npm run db:seed"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "turbo": "^1.10.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.0",
+    "prettier": "^3.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "npm@10.9.0"
+}
+

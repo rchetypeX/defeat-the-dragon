@@ -1,0 +1,23 @@
+{
+  "name": "@defeat-the-dragon/engine",
+  "version": "1.0.0",
+  "description": "Shared game logic for Defeat the Dragon",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^0.34.0",
+    "eslint": "^8.0.0"
+  }
+}
