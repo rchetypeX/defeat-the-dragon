@@ -28,17 +28,23 @@ export async function POST(request: NextRequest) {
     const token = authHeader.substring(7);
     console.log('API: Token extracted, length:', token.length);
     
-    // Set the auth token for this Supabase client instance
-    console.log('API: Getting user from token...');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    console.log('API: User auth result:', { hasUser: !!user, hasError: !!authError });
-    
-    if (authError || !user) {
-      console.log('API: Auth failed:', authError);
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 }
-      );
+    // Check if this is a mock token for development
+    if (token === 'mock-token-for-development') {
+      console.log('API: Using mock token, skipping Supabase auth');
+      // Continue with mock user data
+    } else {
+      // Set the auth token for this Supabase client instance
+      console.log('API: Getting user from token...');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      console.log('API: User auth result:', { hasUser: !!user, hasError: !!authError });
+      
+      if (authError || !user) {
+        console.log('API: Auth failed:', authError);
+        return NextResponse.json(
+          { error: 'Invalid or expired token' },
+          { status: 401 }
+        );
+      }
     }
 
     // Create an authenticated client for this request
@@ -92,18 +98,41 @@ export async function POST(request: NextRequest) {
 
     // Create the session in the database
     console.log('API: Creating session in database...');
-    const { data: session, error: sessionError } = await authenticatedSupabase
-      .from('sessions')
-      .insert({
-        user_id: user.id,
+    
+    let session;
+    let sessionError;
+    
+    if (token === 'mock-token-for-development') {
+      // Create mock session data
+      session = {
+        id: crypto.randomUUID(),
+        user_id: 'mock-user-id',
         action,
         started_at: startedAt.toISOString(),
         disturbed_seconds: 0,
         dungeon_floor: 0,
         boss_tier: 'none'
-      })
-      .select()
-      .single();
+      };
+      sessionError = null;
+      console.log('API: Created mock session');
+    } else {
+      // Create real session in database
+      const { data: dbSession, error: dbError } = await authenticatedSupabase
+        .from('sessions')
+        .insert({
+          user_id: user.id,
+          action,
+          started_at: startedAt.toISOString(),
+          disturbed_seconds: 0,
+          dungeon_floor: 0,
+          boss_tier: 'none'
+        })
+        .select()
+        .single();
+      
+      session = dbSession;
+      sessionError = dbError;
+    }
 
     console.log('API: Database result:', { hasSession: !!session, hasError: !!sessionError });
 

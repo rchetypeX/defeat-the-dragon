@@ -45,7 +45,8 @@ export const PlayerSchema = z.object({
   bond_score: z.number().int().min(0).max(100),
   mood_state: MoodState,
   day_streak: z.number().int().min(0),
-  created_at: z.string().datetime()
+  created_at: z.string().datetime(),
+  display_name: z.string().min(1).max(50).optional()
 });
 
 export const SessionSchema = z.object({

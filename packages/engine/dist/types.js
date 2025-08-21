@@ -35,7 +35,8 @@ exports.PlayerSchema = zod_1.z.object({
     bond_score: zod_1.z.number().int().min(0).max(100),
     mood_state: exports.MoodState,
     day_streak: zod_1.z.number().int().min(0),
-    created_at: zod_1.z.string().datetime()
+    created_at: zod_1.z.string().datetime(),
+    display_name: zod_1.z.string().min(1).max(50).optional()
 });
 exports.SessionSchema = zod_1.z.object({
     id: zod_1.z.string().uuid(),

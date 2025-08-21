@@ -100,6 +100,19 @@ export class SoftShield {
         this.state.isDisturbed = true;
         this.onDisturbance(awayTime);
       }
+      
+      // Reset state when user returns, regardless of warning status
+      // This allows the warning to be dismissed when user returns in time
+      this.state.totalAwayTime = 0;
+      this.state.isDisturbed = false;
+      this.state.lastWarningTime = null;
+      console.log('SoftShield: User returned, resetting state and clearing warning');
+    } else {
+      // User returned without being away, clear disturbed state
+      if (this.state.isDisturbed) {
+        this.state.isDisturbed = false;
+        console.log('SoftShield: User returned, clearing disturbed state');
+      }
     }
   }
 
@@ -119,19 +132,38 @@ export class SoftShield {
         currentAwayTime += Math.floor((currentTime - this.state.awayStartTime) / 1000);
       }
 
-      // Check for warning
-      if (currentAwayTime >= this.config.warningTime && 
-          (!this.state.lastWarningTime || 
-           currentTime - this.state.lastWarningTime > 5000)) { // Show warning every 5 seconds
-        const remainingTime = this.config.maxAwayTime - currentAwayTime;
-        this.onWarning(Math.max(0, remainingTime));
-        this.state.lastWarningTime = currentTime;
-      }
+             // Check for warning
+       if (currentAwayTime >= this.config.warningTime && 
+           currentAwayTime < this.config.maxAwayTime &&
+           !this.state.lastWarningTime) { // Only show warning once
+         // Start with exactly 5 seconds for the warning countdown
+         this.onWarning(5);
+         this.state.lastWarningTime = currentTime;
+         console.log(`SoftShield: Warning triggered - starting 5 second countdown, current away time: ${currentAwayTime}s`);
+       }
 
-      // Check for failure
-      if (currentAwayTime >= this.config.maxAwayTime) {
-        this.fail();
-      }
+       // Continue warning countdown if warning is active
+       if (this.state.lastWarningTime) {
+         const timeSinceWarning = currentTime - this.state.lastWarningTime;
+         const remainingTime = Math.max(0, 5000 - timeSinceWarning); // 5 second warning duration
+         if (remainingTime > 0) {
+           // Calculate seconds more precisely to avoid skipping numbers
+           const remainingSeconds = Math.max(1, Math.ceil(remainingTime / 1000));
+           console.log(`SoftShield: Countdown - timeSinceWarning: ${timeSinceWarning}ms, remainingTime: ${remainingTime}ms, remainingSeconds: ${remainingSeconds}s`);
+           this.onWarning(remainingSeconds);
+         } else {
+           // Warning time expired, session should fail
+           console.log('SoftShield: Warning time expired, session should fail');
+           this.onWarning(0); // Send 0 before failing
+           setTimeout(() => this.fail(), 100); // Small delay to ensure 0 is sent
+         }
+       }
+
+             // Check for failure
+       if (currentAwayTime >= this.config.maxAwayTime) {
+         console.log(`SoftShield: Max away time reached (${currentAwayTime}s), failing session`);
+         this.fail();
+       }
     }, this.config.checkInterval);
   }
 
@@ -188,6 +220,11 @@ export class SoftShield {
     this.state.totalAwayTime = 0;
     this.state.isDisturbed = false;
     this.state.lastWarningTime = null;
+  }
+
+  public clearDisturbed() {
+    this.state.isDisturbed = false;
+    console.log('SoftShield: Disturbed state cleared');
   }
 }
 
