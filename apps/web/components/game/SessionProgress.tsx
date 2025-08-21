@@ -14,14 +14,133 @@ interface SessionProgressProps {
 }
 
 export function SessionProgress({ onSessionComplete, onSessionFail }: SessionProgressProps) {
-  const { currentSession, sessionProgress, updateSessionProgress } = useGameStore();
+  const { currentSession, sessionProgress, updateSessionProgress, player } = useGameStore();
   const [timeLeft, setTimeLeft] = useState(0);
   const [isDisturbed, setIsDisturbed] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [warningTimeLeft, setWarningTimeLeft] = useState(0);
+  const [warningStartTime, setWarningStartTime] = useState<number | null>(null);
+  const [showStopConfirmation, setShowStopConfirmation] = useState(false);
+  const [currentDialogMessage, setCurrentDialogMessage] = useState<string>("");
   const softShieldRef = useRef<any>(null);
 
-  const actionInfo = currentSession ? actionMetadata[currentSession.action as Action] : null;
+  // Get action info from currentSession or use a default
+  const action = currentSession?.action as Action || 'Train';
+  const actionInfo = actionMetadata[action];
+
+  // Define subtext phrases for each action
+  const getActionSubtext = (action: Action): string => {
+    const subtextMap: Record<Action, string> = {
+      'Train': 'I finish training.',
+      'Eat': 'I\'m done eating',
+      'Learn': 'I finish reading',
+      'Bathe': 'I\'m done bathing',
+      'Sleep': 'I wake up',
+      'Maintain': 'I finish maintaining my equipment',
+      'Fight': 'I\'m done fighting these mobs',
+      'Adventure': 'I\'m back from my adventure'
+    };
+    return subtextMap[action] || 'I finish training.';
+  };
+
+  // Define dialog balloon messages for each action based on progress
+  const getDialogMessage = (action: Action, elapsedSeconds: number, totalSeconds: number): string => {
+    const progress = elapsedSeconds / totalSeconds;
+    const messageIndex = Math.min(Math.floor(progress * 9), 8); // 9 messages, 0-8 index
+    
+    const dialogMessages: Record<Action, string[]> = {
+      'Train': [
+        "Quick drills! Let the screen nap for me.",
+        "Stretch… stance… no peeks yet.",
+        "Counting reps—guard the quiet.",
+        "Form's getting tidy; keep hands off.",
+        "Mid-set focus—thank you for the stillness.",
+        "Sweat sparkle—no taps, I'm in rhythm.",
+        "Almost there—hold the calm a little longer.",
+        "Final reps; keep the phone snoozy.",
+        "Done in a blink—stay steady till the bell!"
+      ],
+      'Eat': [
+        "Snack time—silence makes food tastier.",
+        "Nibble, nibble—no scrolling, promise?",
+        "Chewing thoughtfully; keep the screen asleep.",
+        "Savoring bites—thanks for not poking.",
+        "Halfway plate—hands-off teamwork!",
+        "Crunch-crunch—don't wake the phone.",
+        "Last bites coming up—hold the quiet.",
+        "Sip and finish—nearly done.",
+        "Clean plate soon—stay still with me."
+      ],
+      'Learn': [
+        "Opening the tome—shhh.",
+        "Tracing lines—no peeks, please.",
+        "Notes in the margins; keep things calm.",
+        "Mid-chapter focus—guard the silence.",
+        "Idea spark! Don't break the bubble.",
+        "Turning a page—no taps while I think.",
+        "Nearly through this lesson—hold steady.",
+        "Reviewing highlights—screen stays sleepy.",
+        "Closing the book—one more quiet moment."
+      ],
+      'Bathe': [
+        "Steam rising—I'm bathing.",
+        "Soapy whiskers—don't jostle me.",
+        "Rinse cycle; keep the phone dozy.",
+        "Scrub-scrub—thank you for the stillness.",
+        "Warm fog focus—no taps.",
+        "Towel ready—almost squeaky.",
+        "Final rinse; let the screen snooze.",
+        "Drying off—hold the calm.",
+        "All clean soon—stay hands-off till I sparkle."
+      ],
+      'Sleep': [
+        "Curling up—tiny nap mode.",
+        "Zzz… quiet helps me dream.",
+        "Breathing slow; keep the phone resting.",
+        "Dozing deeper—no peeks.",
+        "Half-nap checkpoint—thank you for stillness.",
+        "Soft snores—don't wake the screen.",
+        "Stirring soon—hold the hush.",
+        "Almost refreshed—one more quiet minute.",
+        "Waking stretch—keep it calm till the chime."
+      ],
+      'Maintain': [
+        "Gear check—maintaining my equipment.",
+        "Oiling hinges; no taps while I focus.",
+        "Sharpening edges—thanks for the calm.",
+        "Polish pass; keep hands off.",
+        "Tightening straps—screen stays sleepy.",
+        "Details, details—don't break my groove.",
+        "Final polish—hold the quiet.",
+        "Everything gleams—almost done.",
+        "Toolkit closing—stay steady till the tick."
+      ],
+      'Fight': [
+        "Stance set—I'm fighting these mobs.",
+        "First wave—no peeks, I've got this.",
+        "Combo time—keep the phone still.",
+        "Dodging neatly; thanks for the hush.",
+        "Mid-battle—don't wake the screen.",
+        "Special ready—hold the calm.",
+        "Last few foes—hands off till I finish.",
+        "Boss staggered—nearly there.",
+        "Victory incoming—stay steady for the win!"
+      ],
+      'Adventure': [
+        "Lantern lit—I'm going on an adventure.",
+        "Path forks ahead—no distractions.",
+        "Tracking footprints; keep the phone sleepy.",
+        "Torch high—thanks for the stillness.",
+        "Deeper in—don't jostle my map.",
+        "Treasure glint—hold the calm.",
+        "Gate in sight—hands off, brave friend.",
+        "Chest unlocked—almost done.",
+        "Loot secured—keep it quiet till I return!"
+      ]
+    };
+    
+    return dialogMessages[action]?.[messageIndex] || dialogMessages['Train'][messageIndex] || "Focusing...";
+  };
 
   // Debug logging
   console.log('SessionProgress render:', {
@@ -38,6 +157,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
   // Initialize Soft Shield
   useEffect(() => {
     if (sessionProgress.isActive && !softShieldRef.current) {
+      console.log('SessionProgress: Creating SoftShield...');
       softShieldRef.current = createSoftShield(
         {
           maxAwayTime: 15, // 15 seconds
@@ -51,12 +171,16 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
               disturbedSeconds: sessionProgress.disturbedSeconds + awayTime
             });
           },
-          onWarning: (remainingTime: number) => {
-            console.log(`SoftShield: Warning - ${remainingTime}s remaining`);
-            setShowWarning(true);
-            setWarningTimeLeft(remainingTime);
-            showSoftShieldWarningNotification(remainingTime);
-          },
+                     onWarning: (remainingTime: number) => {
+             console.log(`SoftShield: Warning triggered - ${remainingTime}s remaining`);
+             if (!showWarning) {
+               setShowWarning(true);
+               setWarningStartTime(Date.now());
+               showSoftShieldWarningNotification(remainingTime);
+               console.log('SessionProgress: Warning state set to true');
+             }
+             setWarningTimeLeft(remainingTime);
+           },
           onFail: (totalAwayTime: number) => {
             console.log(`SoftShield: Failed after ${totalAwayTime}s away`);
             onSessionFail();
@@ -64,6 +188,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
         }
       );
       
+      console.log('SessionProgress: Starting SoftShield...');
       softShieldRef.current.start();
     }
 
@@ -75,6 +200,32 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
     };
   }, [sessionProgress.isActive, updateSessionProgress, sessionProgress.disturbedSeconds, onSessionFail]);
 
+  // Handle SoftShield state changes
+  useEffect(() => {
+    if (softShieldRef.current && sessionProgress.isActive) {
+      const shieldState = softShieldRef.current.getState();
+      
+      // Update disturbed state based on SoftShield
+      if (shieldState.isDisturbed !== isDisturbed) {
+        setIsDisturbed(shieldState.isDisturbed);
+        if (!shieldState.isDisturbed) {
+          // Clear disturbed state when user returns
+          updateSessionProgress({
+            isDisturbed: false
+          });
+        }
+      }
+      
+      // Clear warning when user returns and warning is active
+      if (showWarning && !shieldState.lastWarningTime) {
+        console.log('SessionProgress: User returned, clearing warning');
+        setShowWarning(false);
+        setWarningTimeLeft(0);
+        setWarningStartTime(null);
+      }
+    }
+  }, [sessionProgress.isActive, isDisturbed, updateSessionProgress, showWarning]);
+
   useEffect(() => {
     if (!sessionProgress.isActive || !sessionProgress.startTime) return;
 
@@ -85,20 +236,67 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
       setTimeLeft(Math.max(0, remaining));
       setIsDisturbed(sessionProgress.isDisturbed);
 
+      // Update dialog message based on progress
+      const totalSeconds = sessionProgress.durationMinutes * 60;
+      const newDialogMessage = getDialogMessage(action, elapsed, totalSeconds);
+      setCurrentDialogMessage(newDialogMessage);
+
       if (remaining <= 0) {
         clearInterval(interval);
         if (softShieldRef.current) {
           softShieldRef.current.stop();
         }
-        console.log('SessionProgress: Timer reached zero, calling onSessionComplete');
-        onSessionComplete();
+        
+        // Check if session was disturbed
+        if (sessionProgress.isDisturbed) {
+          console.log('SessionProgress: Timer reached zero but session was disturbed, calling onSessionFail');
+          onSessionFail();
+        } else {
+          console.log('SessionProgress: Timer reached zero, calling onSessionComplete');
+          onSessionComplete();
+        }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [sessionProgress.isActive, sessionProgress.startTime, sessionProgress.durationMinutes, sessionProgress.isDisturbed, onSessionComplete]);
+  }, [sessionProgress.isActive, sessionProgress.startTime, sessionProgress.durationMinutes, sessionProgress.isDisturbed, onSessionComplete, onSessionFail, action]);
 
-  if (!currentSession || !actionInfo) {
+  // Clean up when session becomes inactive
+  useEffect(() => {
+    if (!sessionProgress.isActive) {
+      if (softShieldRef.current) {
+        softShieldRef.current.stop();
+        softShieldRef.current = null;
+      }
+      setShowWarning(false);
+      setWarningTimeLeft(0);
+      setIsDisturbed(false);
+      setShowStopConfirmation(false);
+      setCurrentDialogMessage("");
+    }
+  }, [sessionProgress.isActive]);
+
+  // Handle warning dismissal when time reaches 0
+  useEffect(() => {
+    if (showWarning && warningTimeLeft <= 0) {
+      console.log('SessionProgress: Warning time expired, dismissing warning');
+      setShowWarning(false);
+      setWarningTimeLeft(0);
+      setWarningStartTime(null);
+      // Small delay to ensure UI updates before potential session failure
+      setTimeout(() => {
+        if (softShieldRef.current) {
+          const shieldState = softShieldRef.current.getState();
+          if (shieldState.isDisturbed) {
+            console.log('SessionProgress: Session was disturbed, calling onSessionFail');
+            onSessionFail();
+          }
+        }
+      }, 200);
+    }
+  }, [showWarning, warningTimeLeft, onSessionFail]);
+
+  if (!sessionProgress.isActive || !actionInfo) {
     return null;
   }
 
@@ -107,8 +305,6 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
-
-  const progressPercent = ((sessionProgress.durationMinutes * 60 - timeLeft) / (sessionProgress.durationMinutes * 60)) * 100;
 
   return (
     <>
@@ -120,103 +316,93 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
         />
       )}
       
-      <div className="pixel-card p-4 sm:p-6 max-w-2xl mx-auto">
-      <div className="text-center mb-4 sm:mb-6">
-        <h2 className="text-lg sm:text-xl font-bold text-[#f2751a] mb-2">
-          Current Session
-        </h2>
-        
-        {/* Action Display */}
-        <div className="pixel-card p-3 sm:p-4 mb-3 sm:mb-4 inline-block">
-          <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">{actionInfo.emoji}</div>
-          <h3 className="text-base sm:text-lg font-bold text-[#f2751a]">
-            {actionInfo.label}
-          </h3>
-          <p className="text-xs sm:text-sm text-[#fbbf24]">
-            {actionInfo.description}
-          </p>
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="mb-4 sm:mb-6">
-        <div className="flex justify-between text-xs sm:text-sm text-[#fbbf24] mb-2">
-          <span>Progress</span>
-          <span>{formatTime(timeLeft)} remaining</span>
-        </div>
-        <div className="w-full bg-[#8B4513] border-2 border-[#654321] h-5 sm:h-6 relative">
-          <div 
-            className={`h-full transition-all duration-1000 ${
-              isDisturbed ? 'bg-[#ef4444]' : 'bg-[#f2751a]'
-            }`}
-            style={{ width: `${progressPercent}%` }}
-          />
-          {isDisturbed && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-white text-xs font-bold">DISTURBED!</span>
-            </div>
-          )}
-        </div>
-        
-        {/* Soft Shield Status */}
-        <div className="flex items-center justify-center mt-2">
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-[#10b981] rounded-full animate-pulse"></div>
-            <span className="text-xs text-[#10b981]">Soft Shield Active</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Session Info */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="pixel-card p-2 sm:p-3 text-center">
-          <div className="text-xs sm:text-sm text-[#fbbf24]">Started</div>
-          <div className="text-white text-xs sm:text-sm">
-            {new Date(currentSession.started_at).toLocaleTimeString()}
-          </div>
-        </div>
-        <div className="pixel-card p-2 sm:p-3 text-center">
-          <div className="text-xs sm:text-sm text-[#fbbf24]">Duration</div>
-          <div className="text-white text-xs sm:text-sm">
-            {sessionProgress.durationMinutes} minutes
-          </div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex space-x-2 sm:space-x-4">
-        <button
-          onClick={onSessionFail}
-          className="flex-1 pixel-button bg-[#ef4444] hover:bg-[#dc2626] text-xs sm:text-sm py-2"
-        >
-          Fail Session
-        </button>
-        <button
-          onClick={() => {
-            console.log('SessionProgress: Manual complete button clicked');
-            onSessionComplete();
+      {/* Vignette Overlay */}
+      <div className="fixed inset-0 pointer-events-none z-20">
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(circle at center, transparent 0%, transparent 30%, rgba(0, 0, 0, 0.7) 70%, rgba(0, 0, 0, 0.9) 100%)`,
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'center'
           }}
-          className="flex-1 pixel-button text-xs sm:text-sm py-2"
-        >
-          Complete Session
-        </button>
-        <button
-          onClick={() => {
-            console.log('Manual complete test');
-            onSessionComplete();
-          }}
-          className="flex-1 pixel-button bg-[#10b981] hover:bg-[#059669] text-xs sm:text-sm py-2"
-        >
-          Test Complete
-        </button>
+        />
       </div>
 
-      {/* Background Info */}
-      <div className="mt-3 sm:mt-4 text-center text-xs text-[#fbbf24]">
-        Background: {actionInfo.background.replace('_', ' ')} • 
-        Animation: {actionInfo.idleAnimation}
+       {/* Character - Positioned in the center */}
+       <div className="fixed left-1/2 transform -translate-x-1/2 bottom-40 sm:bottom-44 z-25">
+         <img 
+           src="/assets/sprites/character.png" 
+           alt="Tiny Adventurer" 
+           className="w-28 h-32 sm:w-32 sm:h-36 pixel-art drop-shadow-lg"
+           onError={(e) => {
+             e.currentTarget.style.display = 'none';
+           }}
+         />
+       </div>
+
+       {/* Dialog Balloon - Above the character */}
+       <div className="fixed left-1/2 transform -translate-x-1/2 bottom-80 sm:bottom-84 z-30">
+         <div className="pixel-card p-3 sm:p-4 bg-white border-2 border-gray-800 max-w-xs sm:max-w-sm text-center relative">
+           {/* Speech bubble tail */}
+           <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-white"></div>
+           <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-7 border-r-7 border-t-7 border-transparent border-t-gray-800" style={{ marginTop: '-1px' }}></div>
+           
+           <div className="text-gray-800 text-xs sm:text-sm font-medium leading-tight">
+             {currentDialogMessage}
+           </div>
+         </div>
+       </div>
+
+      {/* Timer Display */}
+      <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-30 text-center">
+        <div className="text-4xl sm:text-5xl font-bold text-white drop-shadow-lg mb-2">
+          {formatTime(timeLeft)}
+        </div>
+        <div className="text-sm sm:text-base text-[#fbbf24] drop-shadow-lg">
+          to go until {getActionSubtext(action)}
+        </div>
       </div>
-    </div>
+
+             {/* Stop Button */}
+       <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-30">
+         <button
+           onClick={() => setShowStopConfirmation(true)}
+           className="pixel-button bg-[#ef4444] hover:bg-[#dc2626] text-white px-6 py-3 text-base sm:text-lg"
+         >
+           STOP FOCUSING
+         </button>
+       </div>
+
+       {/* Stop Confirmation Modal */}
+       {showStopConfirmation && (
+         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+           <div className="pixel-card p-6 sm:p-8 border-2 border-[#ef4444] bg-[#1f2937] max-w-md w-full mx-4">
+             <div className="text-center mb-6">
+               <div className="text-white text-lg sm:text-xl font-bold mb-2">
+                 Are you sure?
+               </div>
+               <div className="text-[#fbbf24] text-sm sm:text-base">
+                 {player?.display_name || 'Adventurer'} still needs to focus...
+               </div>
+             </div>
+             
+             <div className="flex gap-3 justify-center">
+               <button
+                 onClick={onSessionFail}
+                 className="pixel-button bg-[#ef4444] hover:bg-[#dc2626] text-white px-6 py-2 text-sm flex-1 max-w-[100px]"
+               >
+                 Yes
+               </button>
+               <button
+                 onClick={() => setShowStopConfirmation(false)}
+                 className="pixel-button bg-[#6b7280] hover:bg-[#4b5563] text-white px-6 py-2 text-sm flex-1 max-w-[100px]"
+               >
+                 No
+               </button>
+             </div>
+           </div>
+         </div>
+       )}
     </>
   );
 }

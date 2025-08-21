@@ -162,3 +162,77 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--pixel-gold);
 }
+
+/* Custom slider styling */
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  border: 2px solid var(--pixel-border);
+  box-shadow: 
+    inset 0 0 0 2px rgba(0, 0, 0, 0.3),
+    0 2px 0 rgba(255, 255, 255, 0.1);
+  /* Add stepped notches for tactile feel */
+  background-image: 
+    repeating-linear-gradient(
+      to right,
+      transparent 0px,
+      transparent 3px,
+      rgba(139, 69, 19, 0.3) 3px,
+      rgba(139, 69, 19, 0.3) 6px
+    );
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--pixel-orange);
+  border: 3px solid var(--pixel-border);
+  cursor: pointer;
+  box-shadow: 
+    inset 0 0 0 2px rgba(255, 255, 255, 0.2),
+    0 2px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.1s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: var(--pixel-gold);
+  transform: scale(1.1);
+}
+
+.slider::-webkit-slider-thumb:active {
+  transform: scale(0.95);
+  box-shadow: 
+    inset 0 0 0 2px rgba(255, 255, 255, 0.2),
+    0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--pixel-orange);
+  border: 3px solid var(--pixel-border);
+  cursor: pointer;
+  box-shadow: 
+    inset 0 0 0 2px rgba(255, 255, 255, 0.2),
+    0 2px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.1s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  background: var(--pixel-gold);
+  transform: scale(1.1);
+}
+
+.slider::-moz-range-thumb:active {
+  transform: scale(0.95);
+  box-shadow: 
+    inset 0 0 0 2px rgba(255, 255, 255, 0.2),
+    0 1px 0 rgba(0, 0, 0, 0.3);
+}

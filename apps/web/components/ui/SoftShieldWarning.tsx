@@ -12,6 +12,7 @@ export function SoftShieldWarning({ remainingTime, onDismiss }: SoftShieldWarnin
   const [timeLeft, setTimeLeft] = useState(remainingTime);
 
   useEffect(() => {
+    // Always update timeLeft when remainingTime changes to prevent skipping
     setTimeLeft(remainingTime);
     
     if (remainingTime <= 0) {
@@ -20,20 +21,30 @@ export function SoftShieldWarning({ remainingTime, onDismiss }: SoftShieldWarnin
       return;
     }
 
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        const newTime = prev - 1;
-        if (newTime <= 0) {
-          setIsVisible(false);
-          onDismiss?.();
-          return 0;
-        }
-        return newTime;
-      });
-    }, 1000);
+    // Only start countdown if we have a valid time
+    if (remainingTime > 0) {
+      const interval = setInterval(() => {
+        setTimeLeft(prev => {
+          const newTime = Math.max(0, prev - 1);
+          if (newTime <= 0) {
+            // Don't auto-dismiss, let the parent component handle it
+            return 0;
+          }
+          return newTime;
+        });
+      }, 1000);
 
-    return () => clearInterval(interval);
+      return () => clearInterval(interval);
+    }
   }, [remainingTime, onDismiss]);
+
+  // Handle dismissal when time reaches 0
+  useEffect(() => {
+    if (timeLeft <= 0 && remainingTime <= 0) {
+      setIsVisible(false);
+      onDismiss?.();
+    }
+  }, [timeLeft, remainingTime, onDismiss]);
 
   if (!isVisible) return null;
 
