@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defeat the Dragon - Offline</title>
+    <style>
+        body {
+            font-family: 'Press Start 2P', monospace;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: #f7fafc;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 600px;
+            padding: 40px 20px;
+        }
+        
+        .dragon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: breathe 2s ease-in-out infinite;
+        }
+        
+        h1 {
+            color: #f2751a;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+        
+        .retry-btn {
+            background: #f2751a;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+        
+        .retry-btn:hover {
+            background: #e35a0f;
+        }
+        
+        .retry-btn:disabled {
+            background: #4a5568;
+            cursor: not-allowed;
+        }
+        
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .status.offline {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+        }
+        
+        .status.connecting {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid #f59e0b;
+        }
+        
+        .status.online {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dragon">🐉</div>
+        <h1>Connection Lost!</h1>
+        <p>The dragon has blocked your path to the internet. Don't worry, your progress is safe!</p>
+        <p>Check your connection and try again to continue your focus journey.</p>
+        
+        <button class="retry-btn" onclick="retryConnection()">
+            Retry Connection
+        </button>
+        
+        <div id="status" class="status offline">
+            Status: Offline
+        </div>
+    </div>
+
+    <script>
+        let retryCount = 0;
+        const maxRetries = 5;
+        
+        function updateStatus(message, className) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = `Status: ${message}`;
+            statusEl.className = `status ${className}`;
+        }
+        
+        function retryConnection() {
+            const btn = document.querySelector('.retry-btn');
+            btn.disabled = true;
+            btn.textContent = 'Connecting...';
+            
+            updateStatus('Connecting...', 'connecting');
+            
+            // Simulate connection check
+            setTimeout(() => {
+                if (navigator.onLine) {
+                    updateStatus('Online!', 'online');
+                    btn.textContent = 'Redirecting...';
+                    
+                    // Redirect to main app
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    retryCount++;
+                    updateStatus(`Offline (Attempt ${retryCount}/${maxRetries})`, 'offline');
+                    
+                    if (retryCount >= maxRetries) {
+                        btn.textContent = 'Try Again Later';
+                        updateStatus('Connection failed. Please check your internet.', 'offline');
+                    } else {
+                        btn.disabled = false;
+                        btn.textContent = 'Retry Connection';
+                    }
+                }
+            }, 2000);
+        }
+        
+        // Listen for online/offline events
+        window.addEventListener('online', () => {
+            updateStatus('Online!', 'online');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        });
+        
+        window.addEventListener('offline', () => {
+            updateStatus('Offline', 'offline');
+        });
+        
+        // Auto-retry every 30 seconds
+        setInterval(() => {
+            if (navigator.onLine && retryCount < maxRetries) {
+                retryConnection();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

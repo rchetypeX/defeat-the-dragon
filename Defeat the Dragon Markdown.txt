@@ -1,0 +1,321 @@
+﻿Defeat the Dragon Markdown
+
+Goal
+Build a production-ready Progressive Web App (PWA) called “Defeat the Dragon”: a pixel-art, ad-free, Pomodoro-style Focus RPG where users set timers (5–120 min, 5-minute steps). Completing sessions awards XP and Coins (everyone) and Sparks (subscribers with “Inspiration”). Cosmetics are visual-only (no buffs). Disturbances (leaving/hiding the app >15s) fail the session (0 rewards; streak breaks). Includes Adventure/Dungeon floors, server-timed Mini-Boss (1–6h) and Big Boss (8–24h), optional Class Ascension at L5, a supportive Tiny Adventurer with a single cute cadence, and a PWA-first architecture with a runway to native later.
+Persona
+You are a Senior Full-Stack Web + Game Engineer specializing in Next.js (React/TypeScript), PixiJS/Canvas, PWAs, Web Push, Supabase (Auth/Postgres/Edge Functions), Stripe subscriptions, Workbox service workers, and secure backend APIs. You prioritize accessibility, performance, privacy, and clean code.
+Task
+* Build a PWA (installable, offline, push notifications) using Next.js (TypeScript) and PixiJS for pixel-art rendering.
+
+* Make it mobile-first and responsive (iOS/Android/desktop), optimized for Add-to-Home-Screen (A2HS).
+
+* Implement auth (email + OAuth), subscription via Stripe; on success, set is_inspired = true to enable Sparks accrual.
+
+* Use Supabase for Auth, Postgres (with RLS), and Edge Functions for server-authoritative logic (rewards, loot, boss timers, push).
+
+* Implement Soft Shield: if the page/tab becomes hidden for >15s, fail the session (0 rewards; streak breaks).
+
+* Implement Focus Sessions (5–120 min), Adventure mode (floors + server-timed bosses), Shop/Inventory, Cosmetics (skins, décor, pets, trinkets), no buffs ever.
+
+* Implement economy formulas (XP/Coins/Sparks), streaks, loot tables, and Class Ascension (cosmetic stores at L5+).
+
+* Implement Push Notifications (Web Push/VAPID) via service worker and backend fan-out.
+
+* Ship ad-free. Cosmetics only; no pay-to-win.
+
+* Ensure a11y (contrast, font toggle for dyslexia, TTS option for dialogue), error handling, telemetry opt-in.
+
+* Provide security (RLS, JWT, webhook signatures, rate limits), CI checks, and a clear README.
+
+* Output a clear, step-by-step build plan in Markdown with file trees, schemas, endpoints, and acceptance criteria an AI Agent can follow.
+
+Format/Output
+Produce a Markdown build plan with these sections (follow the order, use headings, bullets, and code blocks). Be explicit and concrete—assume an agent will execute this plan.
+________________
+
+
+1) High-Level Architecture
+   * Frontend: Next.js (App Router), React/TS, PixiJS for sprite rendering, Zustand (state), TanStack Query (server state), Tailwind (utility CSS), Headless UI/ARIA patterns.
+
+   * PWA: Workbox service worker (precaching + runtime caching), Web App Manifest, offline shell, background sync queue.
+
+   * Backend: Supabase (Auth, Postgres with RLS, Realtime), Edge Functions (Deno) for: session completion/rewards, loot rolls, boss timers, push sending, Stripe webhooks.
+
+   * Payments: Stripe Checkout + Customer Portal; webhook toggles is_inspired=true and controls Sparks accrual.
+
+   * Push: Web Push (VAPID) with subscription storage per user; iOS requires A2HS and permission.
+
+   * Security/Privacy: JWT, RLS policies, signed webhooks, no third-party trackers, opt-in telemetry only.
+
+2) Tech Stack & Versions
+      * Node LTS, Next.js 14+, React 18+, TypeScript 5+, Supabase JS, Stripe SDK, Workbox 7+, PixiJS 7+, Zustand, Zod, ESLint/Prettier, Vitest + Playwright.
+
+3) Repository & Scripts
+apps/
+  web/           # Next.js PWA
+packages/
+  engine/        # Shared TS logic (economy formulas, loot tables, dialogue resolver)
+  ui-tokens/     # Design tokens, palettes, spacing, pixel scale rules
+
+
+         * Scripts: dev, build, start, lint, typecheck, test, e2e, analyze, prepare (husky), db:migrate, db:seed.
+
+4) Environment Variables (.env.local)
+NEXT_PUBLIC_SUPABASE_URL= 
+NEXT_PUBLIC_SUPABASE_ANON_KEY= 
+SUPABASE_SERVICE_ROLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+PUSH_EMAIL_CONTACT=noreply@defeatthedragon.app
+
+
+5) Data Model (SQL for Supabase)
+Provide CREATE TABLE statements and RLS for:
+profiles(user_id PK, display_name text, created_at timestamptz)
+
+
+players(id uuid PK default gen_random_uuid(),
+        user_id uuid FK -> auth.users,
+        level int default 1,
+        xp int default 0,
+        coins int default 0,
+        sparks int default 0,
+        is_inspired bool default false,
+        bond_score int default 50,
+        mood_state text default 'Warm',
+        day_streak int default 0,
+        created_at timestamptz default now())
+
+
+sessions(id uuid PK,
+         user_id uuid,
+         action text,
+         started_at timestamptz,
+         ended_at timestamptz,
+         outcome text check (outcome in ('success','fail','early_stop')),
+         disturbed_seconds int default 0,
+         dungeon_floor int default 0,
+         boss_tier text default 'none') -- 'none'|'mini'|'big'
+
+
+inventory(id uuid PK,
+         user_id uuid,
+         sku text,
+         type text check (type in ('cosmetic','pet','trinket')),
+         qty int default 1,
+         equipped bool default false)
+
+
+shop_items(sku text PK,
+          name text,
+          price_coins int,
+          price_sparks int,
+          type text,
+          class_lock text null,
+          min_level int default 1)
+
+
+classes(user_id uuid, class_id text, unlocked bool, quest_state jsonb)
+
+
+loot(id uuid PK, session_id uuid, sku text, rarity text)
+
+
+push_subscriptions(id uuid PK, user_id uuid, endpoint text, p256dh text, auth text)
+
+
+subscriptions(user_id uuid PK, provider text, status text, expires_at timestamptz)
+
+
+            * Include RLS policies: users can only select/insert/update their own rows.
+
+6) Economy & Rules (put into packages/engine)
+// XP
+const baseXPPerMin = 1;
+const complexityMultiplier = (mins:number)=>Math.min(1 + (mins/50)*0.25, 1.5);
+const sessionTypeMultiplier: Record<string, number> = {
+  Train:1.00, Quest_Study:1.10, Learn:1.05, Search:0.95,
+  Eat:0.50, Sleep:0.25, Bathe:0.40, Maintain:0.80,
+  Fight:1.20, Adventure:1.15,
+};
+const streakMultiplier = (days:number)=>1 + Math.min(days,7)*0.02;
+export const computeXP = (mins:number, action:string, streakDays:number)=>
+  Math.round(mins * baseXPPerMin * complexityMultiplier(mins) * (sessionTypeMultiplier[action]||1) * streakMultiplier(streakDays));
+
+
+// Coins
+export const computeCoins = (xp:number)=> Math.floor(xp * 0.6);
+
+
+// Sparks (subscribers only)
+export const computeSparks = (mins:number, streakDays:number)=> 
+  Math.floor(mins/25) * (1 + Math.min(streakDays,7)*0.05);
+
+
+7) Loot Table (starter)
+               * C: 55% trinket, U: 25% décor, R: 12% skin fragment, SR: 6% pet egg shard, SSR: 2% pet.
+
+               * Increase rarity +1–5% per 25 minutes; bias by class during class-aligned actions.
+
+               * Implement as deterministic PRNG seeded per session id.
+
+8) API Design (Next.js route handlers + Supabase Edge Functions)
+                  * POST /api/sessions/start → create session row, return nonce & expected end time.
+
+                  * POST /api/sessions/heartbeat → optional keep-alive (for diagnostics).
+
+                  * POST /api/sessions/complete (Edge Function) → validate duration + disturbance, compute XP/Coins/(Sparks), roll loot, update streaks, return rewards payload.
+
+                  * POST /api/boss/start (Edge Function) → enqueue server-timed job for mini/big boss.
+
+                  * POST /api/boss/resolve (Edge Function) → finalize rewards and floor progression.
+
+                  * POST /api/stripe/webhook → set is_inspired true/false based on subscription events.
+
+                  * POST /api/push/subscribe → save push subscription keys; POST /api/push/send internal admin.
+
+Include request/response JSON schemas (Zod) for each endpoint.
+9) PWA/Service Worker
+                     * Workbox:
+
+                        * Precache app shell.
+
+                        * Runtime caching: images (stale-while-revalidate), API (network-first with timeout & fallback), fonts (cache-first).
+
+                        * Background Sync for queued writes when offline.
+
+                           * Manifest: name, short_name, icons (192/512), theme_color, display: standalone, scope: /.
+
+                           * Web Push: subscribe, store endpoint keys, handle push event, show notifications.
+
+10) Soft Shield Logic (Strict)
+                              * Use Page Visibility API.
+
+                              * If document.hidden for >15,000 ms during an active focus session ⇒ mark fail (set outcome='fail', disturbed_seconds+=hiddenTime) and show in-app Ambush! banner with 10-min Recovery Quest button.
+
+                              * Timer must pause/stop on fail and block rewards.
+
+11) Timers
+                                 * Focus sessions: foreground setInterval + monotonic time diffs; persist progress every 5s.
+
+                                 * Boss timers: server authoritative; client subscribes to updates via polling or Realtime channel; push on completion.
+
+12) Frontend Structure & Routes
+/ (Home) – Start session, choose Action, pick duration
+/session – Timer view (sprite, ring, Soft Shield watcher)
+/summary – Rewards, streak status, share card
+/shop – Standard & Premium shops (Coins/Sparks)
+/inventory – Equip cosmetic only
+/adventure – Floors, boss prompts (server-timed)
+/classes – Ascension at L5, job quests
+/settings – Profile, a11y, notifications, data export/delete
+/auth – Sign in/up
+
+
+13) UI/UX & Pixel Specs
+                                    * Pixel art: base 32×32 body at 1×; export at 3×; poses: idle, walk(4), train, study, write, read, bathe, sleep, maintain, fight, celebrate.
+
+                                    * Single cadence dialogue; supportive, no guilt.
+
+                                    * Accessibility: dyslexia-friendly font toggle, high contrast palette, TTS option.
+
+                                    * Share Card: sprite pose, focus minutes, XP/Coins/(Sparks).
+
+14) Payments Flow (Stripe)
+                                       * Checkout → webhook verifies event → set subscriptions.status and players.is_inspired=true → entitlement cached in client.
+
+                                       * Customer Portal link in Settings.
+
+                                       * Regional pricing, free trial parameterizable.
+
+15) Push Notifications
+                                          * After A2HS + permission: store subscription; on boss completion or reminders, send push via Edge Function (VAPID).
+
+                                          * Notification payloads: title, body, deep link URL.
+
+16) Class Ascension (from L5)
+                                             * Classes: Fighter, Rogue, Wizard, Cleric, Ranger…
+
+                                             * Each has a job quest (set of focus milestones); on completion, unlock Class Store (cosmetics only).
+
+                                             * Multi-classing allowed; independent quests.
+
+17) Analytics (Opt-in)
+                                                * Minimal custom events: session_start, session_complete (duration/outcome), shop_purchase (sku), subscription_status_changed.
+
+                                                * Store aggregated counts server-side; no third-party analytics by default.
+
+18) Security & Compliance
+                                                   * RLS: row-level access by auth.uid().
+
+                                                   * Rate-limit write endpoints; CSRF protection for non-GET; webhook signature verification.
+
+                                                   * Data export/delete endpoints in Settings.
+
+                                                   * No ads, no gambling, no user-generated chat.
+
+19) Acceptance Criteria (must pass)
+                                                      * PWA installable; loads offline (shell + last state).
+
+                                                      * Focus session fails if app hidden >15s (verified in e2e).
+
+                                                      * Rewards computed per formulas; Sparks only when is_inspired=true.
+
+                                                      * Shop purchases cosmetic-only; no gameplay effects.
+
+                                                      * Adventure floors advance; boss timers resolve on server; push arrives.
+
+                                                      * Stripe subscription sets is_inspired and enables Sparks accrual.
+
+                                                      * A11y features present (font toggle, contrast, TTS option).
+
+                                                      * RLS prevents cross-user access; webhook signatures verified.
+
+                                                      * README documents setup, env, build, and deploy.
+
+20) Milestones
+                                                         1. Scaffold & PWA basics (manifest, SW, routes, auth).
+
+                                                         2. Sessions & Soft Shield (timers, fail rule).
+
+                                                         3. Economy & Rewards (XP/Coins/Sparks, summary).
+
+                                                         4. Shop/Inventory & Cosmetics.
+
+                                                         5. Adventure & Boss timers (server) + push.
+
+                                                         6. Subscriptions (Stripe) + entitlement gating.
+
+                                                         7. Persona/Dialogue v0 + a11y + share card.
+
+                                                         8. Hardening (RLS, tests, perf, polish) → Beta.
+
+21) README Outline
+                                                            * Overview, Features, Stack
+
+                                                            * Quick Start (env, supabase init, stripe webhook)
+
+                                                            * Scripts, Dev Workflow
+
+                                                            * Deployment (Vercel + Supabase)
+
+                                                            * Security & A11y
+
+                                                            * Roadmap
+
+________________
+
+
+Constraints & Non-Negotiables
+                                                               * Ad-free.
+
+                                                               * Cosmetics-only (no buffs or pay-to-win).
+
+                                                               * Disturbance (hidden app >15s) ⇒ fail the session.
+
+                                                               * Use Next.js + TypeScript, Supabase, Stripe, PixiJS, Workbox.
+
+                                                               * Keep code modular; separate pure functions in packages/engine.
