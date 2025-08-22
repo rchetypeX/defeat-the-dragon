@@ -1,25 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { createWalletClient, custom, getAddress } from 'viem';
+import { createWalletClient, custom } from 'viem';
 import { mainnet } from 'wagmi/chains';
 import { supabase } from '../lib/supabase';
 
 export function useWalletAuth() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  
-  const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
+  const [address, setAddress] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
-  // Get the injected connector (MetaMask, etc.)
-  const injectedConnector = connectors.find(connector => connector.id === 'injected');
+  // Check if MetaMask is available
+  const checkIfWalletIsConnected = async () => {
+    try {
+      if (typeof window !== 'undefined' && window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          setAddress(accounts[0]);
+          setIsConnected(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking wallet connection:', error);
+    }
+  };
+
+  useEffect(() => {
+    checkIfWalletIsConnected();
+  }, []);
 
   const connectWallet = async () => {
-    if (!injectedConnector) {
-      setAuthError('No wallet connector found. Please install MetaMask or another Web3 wallet.');
+    if (typeof window === 'undefined' || !window.ethereum) {
+      setAuthError('No wallet found. Please install MetaMask or another Web3 wallet.');
       return;
     }
 
@@ -27,7 +40,11 @@ export function useWalletAuth() {
     setAuthError(null);
 
     try {
-      await connect({ connector: injectedConnector });
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts.length > 0) {
+        setAddress(accounts[0]);
+        setIsConnected(true);
+      }
     } catch (error) {
       console.error('Wallet connection error:', error);
       setAuthError('Failed to connect wallet. Please try again.');
@@ -160,7 +177,8 @@ export function useWalletAuth() {
   const disconnectWallet = async () => {
     try {
       await supabase.auth.signOut();
-      disconnect();
+      setAddress(null);
+      setIsConnected(false);
     } catch (error) {
       console.error('Disconnect error:', error);
     }
