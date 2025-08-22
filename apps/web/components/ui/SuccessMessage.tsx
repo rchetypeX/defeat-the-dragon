@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useCharacterStore } from '../../lib/characterStore';
 
 interface SuccessMessageProps {
   xpGained: number;
@@ -24,6 +25,7 @@ export function SuccessMessage({
   onGoHome
 }: SuccessMessageProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const { equippedCharacter, getCharacterImage } = useCharacterStore();
 
   console.log('SuccessMessage: Rendering with props:', {
     xpGained,
@@ -48,7 +50,7 @@ export function SuccessMessage({
         {/* Large Character in Center */}
         <div className="absolute left-1/2 transform -translate-x-1/2 bottom-1/3 z-10">
           <img 
-            src="/assets/sprites/character.png" 
+            src={getCharacterImage(equippedCharacter)} 
             alt="Tiny Adventurer" 
             className="w-32 h-40 sm:w-40 sm:h-48 pixel-art drop-shadow-lg"
             onError={(e) => {

@@ -88,16 +88,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, displayName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName,
+    try {
+      // First, check if the email already exists using our API
+      const checkResponse = await fetch('/api/auth/check-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      },
-    });
-    return { error };
+        body: JSON.stringify({ email }),
+      });
+
+      if (checkResponse.ok) {
+        const checkResult = await checkResponse.json();
+        if (checkResult.exists) {
+          return { 
+            error: { 
+              message: 'An account with this email already exists. Please sign in instead.' 
+            } 
+          };
+        }
+      }
+
+      // Proceed with sign up
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            display_name: displayName,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+             if (error) {
+         console.log('Sign up error:', error.message); // Debug log
+         
+         // Provide more specific error messages
+         if (error.message.includes('already registered') || 
+             error.message.includes('already exists') ||
+             error.message.includes('User already registered') ||
+             error.message.includes('duplicate key') ||
+             error.message.includes('already been registered') ||
+             error.message.includes('User already registered') ||
+             error.message.includes('Email already registered')) {
+           return { 
+             error: { 
+               message: 'An account with this email already exists. Please sign in instead.' 
+             } 
+           };
+         }
+         if (error.message.includes('password') || error.message.includes('Password')) {
+           return { 
+             error: { 
+               message: 'Password must be at least 6 characters long.' 
+             } 
+           };
+         }
+         if (error.message.includes('email') || error.message.includes('Email')) {
+           return { 
+             error: { 
+               message: 'Please enter a valid email address.' 
+             } 
+           };
+         }
+         // Return the original error if we can't categorize it
+         return { error };
+       }
+
+      return { error: null };
+    } catch (error) {
+      console.error('Sign up error:', error);
+      return { 
+        error: { 
+          message: 'An unexpected error occurred. Please try again.' 
+        } 
+      };
+    }
   };
 
   const signOut = async () => {

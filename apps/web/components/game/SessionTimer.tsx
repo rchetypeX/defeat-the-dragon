@@ -87,6 +87,8 @@ export function SessionTimer({ onSessionStart, onSessionCancel }: SessionTimerPr
         </div>
       </div>
 
+
+
       {/* Action Buttons */}
       <div className="flex space-x-2">
         <button
@@ -103,6 +105,8 @@ export function SessionTimer({ onSessionStart, onSessionCancel }: SessionTimerPr
           {isStarting ? 'Starting' : 'Start'}
         </button>
       </div>
+
+
     </div>
   );
 }
