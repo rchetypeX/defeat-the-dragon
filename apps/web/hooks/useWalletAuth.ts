@@ -80,10 +80,12 @@ export function useWalletAuth() {
         throw new Error(result.error || 'Authentication failed');
       }
 
-      // The API will handle Supabase auth and return session data
-      if (result.session) {
-        // Update Supabase session
-        await supabase.auth.setSession(result.session);
+      // For wallet authentication, we'll handle it differently
+      if (result.walletAuth) {
+        // Store wallet user data in localStorage or state
+        localStorage.setItem('walletUser', JSON.stringify(result.user));
+        // Trigger a page reload to update the auth state
+        window.location.reload();
       }
 
     } catch (error) {
@@ -139,10 +141,12 @@ export function useWalletAuth() {
         throw new Error(result.error || 'Registration failed');
       }
 
-      // The API will handle Supabase auth and return session data
-      if (result.session) {
-        // Update Supabase session
-        await supabase.auth.setSession(result.session);
+      // For wallet authentication, we'll handle it differently
+      if (result.walletAuth) {
+        // Store wallet user data in localStorage or state
+        localStorage.setItem('walletUser', JSON.stringify(result.user));
+        // Trigger a page reload to update the auth state
+        window.location.reload();
       }
 
     } catch (error) {

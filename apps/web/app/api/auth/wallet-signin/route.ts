@@ -64,40 +64,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate a session token for the user
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: `${address.toLowerCase()}@wallet.local`,
-      options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_URL}/auth/callback`,
-      },
-    });
-
-    if (sessionError) {
-      return NextResponse.json(
-        { error: 'Session creation failed' },
-        { status: 500 }
-      );
-    }
-
-    // Create a custom session response
-    const session = {
-      access_token: sessionData.properties?.access_token || '',
-      refresh_token: sessionData.properties?.refresh_token || '',
-      expires_in: 3600,
-      token_type: 'bearer',
-      user: authUser.user,
-    };
-
+    // For wallet authentication, we'll return the user data
+    // The frontend will handle setting the session
     return NextResponse.json({
       success: true,
-      session: session.session,
       user: {
         id: existingUser.user_id,
         wallet_address: existingUser.wallet_address,
         display_name: existingUser.display_name,
+        email: `${address.toLowerCase()}@wallet.local`,
       },
+      // Return a simple success flag for wallet auth
+      walletAuth: true,
     });
+
+
 
   } catch (error) {
     console.error('Wallet sign-in error:', error);
