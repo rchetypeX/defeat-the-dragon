@@ -6,16 +6,32 @@ import { AuthProvider } from '../contexts/AuthContext';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Defeat the Dragon',
-  description: 'A Pixel-art Pomodoro-style Focus RPG',
+  title: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
+  description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pixel-art Pomodoro-style Focus RPG',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Defeat the Dragon',
+    title: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
   },
   formatDetection: {
     telephone: false,
+  },
+  other: {
+    'fc:frame': JSON.stringify({
+      version: 'next',
+      imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE,
+      button: {
+        title: `Launch ${process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon'}`,
+        action: {
+          type: 'launch_frame',
+          name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
+          url: process.env.NEXT_PUBLIC_URL || 'https://your-app.vercel.app',
+          splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE,
+          splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR,
+        },
+      },
+    }),
   },
 };
 
