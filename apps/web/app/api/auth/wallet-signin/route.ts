@@ -64,9 +64,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create a session for the user
-    const { data: session, error: sessionError } = await supabase.auth.admin.createSession({
-      user_id: existingUser.user_id,
+    // Generate a session token for the user
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: `${address.toLowerCase()}@wallet.local`,
+      options: {
+        redirectTo: `${process.env.NEXT_PUBLIC_URL}/auth/callback`,
+      },
     });
 
     if (sessionError) {
@@ -75,6 +79,15 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Create a custom session response
+    const session = {
+      access_token: sessionData.properties?.access_token || '',
+      refresh_token: sessionData.properties?.refresh_token || '',
+      expires_in: 3600,
+      token_type: 'bearer',
+      user: authUser.user,
+    };
 
     return NextResponse.json({
       success: true,
