@@ -7,6 +7,9 @@ import { Action } from '@defeat-the-dragon/engine';
 import { createSoftShield } from '../../lib/softShield';
 import { SoftShieldWarning } from '../ui/SoftShieldWarning';
 import { showSoftShieldWarningNotification } from '../../lib/notifications';
+import { useAudio } from '../../contexts/AudioContext';
+import { useCharacterStore } from '../../lib/characterStore';
+import FocusSessionAudioControls from '../audio/FocusSessionAudioControls';
 
 interface SessionProgressProps {
   onSessionComplete: () => void;
@@ -15,12 +18,15 @@ interface SessionProgressProps {
 
 export function SessionProgress({ onSessionComplete, onSessionFail }: SessionProgressProps) {
   const { currentSession, sessionProgress, updateSessionProgress, player } = useGameStore();
+  const { isBackgroundPlaying, toggleBackgroundPlayPause } = useAudio();
+  const { equippedCharacter, getCharacterImage } = useCharacterStore();
   const [timeLeft, setTimeLeft] = useState(0);
   const [isDisturbed, setIsDisturbed] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [warningTimeLeft, setWarningTimeLeft] = useState(0);
   const [warningStartTime, setWarningStartTime] = useState<number | null>(null);
   const [showStopConfirmation, setShowStopConfirmation] = useState(false);
+  const [showAudioControls, setShowAudioControls] = useState(false);
   const [currentDialogMessage, setCurrentDialogMessage] = useState<string>("");
   const softShieldRef = useRef<any>(null);
 
@@ -331,9 +337,9 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
        {/* Character - Positioned in the center */}
        <div className="fixed left-1/2 transform -translate-x-1/2 bottom-40 sm:bottom-44 z-25">
          <img 
-           src="/assets/sprites/character.png" 
+           src={getCharacterImage(equippedCharacter)} 
            alt="Tiny Adventurer" 
-           className="w-28 h-32 sm:w-32 sm:h-36 pixel-art drop-shadow-lg"
+           className="w-32 h-36 sm:w-36 sm:h-40 pixel-art drop-shadow-lg object-contain"
            onError={(e) => {
              e.currentTarget.style.display = 'none';
            }}
@@ -361,6 +367,16 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
         <div className="text-sm sm:text-base text-[#fbbf24] drop-shadow-lg">
           to go until {getActionSubtext(action)}
         </div>
+      </div>
+
+      {/* Sound Button - Top Right */}
+      <div className="fixed top-4 right-4 z-30">
+        <img 
+          src="/assets/icons/sound.png" 
+          alt="Sound" 
+          className="w-8 h-8 sm:w-10 sm:h-10 pixel-art cursor-pointer hover:opacity-80 transition-opacity drop-shadow-lg"
+          onClick={() => setShowAudioControls(true)}
+        />
       </div>
 
              {/* Stop Button */}
@@ -403,6 +419,12 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
            </div>
          </div>
        )}
+
+       {/* Focus Session Audio Controls */}
+       <FocusSessionAudioControls
+         isOpen={showAudioControls}
+         onClose={() => setShowAudioControls(false)}
+       />
     </>
   );
 }

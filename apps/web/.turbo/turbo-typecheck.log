@@ -1,0 +1,34 @@
+
+> @defeat-the-dragon/web@1.0.0 typecheck
+> tsc --noEmit
+
+app/api/auth/check-email/route.ts(79,54): error TS2339: Property 'email' does not exist on type 'never'.
+app/api/sessions/complete/route.ts(109,24): error TS2304: Cannot find name 'user'.
+app/api/sessions/complete/route.ts(132,24): error TS2304: Cannot find name 'user'.
+app/api/sessions/complete/route.ts(169,26): error TS2304: Cannot find name 'user'.
+app/api/sessions/complete/route.ts(223,24): error TS2304: Cannot find name 'user'.
+app/api/sessions/complete/route.ts(235,21): error TS2749: 'CompleteSessionResponse' refers to a value, but is being used as a type here. Did you mean 'typeof CompleteSessionResponse'?
+app/api/sessions/start/route.ts(123,20): error TS2304: Cannot find name 'user'.
+app/api/sessions/start/route.ts(149,21): error TS2749: 'StartSessionResponse' refers to a value, but is being used as a type here. Did you mean 'typeof StartSessionResponse'?
+components/ui/ShopPopup.tsx(166,52): error TS2345: Argument of type '{ id: string; name: string; price: number; currency: string; description: string; image: string; }' is not assignable to parameter of type 'ShopItem'.
+  Types of property 'currency' are incompatible.
+    Type 'string' is not assignable to type '"coins" | "sparks"'.
+lib/api.ts(90,45): error TS2749: 'StartSessionRequest' refers to a value, but is being used as a type here. Did you mean 'typeof StartSessionRequest'?
+lib/api.ts(90,75): error TS2749: 'StartSessionResponse' refers to a value, but is being used as a type here. Did you mean 'typeof StartSessionResponse'?
+lib/api.ts(93,39): error TS2749: 'StartSessionResponse' refers to a value, but is being used as a type here. Did you mean 'typeof StartSessionResponse'?
+lib/api.ts(108,48): error TS2749: 'CompleteSessionRequest' refers to a value, but is being used as a type here. Did you mean 'typeof CompleteSessionRequest'?
+lib/api.ts(108,81): error TS2749: 'CompleteSessionResponse' refers to a value, but is being used as a type here. Did you mean 'typeof CompleteSessionResponse'?
+lib/api.ts(109,21): error TS2749: 'CompleteSessionResponse' refers to a value, but is being used as a type here. Did you mean 'typeof CompleteSessionResponse'?
+lib/store.ts(158,21): error TS2322: Type '{ id: string; user_id: string; level: number; xp: number; coins: number; sparks: number; is_inspired: boolean; bond_score: number; mood_state: string; day_streak: number; created_at: string; display_name: string; }' is not assignable to type '{ user_id: string; created_at: string; id: string; level: number; xp: number; coins: number; sparks: number; is_inspired: boolean; bond_score: number; mood_state: "Warm" | "Happy" | "Excited" | "Focused" | "Determined"; day_streak: number; display_name?: string; }'.
+  Types of property 'mood_state' are incompatible.
+    Type 'string' is not assignable to type '"Warm" | "Happy" | "Excited" | "Focused" | "Determined"'.
+lib/store.ts(178,19): error TS2322: Type '{ id: string; user_id: string; level: number; xp: number; coins: number; sparks: number; is_inspired: boolean; bond_score: number; mood_state: string; day_streak: number; created_at: string; display_name: string; }' is not assignable to type '{ user_id: string; created_at: string; id: string; level: number; xp: number; coins: number; sparks: number; is_inspired: boolean; bond_score: number; mood_state: "Warm" | "Happy" | "Excited" | "Focused" | "Determined"; day_streak: number; display_name?: string; }'.
+  Types of property 'mood_state' are incompatible.
+    Type 'string' is not assignable to type '"Warm" | "Happy" | "Excited" | "Focused" | "Determined"'.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path C:\Users\EL Bonuan\Documents\GitHub\defeat-the-dragon\apps\web
+npm error workspace @defeat-the-dragon/web@1.0.0
+npm error location C:\Users\EL Bonuan\Documents\GitHub\defeat-the-dragon\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsc --noEmit

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { z } from 'zod';
 import { StartSessionRequest, StartSessionResponse } from '@defeat-the-dragon/engine';
 import { actionForMinutes } from '@defeat-the-dragon/engine';
 
@@ -33,18 +34,8 @@ export async function POST(request: NextRequest) {
       console.log('API: Using mock token, skipping Supabase auth');
       // Continue with mock user data
     } else {
-      // Set the auth token for this Supabase client instance
-      console.log('API: Getting user from token...');
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-      console.log('API: User auth result:', { hasUser: !!user, hasError: !!authError });
-      
-      if (authError || !user) {
-        console.log('API: Auth failed:', authError);
-        return NextResponse.json(
-          { error: 'Invalid or expired token' },
-          { status: 401 }
-        );
-      }
+      // We'll verify the user later when creating the session
+      console.log('API: Will verify user token when creating session');
     }
 
     // Create an authenticated client for this request
@@ -101,6 +92,7 @@ export async function POST(request: NextRequest) {
     
     let session;
     let sessionError;
+    let user = null;
     
     if (token === 'mock-token-for-development') {
       // Create mock session data
@@ -116,6 +108,16 @@ export async function POST(request: NextRequest) {
       sessionError = null;
       console.log('API: Created mock session');
     } else {
+      // Get user info first
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !authUser) {
+        return NextResponse.json(
+          { error: 'Invalid or expired token' },
+          { status: 401 }
+        );
+      }
+      user = authUser;
+
       // Create real session in database
       const { data: dbSession, error: dbError } = await authenticatedSupabase
         .from('sessions')
@@ -146,7 +148,7 @@ export async function POST(request: NextRequest) {
 
     // Prepare the response
     console.log('API: Preparing response...');
-    const response: StartSessionResponse = {
+    const response: z.infer<typeof StartSessionResponse> = {
       session_id: session.id,
       expected_end_time: expectedEndTime.toISOString(),
       nonce

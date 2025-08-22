@@ -10,23 +10,89 @@ export function SignUpForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const { signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Don't submit if email already exists
+    if (emailExists) {
+      setError('An account with this email already exists. Please sign in instead.');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
+    setSuccess(false);
 
     const { error } = await signUp(email, password, displayName);
     
     if (error) {
       setError(error.message);
+      setSuccess(false);
     } else {
       setSuccess(true);
+      setError(null);
     }
     
     setLoading(false);
+  };
+
+  const checkEmail = async (emailToCheck: string) => {
+    if (!emailToCheck || !emailToCheck.includes('@')) {
+      setEmailExists(false);
+      return;
+    }
+
+    setEmailChecking(true);
+    try {
+      const response = await fetch('/api/auth/check-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: emailToCheck }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setEmailExists(result.exists);
+        if (result.exists) {
+          setError('An account with this email already exists. Please sign in instead.');
+        } else {
+          setError(null);
+        }
+      } else {
+        // If the API fails, we can't determine if email exists
+        // Show a warning but don't block signup
+        console.warn('Email check API failed, proceeding with signup');
+        setError('Email availability check failed. Please try again or proceed with signup.');
+      }
+    } catch (error) {
+      console.error('Error checking email:', error);
+      // Show a warning but don't block signup
+      setError('Email availability check failed. Please try again or proceed with signup.');
+    } finally {
+      setEmailChecking(false);
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    setError(null);
+    setEmailExists(false); // Reset email exists state when email changes
+    
+    // Debounce email checking
+    const timeoutId = setTimeout(() => {
+      checkEmail(newEmail);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   };
 
   if (success) {
@@ -55,59 +121,84 @@ export function SignUpForm() {
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="displayName" className="block text-sm font-medium mb-2 text-[#fbbf24]">
-            Display Name
-          </label>
-          <input
-            id="displayName"
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            required
-            className="w-full pixel-input"
-            placeholder="Enter your adventurer name"
-          />
-        </div>
+             <form onSubmit={handleSubmit} className="space-y-4">
+         <div>
+           <label htmlFor="displayName" className="block text-sm font-medium mb-2 text-[#fbbf24]">
+             Adventurer Name
+           </label>
+                       <input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+              maxLength={20}
+              className="w-full pixel-input text-xs placeholder:text-xs"
+              placeholder="Enter adventurer name"
+            />
+         </div>
         
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-2 text-[#fbbf24]">
-            Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full pixel-input"
-            placeholder="Enter your email"
-          />
-        </div>
+                 <div>
+           <label htmlFor="email" className="block text-sm font-medium mb-2 text-[#fbbf24]">
+             Email
+           </label>
+           <div className="relative">
+                           <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                required
+                className={`w-full pixel-input text-xs placeholder:text-xs ${emailExists ? 'border-red-500' : ''}`}
+                placeholder="Enter email"
+              />
+             {emailChecking && (
+               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#f2751a]"></div>
+               </div>
+             )}
+             {emailExists && (
+               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500">
+                 ❌
+               </div>
+             )}
+           </div>
+           {emailExists && (
+             <p className="text-red-500 text-xs mt-1">This email is already registered. Please sign in instead.</p>
+           )}
+         </div>
         
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-2 text-[#fbbf24]">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full pixel-input"
-            placeholder="Enter your password (min 6 characters)"
-          />
-        </div>
+                 <div>
+           <label htmlFor="password" className="block text-sm font-medium mb-2 text-[#fbbf24]">
+             Password
+           </label>
+           <div className="relative">
+                           <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full pixel-input text-xs placeholder:text-xs pr-10"
+                placeholder="Enter password"
+              />
+             <button
+               type="button"
+               onClick={() => setShowPassword(!showPassword)}
+               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#8B4513] hover:text-[#654321]"
+             >
+               {showPassword ? "🙈" : "👁️"}
+             </button>
+           </div>
+         </div>
         
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || emailExists || emailChecking}
           className="w-full pixel-button disabled:opacity-50"
         >
-          {loading ? 'Creating Account...' : 'Start Adventure'}
+          {loading ? 'Creating Account...' : emailExists ? 'Email Already Exists' : 'Start Adventure'}
         </button>
       </form>
     </div>

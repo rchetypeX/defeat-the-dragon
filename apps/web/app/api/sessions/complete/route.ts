@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { z } from 'zod';
 import { 
   CompleteSessionRequest, 
   CompleteSessionResponse,
@@ -74,6 +75,7 @@ export async function POST(request: NextRequest) {
 
     let session;
     let player;
+    let user = null;
 
     if (token === 'mock-token-for-development') {
       // Use mock data for development
@@ -101,6 +103,16 @@ export async function POST(request: NextRequest) {
         created_at: new Date().toISOString()
       };
     } else {
+      // Verify the JWT token and get user info first
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !authUser) {
+        return NextResponse.json(
+          { error: 'Invalid or expired token' },
+          { status: 401 }
+        );
+      }
+      user = authUser;
+
       // Get the session from the database
       const { data: dbSession, error: sessionError } = await authenticatedSupabase
         .from('sessions')
@@ -166,7 +178,7 @@ export async function POST(request: NextRequest) {
         const { data: subscription } = await authenticatedSupabase
           .from('subscriptions')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('user_id', user?.id)
           .eq('status', 'active')
           .single();
 
@@ -220,7 +232,7 @@ export async function POST(request: NextRequest) {
           level: newLevel,
           day_streak: newStreak
         })
-        .eq('user_id', user.id);
+        .eq('user_id', user?.id);
 
       if (updatePlayerError) {
         console.error('Error updating player:', updatePlayerError);
@@ -232,7 +244,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare the response
-    const response: CompleteSessionResponse = {
+    const response: z.infer<typeof CompleteSessionResponse> = {
       xp_gained: xpGained,
       coins_gained: coinsGained,
       sparks_gained: sparksGained,

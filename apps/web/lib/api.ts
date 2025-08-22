@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { z } from 'zod';
 import { StartSessionRequest, StartSessionResponse, CompleteSessionRequest, CompleteSessionResponse } from '@defeat-the-dragon/engine';
 
 /**
@@ -87,10 +88,10 @@ export async function testApi(): Promise<any> {
 /**
  * Start a new focus session
  */
-export async function startSession(request: StartSessionRequest): Promise<StartSessionResponse> {
+export async function startSession(request: z.infer<typeof StartSessionRequest>): Promise<z.infer<typeof StartSessionResponse>> {
   console.log('API: startSession called with:', request);
   try {
-    const response = await apiRequest<StartSessionResponse>('/sessions/start', {
+    const response = await apiRequest<z.infer<typeof StartSessionResponse>>('/sessions/start', {
       method: 'POST',
       body: JSON.stringify(request),
     });
@@ -105,8 +106,8 @@ export async function startSession(request: StartSessionRequest): Promise<StartS
 /**
  * Complete a focus session
  */
-export async function completeSession(request: CompleteSessionRequest): Promise<CompleteSessionResponse> {
-  return apiRequest<CompleteSessionResponse>('/sessions/complete', {
+export async function completeSession(request: z.infer<typeof CompleteSessionRequest>): Promise<z.infer<typeof CompleteSessionResponse>> {
+  return apiRequest<z.infer<typeof CompleteSessionResponse>>('/sessions/complete', {
     method: 'POST',
     body: JSON.stringify(request),
   });
@@ -144,50 +145,160 @@ export async function getCurrentSession() {
  */
 export async function getPlayerData() {
   try {
+    console.log('API: getPlayerData called');
+    
+    // Check if Supabase is properly configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    // If Supabase is not configured, return mock data immediately
+    if (!supabaseUrl || !supabaseAnonKey || 
+        supabaseUrl === 'https://placeholder.supabase.co' || 
+        supabaseAnonKey === 'placeholder-key') {
+      console.log('API: Supabase not configured, returning mock data');
+      console.log('API: To use real Supabase, create a .env.local file with:');
+      console.log('API: NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co');
+      console.log('API: NEXT_PUBLIC_SUPABASE_ANON_KEY=your_actual_anon_key');
+      return {
+        id: 'mock-player-id',
+        user_id: 'mock-user-id',
+        level: 1,
+        xp: 0,
+        coins: 3,
+        sparks: 0,
+        is_inspired: false,
+        bond_score: 50,
+        mood_state: 'Happy',
+        day_streak: 0,
+        created_at: new Date().toISOString(),
+        display_name: 'The Moth' // Set a custom name for testing
+      };
+    }
+    
+                   // No timeout - let Supabase calls take their time
+    console.log('API: Starting getPlayerData execution');
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+    console.log('API: Auth user check completed, user:', user ? 'exists' : 'null');
+    
+    if (!user) {
+      console.log('API: No authenticated user, returning mock data');
+      // Return mock data for development when no user is authenticated
+      return {
+        id: 'mock-player-id',
+        user_id: 'mock-user-id',
+        level: 1,
+        xp: 0,
+        coins: 3,
+        sparks: 0,
+        is_inspired: false,
+        bond_score: 50,
+        mood_state: 'Happy',
+        day_streak: 0,
+        created_at: new Date().toISOString(),
+        display_name: 'The Moth' // Set a custom name for testing
+      };
+    }
 
-    // Get player data and profile data in parallel
-    const [playerResult, profileResult] = await Promise.all([
-      supabase
-        .from('players')
-        .select('*')
-        .eq('user_id', user.id)
-        .single(),
-      supabase
-        .from('profiles')
-        .select('display_name')
-        .eq('user_id', user.id)
-        .single()
-    ]);
+    console.log('API: Starting database queries for user:', user.id);
+    
+    // Get player data and profile data in parallel with individual logging
+    console.log('API: Querying players table...');
+    const playerResult = await supabase
+      .from('players')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+    console.log('API: Players query completed, error:', playerResult.error);
+    
+    console.log('API: Querying profiles table...');
+    const profileResult = await supabase
+      .from('profiles')
+      .select('display_name')
+      .eq('user_id', user.id)
+      .single();
+    console.log('API: Profiles query completed, error:', profileResult.error);
+    
+    console.log('API: All database queries completed');
 
     if (playerResult.error) {
-      throw playerResult.error;
+      console.error('API: Players table query failed:', playerResult.error);
+      throw new Error(`Players query failed: ${playerResult.error.message}`);
+    }
+
+    if (profileResult.error) {
+      console.error('API: Profiles table query failed:', profileResult.error);
+      // Don't throw for profile errors, just use default name
     }
 
     // Combine player data with display name
     const player = {
       ...playerResult.data,
-      display_name: profileResult.data?.display_name || 'Adventurer'
+      display_name: profileResult.data?.display_name || 'The Moth'
     };
 
+    console.log('API: Successfully retrieved player data:', {
+      id: player.id,
+      level: player.level,
+      xp: player.xp,
+      coins: player.coins,
+      display_name: player.display_name
+    });
+
+    console.log('API: getPlayerData completed successfully');
     return player;
   } catch (error) {
     console.error('API: Failed to get player data:', error);
-    // Return mock data for development
-    return {
-      id: 'mock-player-id',
-      user_id: 'mock-user-id',
-      level: 1,
-      xp: 0,
-      coins: 3,
-      sparks: 0,
-      is_inspired: false,
-      bond_score: 50,
-      mood_state: 'Happy',
-      day_streak: 0,
-      created_at: new Date().toISOString(),
-      display_name: 'Adventurer'
-    };
+    console.error('API: getPlayerData failed with error:', error.message);
+    
+    // Don't return mock data - let the error propagate
+    throw error;
+  }
+}
+
+/**
+ * Test database connection and table access
+ */
+export async function testDatabaseConnection() {
+  try {
+    console.log('API: Testing database connection...');
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    console.log('API: Auth test - user exists:', !!user);
+    
+    if (!user) {
+      console.log('API: No authenticated user for database test');
+      return { success: false, error: 'No authenticated user' };
+    }
+    
+    // Test if we can query the players table
+    const { data: players, error: playersError } = await supabase
+      .from('players')
+      .select('count')
+      .limit(1);
+    
+    console.log('API: Players table test - error:', playersError);
+    
+    if (playersError) {
+      return { success: false, error: `Players table error: ${playersError.message}` };
+    }
+    
+    // Test if we can query the profiles table
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('count')
+      .limit(1);
+    
+    console.log('API: Profiles table test - error:', profilesError);
+    
+    if (profilesError) {
+      return { success: false, error: `Profiles table error: ${profilesError.message}` };
+    }
+    
+    console.log('API: Database connection test successful');
+    return { success: true };
+    
+  } catch (error) {
+    console.error('API: Database connection test failed:', error);
+    return { success: false, error: error.message };
   }
 }

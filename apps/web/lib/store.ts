@@ -136,27 +136,18 @@ export const useGameStore = create<GameState & GameActions>()(
             const playerData = await getPlayerData();
             console.log('Store: Player data loaded:', playerData);
             if (playerData) {
+              console.log('Store: Setting player data in store');
               set({ player: playerData });
+              console.log('Store: Player data set successfully');
+            } else {
+              console.log('Store: No player data returned');
+              set({ player: null });
             }
           } catch (error) {
             console.error('Store: Failed to load player data:', error);
-            // Create mock player data for development
-            const mockPlayer = {
-              id: 'mock-player-id',
-              user_id: 'mock-user-id',
-              level: 1,
-              xp: 0,
-              coins: 3,
-              sparks: 0,
-              is_inspired: false,
-              bond_score: 50,
-              mood_state: 'Happy',
-              day_streak: 0,
-              created_at: new Date().toISOString(),
-              display_name: 'Adventurer'
-            };
-            console.log('Store: Using mock player data:', mockPlayer);
-            set({ player: mockPlayer });
+            // Don't use mock data - let the error propagate
+            set({ player: null });
+            throw error;
           }
         },
         
