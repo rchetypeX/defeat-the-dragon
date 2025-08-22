@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createWalletClient, custom } from 'viem';
-import { mainnet } from 'wagmi/chains';
 import { supabase } from '../lib/supabase';
 
 export function useWalletAuth() {
@@ -63,17 +61,11 @@ export function useWalletAuth() {
     setAuthError(null);
 
     try {
-      // Create wallet client for signing
-      const client = createWalletClient({
-        chain: mainnet,
-        transport: custom(window.ethereum),
-      });
-
       // Create a message to sign
       const message = `Sign in to Defeat the Dragon\n\nWallet: ${address}\nTimestamp: ${Date.now()}`;
       
-      // Sign the message
-      const signature = await client.request({
+      // Sign the message using MetaMask directly
+      const signature = await window.ethereum.request({
         method: 'personal_sign',
         params: [message, address],
       });
@@ -123,17 +115,11 @@ export function useWalletAuth() {
     setAuthError(null);
 
     try {
-      // Create wallet client for signing
-      const client = createWalletClient({
-        chain: mainnet,
-        transport: custom(window.ethereum),
-      });
-
       // Create a message to sign
       const message = `Sign up for Defeat the Dragon\n\nWallet: ${address}\nDisplay Name: ${displayName}\nTimestamp: ${Date.now()}`;
       
-      // Sign the message
-      const signature = await client.request({
+      // Sign the message using MetaMask directly
+      const signature = await window.ethereum.request({
         method: 'personal_sign',
         params: [message, address],
       });
