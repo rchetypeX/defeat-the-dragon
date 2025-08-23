@@ -384,17 +384,17 @@ export function GameDashboard() {
            </div>
         </div>
         
-                 {/* Bottom Action Area */}
-         <div className={`p-3 sm:p-4 ${showSessionTimer || sessionResult ? 'hidden' : ''}`}>
-                       {sessionProgress.isActive ? (
-              <SessionProgress
-                onSessionComplete={handleSessionComplete}
-                onSessionFail={handleSessionFail}
-              />
-            ) : (
-             <div className="text-center">
-               {/* Main FOCUS Button */}
-               <div className="w-full max-w-[280px] sm:max-w-[320px] mx-auto -mt-4 sm:-mt-6">
+                         {/* Bottom Action Area */}
+        <div className={`p-3 sm:p-4 ${showSessionTimer || sessionResult ? 'hidden' : ''}`}>
+          {sessionProgress.isActive ? (
+            <SessionProgress
+              onSessionComplete={handleSessionComplete}
+              onSessionFail={handleSessionFail}
+            />
+          ) : (
+            <div className="text-center">
+              {/* Main FOCUS Button */}
+              <div className="w-full max-w-[280px] sm:max-w-[320px] mx-auto">
                  <img 
                    src="/assets/ui/focus-button.png" 
                    alt="FOCUS" 

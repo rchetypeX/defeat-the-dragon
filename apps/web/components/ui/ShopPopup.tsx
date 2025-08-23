@@ -201,17 +201,17 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
       <div 
         ref={popupRef}
-        className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-3 sm:p-6 w-full max-w-sm sm:max-w-2xl h-[90vh] sm:h-auto flex flex-col pixel-art"
+        className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-3 w-full max-w-sm h-[95vh] flex flex-col pixel-art"
       >
         {/* Header */}
-        <div className="flex justify-between items-center mb-3 sm:mb-6 flex-shrink-0">
-          <h2 className="text-lg sm:text-2xl font-bold text-[#8B4513]">🏪 Shop</h2>
+        <div className="flex justify-between items-center mb-3 flex-shrink-0">
+          <h2 className="text-lg font-bold text-[#8B4513]">🏪 Shop</h2>
           <button
             onClick={onClose}
-            className="text-[#8B4513] hover:text-[#654321] text-xl sm:text-2xl font-bold"
+            className="text-[#8B4513] hover:text-[#654321] text-xl font-bold"
           >
             ×
           </button>
@@ -219,28 +219,28 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
 
         {/* Error Message */}
         {errorMessage && (
-          <div className="mb-3 sm:mb-6 flex-shrink-0">
-            <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-xs sm:text-sm">
+          <div className="mb-3 flex-shrink-0">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-xs">
               {errorMessage}
             </div>
           </div>
         )}
 
         {/* Inspiration Boon Button */}
-        <div className="mb-3 sm:mb-6 flex-shrink-0">
+        <div className="mb-3 flex-shrink-0">
           <button
             onClick={handleSubscription}
-            className="w-full bg-gradient-to-r from-[#FFD700] to-[#FFA500] border-2 border-[#8B4513] text-[#8B4513] font-bold py-2 sm:py-3 px-3 sm:px-4 rounded hover:from-[#FFA500] hover:to-[#FF8C00] transition-all duration-200 shadow-lg text-xs sm:text-sm"
+            className="w-full bg-gradient-to-r from-[#FFD700] to-[#FFA500] border-2 border-[#8B4513] text-[#8B4513] font-bold py-2 px-3 rounded hover:from-[#FFA500] hover:to-[#FF8C00] transition-all duration-200 shadow-lg text-xs"
           >
             ✨ Inspiration Boon! Earn Sparks from Focus Sessions!
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex justify-center space-x-1 sm:space-x-2 mb-3 sm:mb-6 flex-shrink-0">
+        <div className="flex justify-center space-x-1 mb-3 flex-shrink-0">
           <button
             onClick={() => setActiveTab('character')}
-            className={`px-2 sm:px-4 py-1 sm:py-2 font-bold rounded border-2 transition-all text-xs sm:text-sm ${
+            className={`px-3 py-2 font-bold rounded border-2 transition-all text-xs ${
               activeTab === 'character'
                 ? 'bg-[#8B4513] text-[#f5f5dc] border-[#8B4513]'
                 : 'bg-[#f5f5dc] text-[#8B4513] border-[#8B4513] hover:bg-[#e8e8d0]'
@@ -250,7 +250,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
           </button>
           <button
             onClick={() => setActiveTab('background')}
-            className={`px-2 sm:px-4 py-1 sm:py-2 font-bold rounded border-2 transition-all text-xs sm:text-sm ${
+            className={`px-3 py-2 font-bold rounded border-2 transition-all text-xs ${
               activeTab === 'background'
                 ? 'bg-[#8B4513] text-[#f5f5dc] border-[#8B4513]'
                 : 'bg-[#f5f5dc] text-[#8B4513] border-[#8B4513] hover:bg-[#e8e8d0]'
@@ -267,9 +267,9 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
           </div>
         )}
 
-        {/* Items Grid - Compact Square Cards */}
-        <div className="flex-1">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        {/* Items Grid - Mobile Optimized */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-2 pb-2">
             {shopItems[activeTab].map((item) => {
               const isOwned = isItemOwned(item.id, activeTab === 'character' ? 'character' : 'background');
               const isDisabled = isOwned || purchaseStatus[item.id] === 'loading';
@@ -277,7 +277,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
               return (
                 <div
                   key={item.id}
-                  className={`aspect-square border-2 border-[#8B4513] rounded p-2 sm:p-3 transition-colors flex flex-col justify-between ${
+                  className={`min-h-[120px] border-2 border-[#8B4513] rounded p-2 transition-colors flex flex-col justify-between ${
                     isOwned 
                       ? 'bg-gray-200 opacity-75' 
                       : 'bg-[#e8e8d0] hover:bg-[#d8d8c0]'
@@ -285,24 +285,24 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
                 >
                   <div className="text-center flex-1 flex flex-col justify-center">
                     {(activeTab === 'character' || activeTab === 'background') && item.image ? (
-                      <div className="mb-2">
+                      <div className="mb-1">
                         <img 
                           src={item.image} 
                           alt={item.name}
                           className={`mx-auto object-contain ${
                             activeTab === 'character' 
-                              ? 'w-12 h-12 sm:w-16 sm:h-16' 
-                              : 'w-16 h-12 sm:w-20 sm:h-16 rounded'
+                              ? 'w-10 h-10' 
+                              : 'w-12 h-8 rounded'
                           }`}
                         />
                       </div>
                     ) : (
-                      <div className="text-lg sm:text-xl mb-1">
+                      <div className="text-lg mb-1">
                         {activeTab === 'character' && '🧙‍♂️'}
                         {activeTab === 'background' && '🖼️'}
                       </div>
                     )}
-                    <h3 className="font-bold text-[#8B4513] text-xs sm:text-sm">
+                    <h3 className="font-bold text-[#8B4513] text-xs">
                       {item.name}
                     </h3>
                     {isOwned && (
@@ -314,10 +314,10 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
                   
                   <div className="text-center">
                     <div className="flex justify-center items-center space-x-1 mb-1">
-                      <span className="text-[#8B4513] font-bold text-xs sm:text-sm">
+                      <span className="text-[#8B4513] font-bold text-xs">
                         {item.price}
                       </span>
-                      <span className="text-xs sm:text-sm">
+                      <span className="text-xs">
                         {item.currency === 'coins' ? '🪙' : '✨'}
                       </span>
                     </div>
@@ -336,8 +336,8 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         </div>
 
         {/* Footer */}
-        <div className="mt-3 sm:mt-6 text-center flex-shrink-0">
-          <p className="text-[#654321] text-xs sm:text-sm">
+        <div className="mt-3 text-center flex-shrink-0">
+          <p className="text-[#654321] text-xs">
             💡 Tip: Get the Inspiration Boon to earn Sparks from your focus sessions!
           </p>
         </div>

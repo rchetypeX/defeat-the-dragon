@@ -199,33 +199,18 @@ export default function HomePage() {
               <p className="text-[#fbbf24] text-xs">Focus RPG with Pomodoro</p>
             </div>
 
-            {/* Value Props - More Compact */}
-            <div className="w-full max-w-sm mb-6">
-              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-3 mb-3">
-                <div className="flex items-center mb-1">
+            {/* Value Props - Ultra Compact for Mobile */}
+            <div className="w-full max-w-sm mb-4">
+              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-2 mb-2">
+                <div className="flex items-center">
                   <span className="text-[#f2751a] mr-2">⚔️</span>
-                  <span className="text-[#fbbf24] text-xs font-medium">Gamified Focus</span>
+                  <span className="text-[#fbbf24] text-xs">Gamified Focus • Level Up Progress • Base App Ready</span>
                 </div>
-                <p className="text-gray-400 text-xs">Transform boring work into an epic adventure</p>
-              </div>
-              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-3 mb-3">
-                <div className="flex items-center mb-1">
-                  <span className="text-[#f2751a] mr-2">🎮</span>
-                  <span className="text-[#fbbf24] text-xs font-medium">Level Up Progress</span>
-                </div>
-                <p className="text-gray-400 text-xs">Earn XP, unlock characters, and progress through levels</p>
-              </div>
-              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-3">
-                <div className="flex items-center mb-1">
-                  <span className="text-[#f2751a] mr-2">🚀</span>
-                  <span className="text-[#fbbf24] text-xs font-medium">Base App Optimized</span>
-                </div>
-                <p className="text-gray-400 text-xs">Seamless Web3 integration with gasless transactions</p>
               </div>
             </div>
 
             {/* Authentication Tabs */}
-            <div className="w-full max-w-sm mb-4">
+            <div className="w-full max-w-sm mb-3">
               <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
                 <button
                   onClick={() => setAuthMode('wallet')}
@@ -251,7 +236,7 @@ export default function HomePage() {
             </div>
             
             {/* Authentication Form */}
-            <div className="w-full max-w-sm">
+            <div className="w-full max-w-sm mb-3">
               {authMode === 'wallet' && <WalletLoginForm />}
               {authMode === 'login' && <LoginForm />}
               {authMode === 'signup' && <SignUpForm />}
@@ -259,7 +244,7 @@ export default function HomePage() {
             
             {/* Email Auth Toggle (only show when not in wallet mode) */}
             {authMode !== 'wallet' && (
-              <div className="mt-4 text-center">
+              <div className="mt-3 text-center">
                 <button
                   onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
                   className="text-[#fbbf24] hover:text-white transition-colors text-xs underline"
@@ -270,7 +255,7 @@ export default function HomePage() {
             )}
 
             {/* Help & FAQ Link */}
-            <div className="mt-6 text-center">
+            <div className="mt-3 text-center">
               <button className="text-[#fbbf24] hover:text-white transition-colors text-xs underline">
                 Need help? View FAQ
               </button>

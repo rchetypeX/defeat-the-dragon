@@ -94,17 +94,17 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
       <div 
         ref={popupRef}
-        className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-3 sm:p-6 w-full max-w-sm sm:max-w-2xl h-[90vh] sm:h-auto flex flex-col pixel-art"
+        className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-3 w-full max-w-sm h-[95vh] flex flex-col pixel-art"
       >
         {/* Header */}
-        <div className="flex justify-between items-center mb-3 sm:mb-6 flex-shrink-0">
-          <h2 className="text-lg sm:text-2xl font-bold text-[#8B4513]">🎒 Inventory</h2>
+        <div className="flex justify-between items-center mb-3 flex-shrink-0">
+          <h2 className="text-lg font-bold text-[#8B4513]">🎒 Inventory</h2>
           <button
             onClick={onClose}
-            className="text-[#8B4513] hover:text-[#654321] text-xl sm:text-2xl font-bold"
+            className="text-[#8B4513] hover:text-[#654321] text-xl font-bold"
           >
             ×
           </button>
@@ -112,11 +112,11 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
 
         
 
-                 {/* Tabs */}
-         <div className="flex justify-center space-x-1 sm:space-x-2 mb-3 sm:mb-6 flex-shrink-0">
+                         {/* Tabs */}
+        <div className="flex justify-center space-x-1 mb-3 flex-shrink-0">
           <button
             onClick={() => setActiveTab('character')}
-            className={`px-2 sm:px-4 py-1 sm:py-2 font-bold rounded border-2 transition-all text-xs sm:text-sm ${
+            className={`px-3 py-2 font-bold rounded border-2 transition-all text-xs ${
               activeTab === 'character'
                 ? 'bg-[#8B4513] text-[#f5f5dc] border-[#8B4513]'
                 : 'bg-[#f5f5dc] text-[#8B4513] border-[#8B4513] hover:bg-[#e8e8d0]'
@@ -126,7 +126,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
           </button>
           <button
             onClick={() => setActiveTab('background')}
-            className={`px-2 sm:px-4 py-1 sm:py-2 font-bold rounded border-2 transition-all text-xs sm:text-sm ${
+            className={`px-3 py-2 font-bold rounded border-2 transition-all text-xs ${
               activeTab === 'background'
                 ? 'bg-[#8B4513] text-[#f5f5dc] border-[#8B4513]'
                 : 'bg-[#f5f5dc] text-[#8B4513] border-[#8B4513] hover:bg-[#e8e8d0]'
@@ -136,15 +136,15 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
           </button>
         </div>
 
-                 {/* Items Grid - Compact Square Cards */}
-         <div className="flex-1">
-           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-             {inventoryItems[activeTab]
-               .filter(item => item.isOwned) // Only show owned items
-               .map((item) => (
-                               <div
+                         {/* Items Grid - Mobile Optimized */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-2 pb-2">
+            {inventoryItems[activeTab]
+              .filter(item => item.isOwned) // Only show owned items
+              .map((item) => (
+                <div
                   key={item.id}
-                  className={`aspect-square border-2 rounded p-2 sm:p-3 transition-colors flex flex-col justify-between ${
+                  className={`min-h-[120px] border-2 rounded p-2 transition-colors flex flex-col justify-between ${
                     (item.category === 'character' && item.id === equippedCharacter) || 
                     (item.category === 'background' && item.id === equippedBackground) || 
                     item.isEquipped
@@ -152,35 +152,35 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
                       : 'bg-[#e8e8d0] border-[#8B4513] hover:bg-[#d8d8c0]'
                   }`}
                 >
-                 <div className="text-center flex-1 flex flex-col justify-center">
-                   {(activeTab === 'character' || activeTab === 'background') && item.image ? (
-                     <div className="mb-2">
-                       <img 
-                         src={item.image} 
-                         alt={item.name}
-                         className={`mx-auto object-contain ${
-                           activeTab === 'character' 
-                             ? 'w-12 h-12 sm:w-16 sm:h-16' 
-                             : 'w-16 h-12 sm:w-20 sm:h-16 rounded'
-                         }`}
-                       />
-                     </div>
-                   ) : (
-                     <div className="text-lg sm:text-xl mb-1">
-                       {activeTab === 'character' && '🧙‍♂️'}
-                       {activeTab === 'background' && '🖼️'}
-                     </div>
-                   )}
-                                       <h3 className={`font-bold text-xs sm:text-sm ${
+                  <div className="text-center flex-1 flex flex-col justify-center">
+                    {(activeTab === 'character' || activeTab === 'background') && item.image ? (
+                      <div className="mb-1">
+                        <img 
+                          src={item.image} 
+                          alt={item.name}
+                          className={`mx-auto object-contain ${
+                            activeTab === 'character' 
+                              ? 'w-10 h-10' 
+                              : 'w-12 h-8 rounded'
+                          }`}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-lg mb-1">
+                        {activeTab === 'character' && '🧙‍♂️'}
+                        {activeTab === 'background' && '🖼️'}
+                      </div>
+                    )}
+                    <h3 className={`font-bold text-xs ${
                       (item.category === 'character' && item.id === equippedCharacter) || 
                       (item.category === 'background' && item.id === equippedBackground) || 
                       item.isEquipped ? 'text-[#f5f5dc]' : 'text-[#8B4513]'
                     }`}>
                       {item.name}
                     </h3>
-                 </div>
-                 
-                                   <div className="text-center">
+                  </div>
+                  
+                  <div className="text-center">
                     {!((item.category === 'character' && item.id === equippedCharacter) || 
                        (item.category === 'background' && item.id === equippedBackground) || 
                        item.isEquipped) && (
@@ -199,14 +199,14 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
                       </span>
                     )}
                   </div>
-               </div>
-             ))}
-           </div>
-         </div>
+                </div>
+              ))}
+          </div>
+        </div>
 
         {/* Footer */}
-        <div className="mt-3 sm:mt-6 text-center flex-shrink-0">
-          <p className="text-[#654321] text-xs sm:text-sm">
+        <div className="mt-3 text-center flex-shrink-0">
+          <p className="text-[#654321] text-xs">
             💡 Tip: Visit the shop to unlock more items and customize your experience!
           </p>
         </div>
