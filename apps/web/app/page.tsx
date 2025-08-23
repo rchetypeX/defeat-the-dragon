@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LoginForm } from '../components/auth/LoginForm';
 import { SignUpForm } from '../components/auth/SignUpForm';
@@ -9,10 +9,16 @@ import { GameDashboard } from '../components/game/GameDashboard';
 import BackgroundMusic from '../components/audio/BackgroundMusic';
 import FocusSessionMusic from '../components/audio/FocusSessionMusic';
 import { AudioProvider } from '../contexts/AudioContext';
+import { useMiniKit } from '@coinbase/onchainkit/minikit';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet'>('wallet');
+  const { setFrameReady, isFrameReady } = useMiniKit();
+
+  useEffect(() => {
+    if (!isFrameReady) setFrameReady();
+  }, [isFrameReady, setFrameReady]);
 
   if (loading) {
     return (

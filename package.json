@@ -22,16 +22,18 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "turbo": "^1.10.0",
+    "eslint": "^8.0.0",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.0",
     "prettier": "^3.0.0",
-    "eslint": "^8.0.0",
+    "turbo": "^1.10.0",
     "typescript": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "packageManager": "npm@10.9.0"
+  "packageManager": "npm@10.9.0",
+  "dependencies": {
+    "@coinbase/onchainkit": "^0.38.19"
+  }
 }
-

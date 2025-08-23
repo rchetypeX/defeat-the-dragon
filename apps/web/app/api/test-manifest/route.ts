@@ -1,9 +1,3 @@
-function withValidProperties(properties: Record<string, undefined | string | string[]>) {
-  return Object.fromEntries(
-    Object.entries(properties).filter(([_, value]) => (Array.isArray(value) ? value.length > 0 : !!value))
-  );
-}
-
 export async function GET() {
   try {
     const URL = process.env.NEXT_PUBLIC_URL || 'https://defeat-the-dragon-app.vercel.app';
@@ -15,9 +9,9 @@ export async function GET() {
         signature: process.env.FARCASTER_SIGNATURE || '',
       },
       baseBuilder: {
-        allowedAddresses: ["0x1a9Fce96e04ba06D9190339DF817b43837fa0eA9"] // Your Base Build wallet address
+        allowedAddresses: ["0x0000000000000000000000000000000000000000"]
       },
-      frame: withValidProperties({
+      frame: {
         version: '1',
         name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
         subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE || 'Focus RPG with Pomodoro',
@@ -35,16 +29,15 @@ export async function GET() {
         ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || 'Defeat the Dragon - Focus RPG',
         ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION || 'Level up your productivity with this pixel-art Pomodoro RPG',
         ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE || `${URL}/assets/images/forest-background.png`,
-      }),
-      // use only while testing
-      noindex: true,
+        noindex: true,
+      },
     };
 
     return Response.json(manifest);
   } catch (error) {
-    console.error('Error generating Farcaster manifest:', error);
+    console.error('Error generating test manifest:', error);
     return Response.json(
-      { error: 'Failed to generate manifest' },
+      { error: 'Failed to generate manifest', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

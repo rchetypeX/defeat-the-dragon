@@ -1,0 +1,94 @@
+
+> @defeat-the-dragon/web@1.0.0 build
+> next build
+
+  ▲ Next.js 14.2.32
+  - Environments: .env.local, .env
+  - Experiments (use with caution):
+    · outputFileTracingRoot
+
+   Creating an optimized production build ...
+(node:17068) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\EL Bonuan\Documents\GitHub\defeat-the-dragon\apps\web\.next\cache\webpack\server-production\0.pack_' -> 'C:\Users\EL Bonuan\Documents\GitHub\defeat-the-dragon\apps\web\.next\cache\webpack\server-production\0.pack'
+ ⚠ Compiled with warnings
+
+../../node_modules/pino/lib/tools.js
+Module not found: Can't resolve 'pino-pretty' in 'C:\Users\EL Bonuan\Documents\GitHub\defeat-the-dragon\node_modules\pino\lib'
+
+Import trace for requested module:
+../../node_modules/pino/lib/tools.js
+../../node_modules/pino/pino.js
+../../node_modules/@walletconnect/logger/dist/index.es.js
+../../node_modules/@walletconnect/universal-provider/dist/index.es.js
+../../node_modules/@walletconnect/ethereum-provider/dist/index.es.js
+../../node_modules/@wagmi/connectors/dist/esm/walletConnect.js
+../../node_modules/@wagmi/connectors/dist/esm/exports/index.js
+../../node_modules/wagmi/dist/esm/exports/connectors.js
+../../node_modules/@coinbase/onchainkit/dist/OnchainKitProvider-C29aWJbj.js
+../../node_modules/@coinbase/onchainkit/dist/minikit/index.js
+./app/page.tsx
+
+(node:28572) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\EL Bonuan\Documents\GitHub\defeat-the-dragon\apps\web\.next\cache\webpack\client-production\0.pack_' -> 'C:\Users\EL Bonuan\Documents\GitHub\defeat-the-dragon\apps\web\.next\cache\webpack\client-production\0.pack'
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+(node:52096) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:49792) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:7788) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:20808) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:36148) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+   Generating static pages (0/12) ...
+   Generating static pages (3/12) 
+(node:27748) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:30156) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+   Generating static pages (6/12) 
+(node:32072) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+(node:3964) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+   Generating static pages (9/12) 
+(node:51800) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+@farcaster/frame-sdk is deprecated. Please use @farcaster/miniapp-sdk instead.
+(node:16460) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+@farcaster/frame-sdk is deprecated. Please use @farcaster/miniapp-sdk instead.
+(node:25396) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+@farcaster/frame-sdk is deprecated. Please use @farcaster/miniapp-sdk instead.
+(node:48112) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ✓ Generating static pages (12/12)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    36 kB           294 kB
+├ ○ /_not-found                          876 B          88.4 kB
+├ ○ /.well-known/farcaster.json          0 B                0 B
+├ ƒ /api/auth/check-email                0 B                0 B
+├ ƒ /api/auth/wallet-signin              0 B                0 B
+├ ƒ /api/auth/wallet-signup              0 B                0 B
+├ ƒ /api/sessions/complete               0 B                0 B
+├ ƒ /api/sessions/start                  0 B                0 B
+├ ƒ /api/test                            0 B                0 B
+└ ○ /test-assets                         882 B          88.4 kB
++ First Load JS shared by all            87.5 kB
+  ├ chunks/1dd3208c-1fab27acb78317be.js  53.6 kB
+  ├ chunks/528-60132c6737bb1f55.js       31.7 kB
+  └ other shared chunks (total)          2.15 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

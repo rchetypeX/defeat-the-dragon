@@ -121,40 +121,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       });
 
-             if (error) {
-         console.log('Sign up error:', error.message); // Debug log
-         
-         // Provide more specific error messages
-         if (error.message.includes('already registered') || 
-             error.message.includes('already exists') ||
-             error.message.includes('User already registered') ||
-             error.message.includes('duplicate key') ||
-             error.message.includes('already been registered') ||
-             error.message.includes('User already registered') ||
-             error.message.includes('Email already registered')) {
-           return { 
-             error: { 
-               message: 'An account with this email already exists. Please sign in instead.' 
-             } 
-           };
-         }
-         if (error.message.includes('password') || error.message.includes('Password')) {
-           return { 
-             error: { 
-               message: 'Password must be at least 6 characters long.' 
-             } 
-           };
-         }
-         if (error.message.includes('email') || error.message.includes('Email')) {
-           return { 
-             error: { 
-               message: 'Please enter a valid email address.' 
-             } 
-           };
-         }
-         // Return the original error if we can't categorize it
-         return { error };
-       }
+      if (error) {
+        console.log('Sign up error:', error.message); // Debug log
+        
+        // Provide more specific error messages
+        if (error.message.includes('already registered') || 
+            error.message.includes('already exists') ||
+            error.message.includes('User already registered') ||
+            error.message.includes('duplicate key') ||
+            error.message.includes('already been registered') ||
+            error.message.includes('User already registered') ||
+            error.message.includes('Email already registered')) {
+          return { 
+            error: { 
+              message: 'An account with this email already exists. Please sign in instead.' 
+            } 
+          };
+        }
+        if (error.message.includes('password') || error.message.includes('Password')) {
+          return { 
+            error: { 
+              message: 'Password must be at least 6 characters long.' 
+            } 
+          };
+        }
+        if (error.message.includes('email') || error.message.includes('Email')) {
+          return { 
+            error: { 
+              message: 'Please enter a valid email address.' 
+            } 
+          };
+        }
+        // Return the original error if we can't categorize it
+        return { error };
+      }
 
       return { error: null };
     } catch (error) {
