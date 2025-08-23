@@ -34,16 +34,34 @@ export async function GET(request: NextRequest) {
         },
       }
     );
+    
+    // Try to get user from session first
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (authError || !user) {
+    let userId: string | null = null;
+    
+    if (user) {
+      // Standard Supabase auth user
+      userId = user.id;
+    } else {
+      // Check if this is a wallet user by looking for wallet address in headers or cookies
+      const walletUser = cookieStore.get('wallet-user');
+      if (walletUser) {
+        try {
+          const walletData = JSON.parse(walletUser.value);
+          userId = walletData.id;
+        } catch (e) {
+          console.error('Error parsing wallet user data:', e);
+        }
+      }
+    }
+    
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-
-    const userId = user.id;
 
     // Fetch all user data in parallel
     const [
@@ -180,16 +198,34 @@ export async function POST(request: NextRequest) {
         },
       }
     );
+    
+    // Try to get user from session first
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    if (authError || !user) {
+    let userId: string | null = null;
+    
+    if (user) {
+      // Standard Supabase auth user
+      userId = user.id;
+    } else {
+      // Check if this is a wallet user by looking for wallet address in headers or cookies
+      const walletUser = cookieStore.get('wallet-user');
+      if (walletUser) {
+        try {
+          const walletData = JSON.parse(walletUser.value);
+          userId = walletData.id;
+        } catch (e) {
+          console.error('Error parsing wallet user data:', e);
+        }
+      }
+    }
+    
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
-
-    const userId = user.id;
     const body = await request.json();
     const { 
       player, 

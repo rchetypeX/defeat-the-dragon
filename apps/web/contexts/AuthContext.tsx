@@ -45,6 +45,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
           console.error('Failed to load player data:', error);
         }
+      } else {
+        // Check for wallet user in localStorage
+        const walletUserStr = localStorage.getItem('walletUser');
+        if (walletUserStr) {
+          try {
+            const walletUser = JSON.parse(walletUserStr);
+            setUser(walletUser);
+            setGameUser({
+              id: walletUser.id,
+              email: walletUser.email || `${walletUser.wallet_address}@wallet.local`,
+            });
+            // Load player data for wallet user
+            try {
+              const playerData = await getPlayerData();
+              if (playerData) {
+                useGameStore.getState().setPlayer(playerData);
+              }
+            } catch (error) {
+              console.error('Failed to load player data for wallet user:', error);
+            }
+          } catch (error) {
+            console.error('Error parsing wallet user data:', error);
+            localStorage.removeItem('walletUser');
+          }
+        }
       }
     });
 

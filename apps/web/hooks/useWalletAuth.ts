@@ -180,8 +180,10 @@ export function useWalletAuth() {
         // Use the session URL to automatically sign in the user
         window.location.href = result.sessionUrl;
       } else if (result.walletAuth) {
-        // Fallback: Store wallet user data in localStorage or state
+        // Fallback: Store wallet user data in localStorage and cookies
         localStorage.setItem('walletUser', JSON.stringify(result.user));
+        // Also store in a cookie for server-side access
+        document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
         // Trigger a page reload to update the auth state
         window.location.reload();
       }
@@ -238,8 +240,10 @@ export function useWalletAuth() {
         // Use the session URL to automatically sign in the user
         window.location.href = result.sessionUrl;
       } else if (result.walletAuth) {
-        // Fallback: Store wallet user data in localStorage or state
+        // Fallback: Store wallet user data in localStorage and cookies
         localStorage.setItem('walletUser', JSON.stringify(result.user));
+        // Also store in a cookie for server-side access
+        document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
         // Update account status
         setHasAccount(true);
         // Trigger a page reload to update the auth state
