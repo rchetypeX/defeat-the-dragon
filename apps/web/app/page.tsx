@@ -190,21 +190,21 @@ export default function HomePage() {
           
           {/* Content */}
           <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-4">
-            {/* App Logo & Title */}
+            {/* App Logo */}
             <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto mb-3 bg-[#f2751a] rounded-lg flex items-center justify-center">
-                <span className="text-2xl">🐉</span>
-              </div>
-              <h1 className="text-xl font-bold text-[#f2751a] mb-1">Defeat the Dragon</h1>
-              <p className="text-[#fbbf24] text-xs">Focus RPG with Pomodoro</p>
-            </div>
-
-            {/* Value Props - Ultra Compact for Mobile */}
-            <div className="w-full max-w-sm mb-4">
-              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-2 mb-2">
-                <div className="flex items-center">
-                  <span className="text-[#f2751a] mr-2">⚔️</span>
-                  <span className="text-[#fbbf24] text-xs">Gamified Focus • Level Up Progress • Base App Ready</span>
+              <div className="w-16 h-16 mx-auto mb-3">
+                <img 
+                  src="/assets/images/logo-placeholder.png" 
+                  alt="Defeat the Dragon Logo" 
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    // Fallback to a simple colored div if image fails to load
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                <div className="w-full h-full bg-[#f2751a] rounded-lg flex items-center justify-center hidden">
+                  <span className="text-2xl">🐉</span>
                 </div>
               </div>
             </div>
@@ -254,12 +254,7 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Help & FAQ Link */}
-            <div className="mt-3 text-center">
-              <button className="text-[#fbbf24] hover:text-white transition-colors text-xs underline">
-                Need help? View FAQ
-              </button>
-            </div>
+
           </div>
         </main>
       </AudioProvider>

@@ -171,6 +171,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
         {
           maxAwayTime: 15, // 15 seconds
           warningTime: 10, // 10 seconds
+          awayStartDelay: 3000, // 3 second delay for mobile screen timeout protection
         },
         {
           onDisturbance: (awayTime: number) => {
