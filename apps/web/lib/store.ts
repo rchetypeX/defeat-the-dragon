@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { Player, Session, Inventory, Class, Action } from '@defeat-the-dragon/engine';
 import { startSession, completeSession, getCurrentSession, getPlayerData } from './api';
+import { syncService } from './syncService';
 
 interface GameState {
   // User state
@@ -126,9 +127,16 @@ export const useGameStore = create<GameState & GameActions>()(
         
         setPlayer: (player) => set({ player }),
         
-        updatePlayer: (updates) => set((state) => ({
-          player: state.player ? { ...state.player, ...updates } : null,
-        })),
+        updatePlayer: (updates) => set((state) => {
+          const updatedPlayer = state.player ? { ...state.player, ...updates } : null;
+          
+          // Auto-sync player data changes
+          if (updatedPlayer) {
+            syncService.syncPlayerData();
+          }
+          
+          return { player: updatedPlayer };
+        }),
         
         loadPlayerData: async () => {
           try {
@@ -326,15 +334,25 @@ export const useGameStore = create<GameState & GameActions>()(
         
         setInventory: (inventory) => set({ inventory }),
         
-        addToInventory: (item) => set((state) => ({
-          inventory: [...state.inventory, item],
-        })),
+        addToInventory: (item) => set((state) => {
+          const updatedInventory = [...state.inventory, item];
+          
+          // Auto-sync inventory changes
+          syncService.syncInventory();
+          
+          return { inventory: updatedInventory };
+        }),
         
-        updateInventoryItem: (id, updates) => set((state) => ({
-          inventory: state.inventory.map((item) =>
+        updateInventoryItem: (id, updates) => set((state) => {
+          const updatedInventory = state.inventory.map((item) =>
             item.id === id ? { ...item, ...updates } : item
-          ),
-        })),
+          );
+          
+          // Auto-sync inventory changes
+          syncService.syncInventory();
+          
+          return { inventory: updatedInventory };
+        }),
         
         setClasses: (classes) => set({ classes }),
         
@@ -344,9 +362,14 @@ export const useGameStore = create<GameState & GameActions>()(
           ),
         })),
         
-        updateSettings: (updates) => set((state) => ({
-          settings: { ...state.settings, ...updates },
-        })),
+        updateSettings: (updates) => set((state) => {
+          const updatedSettings = { ...state.settings, ...updates };
+          
+          // Auto-sync settings changes
+          syncService.syncSettings();
+          
+          return { settings: updatedSettings };
+        }),
         
         resetGame: () => set(initialState),
       }),

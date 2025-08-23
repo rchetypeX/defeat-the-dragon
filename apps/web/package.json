@@ -19,6 +19,7 @@
     "@defeat-the-dragon/engine": "*",
     "@defeat-the-dragon/ui-tokens": "*",
     "@headlessui/react": "^1.7.0",
+    "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.38.0",
     "@tanstack/react-query": "^5.0.0",
     "clsx": "^2.0.0",

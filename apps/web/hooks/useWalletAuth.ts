@@ -8,6 +8,8 @@ export function useWalletAuth() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [hasAccount, setHasAccount] = useState<boolean | null>(null);
+  const [isCheckingAccount, setIsCheckingAccount] = useState(false);
 
   // Check if MetaMask is available
   const checkIfWalletIsConnected = async () => {
@@ -17,6 +19,8 @@ export function useWalletAuth() {
         if (accounts.length > 0) {
           setAddress(accounts[0]);
           setIsConnected(true);
+          // Check if this wallet has an account
+          await checkAccountExists(accounts[0]);
         }
       }
     } catch (error) {
@@ -24,8 +28,65 @@ export function useWalletAuth() {
     }
   };
 
+  // Check if a wallet address has an existing account
+  const checkAccountExists = async (walletAddress: string) => {
+    if (!walletAddress) return;
+    
+    setIsCheckingAccount(true);
+    try {
+      const response = await fetch('/api/auth/check-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address: walletAddress }),
+      });
+
+      const result = await response.json();
+      setHasAccount(result.hasAccount);
+    } catch (error) {
+      console.error('Error checking account:', error);
+      setHasAccount(null);
+    } finally {
+      setIsCheckingAccount(false);
+    }
+  };
+
   useEffect(() => {
     checkIfWalletIsConnected();
+  }, []);
+
+  // Listen for account changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      const handleAccountsChanged = async (accounts: string[]) => {
+        if (accounts.length === 0) {
+          // User disconnected wallet
+          setAddress(null);
+          setIsConnected(false);
+          setHasAccount(null);
+        } else {
+          // User switched accounts
+          setAddress(accounts[0]);
+          setIsConnected(true);
+          await checkAccountExists(accounts[0]);
+        }
+      };
+
+      const handleDisconnect = () => {
+        setAddress(null);
+        setIsConnected(false);
+        setHasAccount(null);
+      };
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('disconnect', handleDisconnect);
+
+      return () => {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('disconnect', handleDisconnect);
+      };
+    }
   }, []);
 
   const connectWallet = async () => {
@@ -42,6 +103,7 @@ export function useWalletAuth() {
       if (accounts.length > 0) {
         setAddress(accounts[0]);
         setIsConnected(true);
+        await checkAccountExists(accounts[0]);
       }
     } catch (error) {
       console.error('Wallet connection error:', error);
@@ -49,6 +111,30 @@ export function useWalletAuth() {
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const disconnectWallet = async () => {
+    try {
+      // Clear local storage
+      localStorage.removeItem('walletUser');
+      
+      // Reset state
+      setAddress(null);
+      setIsConnected(false);
+      setHasAccount(null);
+      setAuthError(null);
+      
+      // Note: We can't programmatically disconnect MetaMask
+      // The user needs to disconnect manually from their wallet
+      // But we can clear our local state
+    } catch (error) {
+      console.error('Disconnect error:', error);
+    }
+  };
+
+  const switchWallet = async () => {
+    await disconnectWallet();
+    await connectWallet();
   };
 
   const signInWithWallet = async () => {
@@ -148,6 +234,8 @@ export function useWalletAuth() {
       if (result.walletAuth) {
         // Store wallet user data in localStorage or state
         localStorage.setItem('walletUser', JSON.stringify(result.user));
+        // Update account status
+        setHasAccount(true);
         // Trigger a page reload to update the auth state
         window.location.reload();
       }
@@ -160,24 +248,17 @@ export function useWalletAuth() {
     }
   };
 
-  const disconnectWallet = async () => {
-    try {
-      await supabase.auth.signOut();
-      setAddress(null);
-      setIsConnected(false);
-    } catch (error) {
-      console.error('Disconnect error:', error);
-    }
-  };
-
   return {
     address,
     isConnected,
     isConnecting,
+    isCheckingAccount,
+    hasAccount,
     authError,
     connectWallet,
+    disconnectWallet,
+    switchWallet,
     signInWithWallet,
     signUpWithWallet,
-    disconnectWallet,
   };
 }

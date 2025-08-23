@@ -16,6 +16,7 @@ import { useAudio } from '../../contexts/AudioContext';
 import { useCharacterStore } from '../../lib/characterStore';
 import { useBackgroundStore } from '../../lib/backgroundStore';
 import { CharacterDialogue } from './CharacterDialogue';
+import { useDataSync } from '../../hooks/useDataSync';
 
 interface SessionResult {
   xp_gained: number;
@@ -30,9 +31,10 @@ export function GameDashboard() {
     player, 
     sessionProgress, 
     startSession, 
-    completeSession,
-    loadPlayerData
+    completeSession
   } = useGameStore();
+  
+  const { isLoading, error, lastSyncTime, forceSync, refreshData } = useDataSync();
   
   const {
     backgroundVolume,
@@ -57,8 +59,7 @@ export function GameDashboard() {
 
   useEffect(() => {
     requestNotificationPermission();
-    loadPlayerData();
-  }, [loadPlayerData]);
+  }, []);
 
   // Update session active state when session progress changes
   useEffect(() => {

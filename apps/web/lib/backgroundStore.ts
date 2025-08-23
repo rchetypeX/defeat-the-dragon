@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { syncService } from './syncService';
 
 interface BackgroundState {
   equippedBackground: string;
@@ -14,6 +15,8 @@ export const useBackgroundStore = create<BackgroundState>()(
       
       setEquippedBackground: (backgroundId: string) => {
         set({ equippedBackground: backgroundId });
+        // Auto-sync background changes
+        syncService.syncSettings();
       },
       
       getBackgroundImage: (backgroundId: string) => {

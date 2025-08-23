@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { syncService } from './syncService';
 
 interface CharacterState {
   equippedCharacter: string;
@@ -14,6 +15,8 @@ export const useCharacterStore = create<CharacterState>()(
       
       setEquippedCharacter: (characterId: string) => {
         set({ equippedCharacter: characterId });
+        // Auto-sync character changes
+        syncService.syncSettings();
       },
       
       getCharacterImage: (characterId: string) => {

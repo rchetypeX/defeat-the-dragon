@@ -30,40 +30,34 @@ export interface Database {
         Row: {
           id: string
           user_id: string
+          wallet_address: string | null
+          display_name: string | null
           level: number
           xp: number
           coins: number
           sparks: number
-          is_inspired: boolean
-          bond_score: number
-          mood_state: 'Warm' | 'Happy' | 'Excited' | 'Focused' | 'Determined'
-          day_streak: number
           created_at: string
         }
         Insert: {
           id?: string
           user_id: string
+          wallet_address?: string | null
+          display_name?: string | null
           level?: number
           xp?: number
           coins?: number
           sparks?: number
-          is_inspired?: boolean
-          bond_score?: number
-          mood_state?: 'Warm' | 'Happy' | 'Excited' | 'Focused' | 'Determined'
-          day_streak?: number
           created_at?: string
         }
         Update: {
           id?: string
           user_id?: string
+          wallet_address?: string | null
+          display_name?: string | null
           level?: number
           xp?: number
           coins?: number
           sparks?: number
-          is_inspired?: boolean
-          bond_score?: number
-          mood_state?: 'Warm' | 'Happy' | 'Excited' | 'Focused' | 'Determined'
-          day_streak?: number
           created_at?: string
         }
       }
@@ -71,173 +65,253 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          action: 'Train' | 'Quest_Study' | 'Learn' | 'Search' | 'Eat' | 'Sleep' | 'Bathe' | 'Maintain' | 'Fight' | 'Adventure'
+          action: 'Train' | 'Quest_Study' | 'Learn' | 'Search'
           started_at: string
           ended_at: string | null
           outcome: 'success' | 'fail' | 'early_stop' | null
-          disturbed_seconds: number
-          dungeon_floor: number
-          boss_tier: 'none' | 'mini' | 'big'
         }
         Insert: {
           id?: string
           user_id: string
-          action: 'Train' | 'Quest_Study' | 'Learn' | 'Search' | 'Eat' | 'Sleep' | 'Bathe' | 'Maintain' | 'Fight' | 'Adventure'
+          action: 'Train' | 'Quest_Study' | 'Learn' | 'Search'
           started_at?: string
           ended_at?: string | null
           outcome?: 'success' | 'fail' | 'early_stop' | null
-          disturbed_seconds?: number
-          dungeon_floor?: number
-          boss_tier?: 'none' | 'mini' | 'big'
         }
         Update: {
           id?: string
           user_id?: string
-          action?: 'Train' | 'Quest_Study' | 'Learn' | 'Search' | 'Eat' | 'Sleep' | 'Bathe' | 'Maintain' | 'Fight' | 'Adventure'
+          action?: 'Train' | 'Quest_Study' | 'Learn' | 'Search'
           started_at?: string
           ended_at?: string | null
           outcome?: 'success' | 'fail' | 'early_stop' | null
-          disturbed_seconds?: number
-          dungeon_floor?: number
-          boss_tier?: 'none' | 'mini' | 'big'
-        }
-      }
-      inventory: {
-        Row: {
-          id: string
-          user_id: string
-          sku: string
-          type: 'cosmetic' | 'pet' | 'trinket'
-          qty: number
-          equipped: boolean
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          sku: string
-          type: 'cosmetic' | 'pet' | 'trinket'
-          qty?: number
-          equipped?: boolean
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          sku?: string
-          type?: 'cosmetic' | 'pet' | 'trinket'
-          qty?: number
-          equipped?: boolean
-        }
-      }
-      shop_items: {
-        Row: {
-          sku: string
-          name: string
-          price_coins: number
-          price_sparks: number
-          type: string
-          class_lock: string | null
-          min_level: number
-        }
-        Insert: {
-          sku: string
-          name: string
-          price_coins: number
-          price_sparks: number
-          type: string
-          class_lock?: string | null
-          min_level?: number
-        }
-        Update: {
-          sku?: string
-          name?: string
-          price_coins?: number
-          price_sparks?: number
-          type?: string
-          class_lock?: string | null
-          min_level?: number
-        }
-      }
-      classes: {
-        Row: {
-          user_id: string
-          class_id: string
-          unlocked: boolean
-          quest_state: Json
-        }
-        Insert: {
-          user_id: string
-          class_id: string
-          unlocked?: boolean
-          quest_state?: Json
-        }
-        Update: {
-          user_id?: string
-          class_id?: string
-          unlocked?: boolean
-          quest_state?: Json
-        }
-      }
-      loot: {
-        Row: {
-          id: string
-          session_id: string
-          sku: string
-          rarity: 'C' | 'U' | 'R' | 'SR' | 'SSR'
-        }
-        Insert: {
-          id?: string
-          session_id: string
-          sku: string
-          rarity: 'C' | 'U' | 'R' | 'SR' | 'SSR'
-        }
-        Update: {
-          id?: string
-          session_id?: string
-          sku?: string
-          rarity?: 'C' | 'U' | 'R' | 'SR' | 'SSR'
-        }
-      }
-      push_subscriptions: {
-        Row: {
-          id: string
-          user_id: string
-          endpoint: string
-          p256dh: string
-          auth: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          endpoint: string
-          p256dh: string
-          auth: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          endpoint?: string
-          p256dh?: string
-          auth?: string
         }
       }
       subscriptions: {
         Row: {
+          id: string
           user_id: string
-          provider: string
+          subscription_type: string
           status: string
+          provider: string | null
+          external_id: string | null
+          started_at: string
           expires_at: string | null
+          user_tag: string | null
+          auto_tag_enabled: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          subscription_type: string
+          status?: string
+          provider?: string | null
+          external_id?: string | null
+          started_at?: string
+          expires_at?: string | null
+          user_tag?: string | null
+          auto_tag_enabled?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          subscription_type?: string
+          status?: string
+          provider?: string | null
+          external_id?: string | null
+          started_at?: string
+          expires_at?: string | null
+          user_tag?: string | null
+          auto_tag_enabled?: boolean
+          created_at?: string
+        }
+      }
+      shop_items: {
+        Row: {
+          id: string
+          sku: string
+          name: string
+          price: number
+          price_sale: number
+          type: string
+          class_lock: string | null
+          is_active: boolean
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          sku: string
+          name: string
+          price: number
+          price_sale?: number
+          type: string
+          class_lock?: string | null
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          sku?: string
+          name?: string
+          price?: number
+          price_sale?: number
+          type?: string
+          class_lock?: string | null
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_settings: {
+        Row: {
+          user_id: string
+          sound_enabled: boolean
+          notifications_enabled: boolean
+          accessibility: Json
+          equipped_character: string
+          equipped_background: string
+          updated_at: string
         }
         Insert: {
           user_id: string
-          provider: string
-          status: string
-          expires_at?: string | null
+          sound_enabled?: boolean
+          notifications_enabled?: boolean
+          accessibility?: Json
+          equipped_character?: string
+          equipped_background?: string
+          updated_at?: string
         }
         Update: {
           user_id?: string
-          provider?: string
+          sound_enabled?: boolean
+          notifications_enabled?: boolean
+          accessibility?: Json
+          equipped_character?: string
+          equipped_background?: string
+          updated_at?: string
+        }
+      }
+      user_inventory: {
+        Row: {
+          id: string
+          user_id: string
+          item_id: string
+          item_type: 'cosmetic' | 'pet' | 'trinket' | 'character' | 'background'
+          quantity: number
+          equipped: boolean
+          acquired_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          item_id: string
+          item_type: 'cosmetic' | 'pet' | 'trinket' | 'character' | 'background'
+          quantity?: number
+          equipped?: boolean
+          acquired_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          item_id?: string
+          item_type?: 'cosmetic' | 'pet' | 'trinket' | 'character' | 'background'
+          quantity?: number
+          equipped?: boolean
+          acquired_at?: string
+        }
+      }
+      user_subscriptions: {
+        Row: {
+          user_id: string
+          subscription_type: string
+          status: string
+          provider: string | null
+          external_id: string | null
+          started_at: string
+          expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          subscription_type: string
           status?: string
+          provider?: string | null
+          external_id?: string | null
+          started_at?: string
           expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          subscription_type?: string
+          status?: string
+          provider?: string | null
+          external_id?: string | null
+          started_at?: string
+          expires_at?: string | null
+          updated_at?: string
+        }
+      }
+      user_purchases: {
+        Row: {
+          id: string
+          user_id: string
+          item_id: string
+          item_type: string
+          price_coins: number
+          price_sparks: number
+          purchased_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          item_id: string
+          item_type: string
+          price_coins?: number
+          price_sparks?: number
+          purchased_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          item_id?: string
+          item_type?: string
+          price_coins?: number
+          price_sparks?: number
+          purchased_at?: string
+        }
+      }
+      user_achievements: {
+        Row: {
+          id: string
+          user_id: string
+          achievement_id: string
+          progress: number
+          completed: boolean
+          completed_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          achievement_id: string
+          progress?: number
+          completed?: boolean
+          completed_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          achievement_id?: string
+          progress?: number
+          completed?: boolean
+          completed_at?: string | null
         }
       }
     }

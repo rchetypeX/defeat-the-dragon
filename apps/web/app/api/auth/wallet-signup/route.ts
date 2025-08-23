@@ -44,6 +44,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if display name is already taken
+    const { data: existingDisplayName, error: displayNameError } = await supabase
+      .from('players')
+      .select('id')
+      .eq('display_name', displayName.trim())
+      .single();
+
+    if (displayNameError && displayNameError.code !== 'PGRST116') {
+      return NextResponse.json(
+        { error: 'Database error checking display name' },
+        { status: 500 }
+      );
+    }
+
+    if (existingDisplayName) {
+      return NextResponse.json(
+        { error: 'This adventurer name is already taken. Please choose a different name.' },
+        { status: 409 }
+      );
+    }
+
     // Create a new Supabase user with a unique email
     const uniqueEmail = `${address.toLowerCase()}@wallet.local`;
     
@@ -71,17 +92,9 @@ export async function POST(request: NextRequest) {
         wallet_address: address.toLowerCase(),
         display_name: displayName,
         level: 1,
-        experience: 0,
-        gold: 100,
+        xp: 0,
+        coins: 100,
         sparks: 50,
-        current_character: 'fighter',
-        inventory: [],
-        achievements: [],
-        settings: {
-          sound_enabled: true,
-          music_enabled: true,
-          notifications_enabled: true,
-        },
       })
       .select()
       .single();
