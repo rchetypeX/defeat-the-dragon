@@ -12,6 +12,12 @@
   "categories": ["productivity", "games", "education"],
       "icons": [
       {
+        "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>",
+        "sizes": "32x32",
+        "type": "image/svg+xml",
+        "purpose": "any maskable"
+      },
+      {
         "src": "/favicon.svg",
         "sizes": "32x32",
         "type": "image/svg+xml",
@@ -21,6 +27,12 @@
         "src": "/favicon.ico",
         "sizes": "32x32",
         "type": "image/x-icon",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='192' height='192' rx='24' fill='%23f2751a'/><text x='96' y='120' font-family='Arial' font-size='72' font-weight='bold' text-anchor='middle' fill='white'>DTD</text></svg>",
+        "sizes": "192x192",
+        "type": "image/svg+xml",
         "purpose": "any maskable"
       },
       {
@@ -59,7 +71,7 @@
         "url": "/?action=focus",
         "icons": [
           {
-            "src": "/favicon.svg",
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>",
             "sizes": "32x32"
           }
         ]
@@ -71,7 +83,7 @@
         "url": "/?action=progress",
         "icons": [
           {
-            "src": "/favicon.svg",
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>",
             "sizes": "32x32"
           }
         ]

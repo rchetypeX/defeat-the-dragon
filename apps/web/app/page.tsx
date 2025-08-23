@@ -194,14 +194,18 @@ export default function HomePage() {
             <div className="text-center mb-6">
               <div className="w-16 h-16 mx-auto mb-3">
                 <img 
-                  src="/logo.svg" 
+                  src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><rect width='64' height='64' rx='8' fill='%23f2751a'/><text x='32' y='42' font-family='Arial' font-size='24' font-weight='bold' text-anchor='middle' fill='white'>DTD</text></svg>"
                   alt="Defeat the Dragon Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    console.log('Logo image failed to load, showing fallback');
-                    // Fallback to a simple colored div if image fails to load
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    console.log('Primary logo failed, trying logo.svg');
+                    // Try the uploaded logo.svg first
+                    e.currentTarget.src = '/logo.svg';
+                    e.currentTarget.onerror = () => {
+                      console.log('Logo.svg also failed, showing final fallback');
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    };
                   }}
                   onLoad={() => {
                     console.log('Logo image loaded successfully');

@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
+      { url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>", type: 'image/svg+xml', sizes: '32x32' },
       { url: '/favicon.svg', type: 'image/svg+xml', sizes: '32x32' },
       { url: '/favicon.ico', type: 'image/x-icon', sizes: '32x32' },
       { url: '/icon-simple.svg', type: 'image/svg+xml', sizes: '192x192' },
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     apple: [
       { url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' },
     ],
-    shortcut: '/favicon.svg',
+    shortcut: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>",
   },
       openGraph: {
       title: 'Defeat the Dragon',
@@ -95,6 +96,7 @@ export default function RootLayout({
   return (
     <html lang="en">
               <head>
+          <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>" type="image/svg+xml" />
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
           <link rel="icon" href="/favicon.ico" type="image/x-icon" />
           <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

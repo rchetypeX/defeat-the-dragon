@@ -370,12 +370,12 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
 
        {/* Dialog Balloon - Above the character */}
        <div className="fixed left-1/2 transform -translate-x-1/2 bottom-80 sm:bottom-84 z-30">
-         <div className="pixel-card p-3 sm:p-4 bg-white border-2 border-gray-800 max-w-xs sm:max-w-sm text-center relative">
+         <div className="pixel-card p-3 sm:p-4 bg-white border-2 border-gray-800 max-w-xs sm:max-w-sm text-center relative overflow-hidden">
            {/* Speech bubble tail */}
            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-white"></div>
            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-7 border-r-7 border-t-7 border-transparent border-t-gray-800" style={{ marginTop: '-1px' }}></div>
            
-           <div className="text-gray-800 text-xs sm:text-sm font-medium leading-tight">
+           <div className="text-gray-800 text-xs sm:text-sm font-medium leading-tight break-words">
              {currentDialogMessage}
            </div>
          </div>

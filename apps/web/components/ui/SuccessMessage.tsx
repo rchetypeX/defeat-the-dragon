@@ -60,10 +60,10 @@ export function SuccessMessage({
         </div>
 
         {/* Session Complete Popup */}
-        <div className="pixel-card p-6 sm:p-8 border-2 border-[#10b981] bg-[#064e3b] max-w-md w-full mx-4 relative z-20">
+        <div className="pixel-card p-6 sm:p-8 border-2 border-[#8B4513] bg-[#f5f5dc] max-w-md w-full mx-4 relative z-20">
           {/* Title */}
           <div className="text-center mb-6">
-            <div className="text-white text-xl sm:text-2xl font-bold mb-2">
+            <div className="text-[#8B4513] text-xl sm:text-2xl font-bold mb-2">
               🎉 Session Complete! 🎉
             </div>
           </div>
@@ -71,47 +71,41 @@ export function SuccessMessage({
           {/* Rewards */}
           <div className="space-y-4">
             {levelUp && (
-              <div className="text-[#fbbf24] font-bold text-center py-2">
+              <div className="text-[#f2751a] font-bold text-center py-2">
                 🚀 LEVEL UP! You are now Level {newLevel}!
               </div>
             )}
             
-                         <div className="grid grid-cols-3 gap-3 text-center">
-               <div className="pixel-card p-3 bg-[#1f2937] flex flex-col items-center justify-center">
-                 <div className="text-[#fbbf24] text-sm mb-1">XP</div>
-                 <div className="text-white font-bold text-lg">+{xpGained}</div>
-               </div>
-               <div className="pixel-card p-3 bg-[#1f2937] flex flex-col items-center justify-center">
-                 <div className="text-[#fbbf24] text-sm mb-1">Coins</div>
-                 <div className="text-white font-bold text-lg">+{coinsGained}</div>
-               </div>
-               {sparksGained > 0 && (
-                 <div className="pixel-card p-3 bg-[#1f2937] flex flex-col items-center justify-center">
-                   <div className="text-[#fbbf24] text-sm mb-1">Sparks</div>
-                   <div className="text-white font-bold text-lg">+{sparksGained}</div>
-                 </div>
-               )}
-             </div>
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <div className="pixel-card p-3 bg-[#f5f5dc] border-2 border-[#8B4513] flex flex-col items-center justify-center">
+                <div className="text-[#8B4513] text-sm mb-1 font-bold">XP</div>
+                <div className="text-[#654321] font-bold text-lg">+{xpGained}</div>
+              </div>
+              <div className="pixel-card p-3 bg-[#f5f5dc] border-2 border-[#8B4513] flex flex-col items-center justify-center">
+                <div className="text-[#8B4513] text-sm mb-1 font-bold">Coins</div>
+                <div className="text-[#654321] font-bold text-lg">+{coinsGained}</div>
+              </div>
+            </div>
             
-                         {/* Keep Focusing Prompt */}
-             <div className="text-center mt-6">
-               <div className="text-white text-lg font-bold mb-4">
-                 Keep Focusing?
-               </div>
-                               <div className="flex gap-3 justify-center">
-                  <button
-                    onClick={onKeepFocusing}
-                    className="pixel-button bg-[#10b981] hover:bg-[#059669] text-white px-8 py-2 text-sm flex-1 max-w-[100px] flex items-center justify-center"
-                  >
-                    Yes
-                  </button>
-                  <button
-                    onClick={onGoHome}
-                    className="pixel-button bg-[#6b7280] hover:bg-[#4b5563] text-white px-8 py-2 text-sm flex-1 max-w-[100px] flex items-center justify-center"
-                  >
-                    No
-                  </button>
-                </div>
+            {/* Keep Focusing Prompt */}
+            <div className="text-center mt-6">
+              <div className="text-[#8B4513] text-lg font-bold mb-4">
+                Keep Focusing?
+              </div>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={onKeepFocusing}
+                  className="pixel-button bg-[#8B4513] hover:bg-[#654321] text-white px-8 py-2 text-sm flex-1 max-w-[100px] flex items-center justify-center"
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={onGoHome}
+                  className="pixel-button bg-[#8B4513] hover:bg-[#654321] text-white px-8 py-2 text-sm flex-1 max-w-[100px] flex items-center justify-center"
+                >
+                  No
+                </button>
+              </div>
              </div>
           </div>
         </div>
