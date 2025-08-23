@@ -1,6 +1,6 @@
 export async function GET() {
   try {
-    const URL = process.env.NEXT_PUBLIC_URL || 'https://defeat-the-dragon-app.vercel.app';
+    const URL = process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz';
     
     const manifest = {
       accountAssociation: {

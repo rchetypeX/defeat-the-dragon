@@ -6,7 +6,7 @@ function withValidProperties(properties: Record<string, undefined | string | str
 
 export async function GET(request: Request) {
   try {
-    const URL = process.env.NEXT_PUBLIC_URL || 'https://defeat-the-dragon-app.vercel.app';
+    const URL = process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz';
     
     const manifest = {
       accountAssociation: {

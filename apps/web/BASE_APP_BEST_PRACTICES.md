@@ -59,7 +59,7 @@ This document outlines the implementation of Base App best practices for Defeat 
 1. **Welcome**: Game introduction and value proposition
 2. **Focus Sessions**: How to earn rewards through focus
 3. **Progression**: Level up and unlock features
-4. **Streaks**: Build consistency and earn bonuses
+4. **Progress Tracking**: Build consistency and earn rewards
 
 #### **App Metadata Optimization**
 ```typescript

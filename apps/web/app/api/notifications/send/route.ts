@@ -8,7 +8,7 @@ const supabase = createClient(
 
 interface NotificationRequest {
   userId: string;
-  type: 'session_complete' | 'session_failed' | 'level_up' | 'achievement' | 'streak_milestone' | 'boss_defeated' | 'daily_reminder' | 're_engagement';
+  type: 'session_complete' | 'session_failed' | 'level_up' | 'achievement' | 'boss_defeated' | 'daily_reminder' | 're_engagement';
   title: string;
   body: string;
   data?: Record<string, any>;

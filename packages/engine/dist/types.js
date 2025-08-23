@@ -31,10 +31,6 @@ exports.PlayerSchema = zod_1.z.object({
     xp: zod_1.z.number().int().min(0),
     coins: zod_1.z.number().int().min(0),
     sparks: zod_1.z.number().int().min(0),
-    is_inspired: zod_1.z.boolean(),
-    bond_score: zod_1.z.number().int().min(0).max(100),
-    mood_state: exports.MoodState,
-    day_streak: zod_1.z.number().int().min(0),
     created_at: zod_1.z.string().datetime(),
     display_name: zod_1.z.string().min(1).max(50).optional()
 });
@@ -113,8 +109,6 @@ exports.CompleteSessionResponse = zod_1.z.object({
     sparks_gained: zod_1.z.number().int().min(0),
     level_up: zod_1.z.boolean(),
     new_level: zod_1.z.number().int().min(1),
-    streak_updated: zod_1.z.boolean(),
-    new_streak: zod_1.z.number().int().min(0),
     loot: zod_1.z.array(zod_1.z.object({
         sku: zod_1.z.string(),
         name: zod_1.z.string(),

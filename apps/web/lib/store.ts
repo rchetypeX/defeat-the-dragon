@@ -266,7 +266,7 @@ export const useGameStore = create<GameState & GameActions>()(
                   coins_gained: response.coins_gained,
                   sparks_gained: response.sparks_gained,
                   new_level: response.new_level,
-                  new_streak: response.new_streak,
+
                 }
               });
               
@@ -277,7 +277,7 @@ export const useGameStore = create<GameState & GameActions>()(
                   coins: state.player.coins + response.coins_gained,
                   sparks: state.player.sparks + response.sparks_gained,
                   level: response.new_level,
-                  day_streak: response.new_streak,
+
                 },
                 currentSession: null,
                 sessionProgress: {
@@ -297,10 +297,10 @@ export const useGameStore = create<GameState & GameActions>()(
             const mockResponse = {
               xp_gained: 10,
               coins_gained: 5,
-              sparks_gained: currentState.player?.is_inspired ? 2 : 0, // Only give sparks if inspired
+              sparks_gained: 0, // Sparks not implemented yet
               level_up: false,
               new_level: currentState.player?.level || 1,
-              new_streak: 1
+
             };
             
             console.log('Store: Using mock completion response:', mockResponse);
@@ -314,7 +314,7 @@ export const useGameStore = create<GameState & GameActions>()(
                   coins: currentState.player.coins + mockResponse.coins_gained,
                   sparks: currentState.player.sparks + mockResponse.sparks_gained,
                   level: mockResponse.new_level,
-                  day_streak: mockResponse.new_streak,
+
                 },
                 currentSession: null,
                 sessionProgress: {

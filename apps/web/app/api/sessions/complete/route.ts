@@ -96,10 +96,7 @@ export async function POST(request: NextRequest) {
         xp: 0,
         coins: 3,
         sparks: 0,
-        is_inspired: false, // Mock player is NOT inspired (no subscription)
-        bond_score: 50,
-        mood_state: 'Happy',
-        day_streak: 0,
+
         created_at: new Date().toISOString()
       };
     } else {
@@ -159,33 +156,15 @@ export async function POST(request: NextRequest) {
     let sparksGained = 0;
     let levelUp = false;
     let newLevel = player.level;
-    let streakUpdated = false;
-    let newStreak = player.day_streak;
+
 
     if (outcome === 'success') {
       // Calculate XP based on actual duration and action
-      xpGained = computeXP(actual_duration_minutes, session.action, player.day_streak);
+      xpGained = computeXP(actual_duration_minutes, session.action, 0);
       coinsGained = computeCoins(actual_duration_minutes);
       
-      // Sparks only for subscribers (check if user has active subscription)
-      if (token === 'mock-token-for-development') {
-        // For mock tokens, check player's is_inspired status
-        if (player.is_inspired) {
-          sparksGained = computeSparks(actual_duration_minutes, true);
-        }
-      } else {
-        // For real tokens, check subscription status
-        const { data: subscription } = await authenticatedSupabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user?.id)
-          .eq('status', 'active')
-          .single();
-
-        if (subscription) {
-          sparksGained = computeSparks(actual_duration_minutes, true);
-        }
-      }
+      // Sparks are not implemented yet (subscription feature)
+      sparksGained = 0;
 
       // Check for level up
       const newTotalXP = player.xp + xpGained;
@@ -193,10 +172,7 @@ export async function POST(request: NextRequest) {
       levelUp = newLevelCalculated > player.level;
       newLevel = newLevelCalculated;
 
-      // Update streak (simplified - just increment for now)
-      // TODO: Implement proper streak logic based on daily completion
-      newStreak = player.day_streak + 1;
-      streakUpdated = true;
+
     }
 
     // Update session and player data
@@ -229,8 +205,7 @@ export async function POST(request: NextRequest) {
           xp: player.xp + xpGained,
           coins: player.coins + coinsGained,
           sparks: player.sparks + sparksGained,
-          level: newLevel,
-          day_streak: newStreak
+          level: newLevel
         })
         .eq('user_id', user?.id);
 
@@ -249,9 +224,7 @@ export async function POST(request: NextRequest) {
       coins_gained: coinsGained,
       sparks_gained: sparksGained,
       level_up: levelUp,
-      new_level: newLevel,
-      streak_updated: streakUpdated,
-      new_streak: newStreak
+      new_level: newLevel
     };
 
     return NextResponse.json(response);

@@ -12,7 +12,7 @@ export type NotificationType =
   | 'soft_shield_warning'
   | 'level_up'
   | 'achievement_unlocked'
-  | 'streak_milestone'
+
   | 'boss_defeated'
   | 'daily_reminder'
   | 'weekly_challenge'
@@ -194,8 +194,7 @@ export async function showNotification(config: NotificationConfig): Promise<bool
  */
 export async function showReEngagementNotification(
   daysSinceLastSession: number,
-  playerLevel: number,
-  streakCount: number
+  playerLevel: number
 ): Promise<boolean> {
   let config: NotificationConfig;
 
@@ -226,7 +225,7 @@ export async function showReEngagementNotification(
       type: 're_engagement',
       priority: 'low',
       title: '✨ Daily Focus Quest',
-      body: `Maintain your ${streakCount}-day streak! Every session brings you closer to defeating the dragon.`,
+      body: `Ready for today's focus adventure? Every session brings you closer to defeating the dragon!`,
       icon: '/icon.png',
       tag: 're-engagement-daily',
       rateLimit: { maxPerHour: 1, maxPerDay: 1 },
@@ -386,31 +385,7 @@ export function showAchievementNotification(
   return showNotification(config);
 }
 
-/**
- * Streak milestone notification
- */
-export function showStreakMilestoneNotification(
-  streakCount: number,
-  milestone: number
-): Promise<boolean> {
-  const config: NotificationConfig = {
-    type: 'streak_milestone',
-    priority: 'medium',
-    title: '🔥 Streak Milestone!',
-    body: `Amazing! You've maintained a ${streakCount}-day focus streak! Keep the momentum going!`,
-    icon: '/icon.png',
-    tag: 'streak-milestone',
-    requireInteraction: false,
-    rateLimit: { maxPerHour: 2, maxPerDay: 5 },
-    data: { 
-      deepLink: '/?action=streak',
-      streakCount,
-      milestone
-    }
-  };
 
-  return showNotification(config);
-}
 
 /**
  * Boss defeated notification
@@ -442,27 +417,23 @@ export function showBossDefeatedNotification(
  * Daily reminder notification
  */
 export function showDailyReminderNotification(
-  lastSessionDate?: string,
-  streakCount?: number
+  lastSessionDate?: string
 ): Promise<boolean> {
   const today = new Date().toDateString();
-  const isStreakAtRisk = lastSessionDate && lastSessionDate !== today && streakCount && streakCount > 0;
+  const hasSessionToday = lastSessionDate && lastSessionDate === today;
 
   const config: NotificationConfig = {
     type: 'daily_reminder',
-    priority: isStreakAtRisk ? 'high' : 'medium',
-    title: isStreakAtRisk ? '🔥 Streak at Risk!' : '🐉 Daily Focus Quest',
-    body: isStreakAtRisk 
-      ? `Don't break your ${streakCount}-day streak! Start a session today.`
-      : "Ready for today's focus adventure? Every session brings you closer to defeating the dragon!",
+    priority: hasSessionToday ? 'low' : 'medium',
+    title: '🐉 Daily Focus Quest',
+    body: "Ready for today's focus adventure? Every session brings you closer to defeating the dragon!",
     icon: '/icon.png',
     tag: 'daily-reminder',
     requireInteraction: false,
     rateLimit: { maxPerHour: 1, maxPerDay: 2 },
     data: { 
       deepLink: '/?action=start',
-      isStreakAtRisk,
-      streakCount
+      hasSessionToday
     }
   };
 

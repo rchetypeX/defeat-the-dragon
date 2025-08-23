@@ -13,7 +13,7 @@ import {
   showSoftShieldWarningNotification,
   showLevelUpNotification,
   showAchievementNotification,
-  showStreakMilestoneNotification,
+
   showBossDefeatedNotification,
   showDailyReminderNotification,
   showSocialAchievementNotification,
@@ -33,15 +33,15 @@ interface UseBaseAppNotificationsOptions {
 interface NotificationManager {
   // Core notification functions
   showNotification: (config: NotificationConfig) => Promise<boolean>;
-  showReEngagement: (daysSinceLastSession: number, playerLevel: number, streakCount: number) => Promise<boolean>;
+  showReEngagement: (daysSinceLastSession: number, playerLevel: number) => Promise<boolean>;
   showSessionComplete: (xpGained: number, coinsGained: number, sparksGained?: number, levelUp?: boolean, newLevel?: number) => Promise<boolean>;
   showSessionFailed: (disturbedSeconds: number, sessionDuration: number) => Promise<boolean>;
   showSoftShieldWarning: (remainingTime: number) => Promise<boolean>;
   showLevelUp: (newLevel: number, unlockedFeatures?: string[]) => Promise<boolean>;
   showAchievement: (achievementName: string, achievementDescription: string, rarity?: 'common' | 'rare' | 'epic' | 'legendary') => Promise<boolean>;
-  showStreakMilestone: (streakCount: number, milestone: number) => Promise<boolean>;
+
   showBossDefeated: (bossName: string, rewards: { xp: number; coins: number; sparks?: number }) => Promise<boolean>;
-  showDailyReminder: (lastSessionDate?: string, streakCount?: number) => Promise<boolean>;
+  showDailyReminder: (lastSessionDate?: string) => Promise<boolean>;
   showSocialAchievement: (achievementType: 'first_share' | 'milestone_share' | 'community_challenge', details: string) => Promise<boolean>;
   showWeeklyChallenge: (challengeName: string, challengeDescription: string, reward: string) => Promise<boolean>;
   
@@ -134,11 +134,10 @@ export function useBaseAppNotifications(options: UseBaseAppNotificationsOptions 
 
   const enhancedShowReEngagement = useCallback(async (
     daysSinceLastSession: number,
-    playerLevel: number,
-    streakCount: number
+    playerLevel: number
   ): Promise<boolean> => {
     if (!enableReEngagement) return false;
-    return showReEngagementNotification(daysSinceLastSession, playerLevel, streakCount);
+    return showReEngagementNotification(daysSinceLastSession, playerLevel);
   }, [enableReEngagement]);
 
   const enhancedShowSessionComplete = useCallback(async (
@@ -177,12 +176,7 @@ export function useBaseAppNotifications(options: UseBaseAppNotificationsOptions 
     return showAchievementNotification(achievementName, achievementDescription, rarity);
   }, []);
 
-  const enhancedShowStreakMilestone = useCallback(async (
-    streakCount: number,
-    milestone: number
-  ): Promise<boolean> => {
-    return showStreakMilestoneNotification(streakCount, milestone);
-  }, []);
+
 
   const enhancedShowBossDefeated = useCallback(async (
     bossName: string,
@@ -192,11 +186,10 @@ export function useBaseAppNotifications(options: UseBaseAppNotificationsOptions 
   }, []);
 
   const enhancedShowDailyReminder = useCallback(async (
-    lastSessionDate?: string,
-    streakCount?: number
+    lastSessionDate?: string
   ): Promise<boolean> => {
     if (!enableDailyReminders) return false;
-    return showDailyReminderNotification(lastSessionDate, streakCount);
+    return showDailyReminderNotification(lastSessionDate);
   }, [enableDailyReminders]);
 
   const enhancedShowSocialAchievement = useCallback(async (
@@ -223,7 +216,7 @@ export function useBaseAppNotifications(options: UseBaseAppNotificationsOptions 
     showSoftShieldWarning: enhancedShowSoftShieldWarning,
     showLevelUp: enhancedShowLevelUp,
     showAchievement: enhancedShowAchievement,
-    showStreakMilestone: enhancedShowStreakMilestone,
+
     showBossDefeated: enhancedShowBossDefeated,
     showDailyReminder: enhancedShowDailyReminder,
     showSocialAchievement: enhancedShowSocialAchievement,

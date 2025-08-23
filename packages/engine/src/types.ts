@@ -41,10 +41,6 @@ export const PlayerSchema = z.object({
   xp: z.number().int().min(0),
   coins: z.number().int().min(0),
   sparks: z.number().int().min(0),
-  is_inspired: z.boolean(),
-  bond_score: z.number().int().min(0).max(100),
-  mood_state: MoodState,
-  day_streak: z.number().int().min(0),
   created_at: z.string().datetime(),
   display_name: z.string().min(1).max(50).optional()
 });
@@ -134,8 +130,6 @@ export const CompleteSessionResponse = z.object({
   sparks_gained: z.number().int().min(0),
   level_up: z.boolean(),
   new_level: z.number().int().min(1),
-  streak_updated: z.boolean(),
-  new_streak: z.number().int().min(0),
   loot: z.array(z.object({
     sku: z.string(),
     name: z.string(),

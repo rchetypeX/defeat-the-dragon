@@ -166,12 +166,9 @@ export async function getPlayerData() {
         xp: 0,
         coins: 3,
         sparks: 0,
-        is_inspired: false,
-        bond_score: 50,
-        mood_state: 'Happy',
-        day_streak: 0,
+
         created_at: new Date().toISOString(),
-        display_name: 'The Moth' // Set a custom name for testing
+        display_name: 'Adventurer' // Default name for testing
       };
     }
     
@@ -190,12 +187,9 @@ export async function getPlayerData() {
         xp: 0,
         coins: 3,
         sparks: 0,
-        is_inspired: false,
-        bond_score: 50,
-        mood_state: 'Happy',
-        day_streak: 0,
+
         created_at: new Date().toISOString(),
-        display_name: 'The Moth' // Set a custom name for testing
+        display_name: 'Adventurer' // Default name for testing
       };
     }
 
@@ -233,7 +227,7 @@ export async function getPlayerData() {
     // Combine player data with display name
     const player = {
       ...playerResult.data,
-      display_name: profileResult.data?.display_name || 'The Moth'
+      display_name: profileResult.data?.display_name || 'Adventurer'
     };
 
     console.log('API: Successfully retrieved player data:', {

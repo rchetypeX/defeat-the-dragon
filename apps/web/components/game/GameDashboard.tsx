@@ -42,7 +42,6 @@ export function GameDashboard() {
     showSessionFailed,
     showLevelUp,
     showAchievement,
-    showStreakMilestone,
     showBossDefeated,
     isBaseApp,
     isEnabled

@@ -39,10 +39,6 @@ export declare const PlayerSchema: z.ZodObject<{
     xp: z.ZodNumber;
     coins: z.ZodNumber;
     sparks: z.ZodNumber;
-    is_inspired: z.ZodBoolean;
-    bond_score: z.ZodNumber;
-    mood_state: z.ZodEnum<["Warm", "Happy", "Excited", "Focused", "Determined"]>;
-    day_streak: z.ZodNumber;
     created_at: z.ZodString;
     display_name: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
@@ -53,10 +49,6 @@ export declare const PlayerSchema: z.ZodObject<{
     xp: number;
     coins: number;
     sparks: number;
-    is_inspired: boolean;
-    bond_score: number;
-    mood_state: "Warm" | "Happy" | "Excited" | "Focused" | "Determined";
-    day_streak: number;
     display_name?: string | undefined;
 }, {
     user_id: string;
@@ -66,10 +58,6 @@ export declare const PlayerSchema: z.ZodObject<{
     xp: number;
     coins: number;
     sparks: number;
-    is_inspired: boolean;
-    bond_score: number;
-    mood_state: "Warm" | "Happy" | "Excited" | "Focused" | "Determined";
-    day_streak: number;
     display_name?: string | undefined;
 }>;
 export declare const SessionSchema: z.ZodObject<{
@@ -120,15 +108,15 @@ export declare const InventorySchema: z.ZodObject<{
     qty: z.ZodDefault<z.ZodNumber>;
     equipped: z.ZodDefault<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
-    type: "cosmetic" | "pet" | "trinket";
     user_id: string;
+    type: "cosmetic" | "pet" | "trinket";
     id: string;
     sku: string;
     qty: number;
     equipped: boolean;
 }, {
-    type: "cosmetic" | "pet" | "trinket";
     user_id: string;
+    type: "cosmetic" | "pet" | "trinket";
     id: string;
     sku: string;
     qty?: number | undefined;
@@ -181,15 +169,15 @@ export declare const LootSchema: z.ZodObject<{
     sku: z.ZodString;
     rarity: z.ZodEnum<["C", "U", "R", "SR", "SSR"]>;
 }, "strip", z.ZodTypeAny, {
-    rarity: "C" | "U" | "R" | "SR" | "SSR";
     id: string;
     sku: string;
     session_id: string;
+    rarity: "C" | "U" | "R" | "SR" | "SSR";
 }, {
-    rarity: "C" | "U" | "R" | "SR" | "SSR";
     id: string;
     sku: string;
     session_id: string;
+    rarity: "C" | "U" | "R" | "SR" | "SSR";
 }>;
 export declare const PushSubscriptionSchema: z.ZodObject<{
     id: z.ZodString;
@@ -216,13 +204,13 @@ export declare const SubscriptionSchema: z.ZodObject<{
     status: z.ZodString;
     expires_at: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    status: string;
     user_id: string;
+    status: string;
     provider: string;
     expires_at?: string | undefined;
 }, {
-    status: string;
     user_id: string;
+    status: string;
     provider: string;
     expires_at?: string | undefined;
 }>;
@@ -280,8 +268,6 @@ export declare const CompleteSessionResponse: z.ZodObject<{
     sparks_gained: z.ZodNumber;
     level_up: z.ZodBoolean;
     new_level: z.ZodNumber;
-    streak_updated: z.ZodBoolean;
-    new_streak: z.ZodNumber;
     loot: z.ZodOptional<z.ZodArray<z.ZodObject<{
         sku: z.ZodString;
         name: z.ZodString;
@@ -289,14 +275,14 @@ export declare const CompleteSessionResponse: z.ZodObject<{
         type: z.ZodString;
     }, "strip", z.ZodTypeAny, {
         type: string;
-        rarity: string;
         sku: string;
         name: string;
+        rarity: string;
     }, {
         type: string;
-        rarity: string;
         sku: string;
         name: string;
+        rarity: string;
     }>, "many">>;
 }, "strip", z.ZodTypeAny, {
     xp_gained: number;
@@ -304,13 +290,11 @@ export declare const CompleteSessionResponse: z.ZodObject<{
     sparks_gained: number;
     level_up: boolean;
     new_level: number;
-    streak_updated: boolean;
-    new_streak: number;
     loot?: {
         type: string;
-        rarity: string;
         sku: string;
         name: string;
+        rarity: string;
     }[] | undefined;
 }, {
     xp_gained: number;
@@ -318,13 +302,11 @@ export declare const CompleteSessionResponse: z.ZodObject<{
     sparks_gained: number;
     level_up: boolean;
     new_level: number;
-    streak_updated: boolean;
-    new_streak: number;
     loot?: {
         type: string;
-        rarity: string;
         sku: string;
         name: string;
+        rarity: string;
     }[] | undefined;
 }>;
 export declare const BossStartRequest: z.ZodObject<{

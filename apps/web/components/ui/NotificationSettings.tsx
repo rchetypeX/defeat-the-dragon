@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useBaseAppNotifications } from '../../hooks/useBaseAppNotifications';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
 
 interface NotificationSettings {
   sessionComplete: boolean;
@@ -9,12 +10,13 @@ interface NotificationSettings {
   softShieldWarning: boolean;
   levelUp: boolean;
   achievements: boolean;
-  streakMilestones: boolean;
+
   bossDefeated: boolean;
   dailyReminders: boolean;
   socialAchievements: boolean;
   weeklyChallenges: boolean;
   reEngagement: boolean;
+  pushTest: boolean;
 }
 
 interface NotificationSettingsProps {
@@ -29,12 +31,13 @@ export function NotificationSettings({ isOpen, onClose }: NotificationSettingsPr
     softShieldWarning: true,
     levelUp: true,
     achievements: true,
-    streakMilestones: true,
+
     bossDefeated: true,
     dailyReminders: true,
     socialAchievements: true,
     weeklyChallenges: true,
     reEngagement: true,
+    pushTest: false,
   });
 
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -42,6 +45,16 @@ export function NotificationSettings({ isOpen, onClose }: NotificationSettingsPr
   const [stats, setStats] = useState<Record<string, { hourly: number; daily: number }>>({});
 
   const { getStats, isBaseApp: baseAppDetected } = useBaseAppNotifications();
+  const { 
+    isSupported: pushSupported, 
+    isSubscribed: pushSubscribed, 
+    isPermissionGranted: pushPermissionGranted,
+    isLoading: pushLoading,
+    error: pushError,
+    subscribe: pushSubscribe,
+    unsubscribe: pushUnsubscribe,
+    sendTestNotification: sendPushTest
+  } = usePushNotifications();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -100,12 +113,13 @@ export function NotificationSettings({ isOpen, onClose }: NotificationSettingsPr
       softShieldWarning: () => showTestNotification('⚠️ Focus Interrupted!', 'Return within 10 seconds or your session will fail!'),
       levelUp: () => showTestNotification('🌟 LEVEL UP!', 'Congratulations! You reached Level 5!'),
       achievements: () => showTestNotification('🥉 Achievement Unlocked!', 'First Focus: Complete your first focus session'),
-      streakMilestones: () => showTestNotification('🔥 Streak Milestone!', 'Amazing! You\'ve maintained a 7-day focus streak!'),
+
       bossDefeated: () => showTestNotification('⚔️ Boss Defeated!', 'You defeated the Mini-Boss! Rewards: 100 XP, 60 coins'),
       dailyReminders: () => showTestNotification('🐉 Daily Focus Quest', 'Ready for today\'s focus adventure?'),
       socialAchievements: () => showTestNotification('🌟 Social Achievement!', 'You shared your first achievement!'),
-      weeklyChallenges: () => showTestNotification('🎯 Weekly Challenge!', 'Complete 5 sessions this week. Reward: 200 XP'),
-      reEngagement: () => showTestNotification('🐉 Your Dragon Awaits!', 'Ready to continue your quest?'),
+             weeklyChallenges: () => showTestNotification('🎯 Weekly Challenge!', 'Complete 5 sessions this week. Reward: 200 XP'),
+       reEngagement: () => showTestNotification('🐉 Your Dragon Awaits!', 'Ready to continue your quest?'),
+       pushTest: () => sendPushTest(),
     };
 
     const testFn = testNotifications[type];
@@ -155,20 +169,52 @@ export function NotificationSettings({ isOpen, onClose }: NotificationSettingsPr
             </span>
           </div>
           
-          {isBaseApp && (
-            <div className="flex items-center text-sm text-[#fbbf24] mb-2">
-              <span>🔗 Base App Integration: Active</span>
-            </div>
-          )}
+                     {isBaseApp && (
+             <div className="flex items-center text-sm text-[#fbbf24] mb-2">
+               <span>🔗 Base App Integration: Active</span>
+             </div>
+           )}
+           
+           {pushSupported && (
+             <div className="flex items-center text-sm text-[#fbbf24] mb-2">
+               <span>📱 Push Notifications: {pushSubscribed ? 'Subscribed' : 'Not Subscribed'}</span>
+             </div>
+           )}
           
-          {permission !== 'granted' && (
-            <button
-              onClick={requestPermission}
-              className="w-full pixel-button text-sm"
-            >
-              Request Permission
-            </button>
-          )}
+                     {permission !== 'granted' && (
+             <button
+               onClick={requestPermission}
+               className="w-full pixel-button text-sm"
+             >
+               Request Permission
+             </button>
+           )}
+           
+           {pushSupported && !pushSubscribed && pushPermissionGranted && (
+             <button
+               onClick={pushSubscribe}
+               disabled={pushLoading}
+               className="w-full pixel-button text-sm mt-2"
+             >
+               {pushLoading ? 'Subscribing...' : 'Subscribe to Push Notifications'}
+             </button>
+           )}
+           
+           {pushSupported && pushSubscribed && (
+             <button
+               onClick={pushUnsubscribe}
+               disabled={pushLoading}
+               className="w-full pixel-button text-sm mt-2 bg-red-600 hover:bg-red-700"
+             >
+               {pushLoading ? 'Unsubscribing...' : 'Unsubscribe from Push Notifications'}
+             </button>
+           )}
+           
+           {pushError && (
+             <div className="text-red-400 text-sm mt-2">
+               {pushError}
+             </div>
+           )}
         </div>
 
         {/* Notification Types */}
@@ -252,12 +298,13 @@ function getNotificationLabel(key: keyof NotificationSettings): string {
     softShieldWarning: 'Soft Shield Warning',
     levelUp: 'Level Up',
     achievements: 'Achievements',
-    streakMilestones: 'Streak Milestones',
+
     bossDefeated: 'Boss Defeated',
     dailyReminders: 'Daily Reminders',
     socialAchievements: 'Social Achievements',
     weeklyChallenges: 'Weekly Challenges',
     reEngagement: 'Re-engagement',
+    pushTest: 'Push Test',
   };
   return labels[key];
 }
@@ -269,12 +316,13 @@ function getNotificationDescription(key: keyof NotificationSettings): string {
     softShieldWarning: 'When you\'re away too long during a session',
     levelUp: 'When you gain a new level',
     achievements: 'When you unlock new achievements',
-    streakMilestones: 'When you reach streak milestones',
+
     bossDefeated: 'When you defeat a boss',
     dailyReminders: 'Daily focus reminders',
     socialAchievements: 'Social and sharing achievements',
     weeklyChallenges: 'Weekly challenge updates',
     reEngagement: 'Smart re-engagement messages',
+    pushTest: 'Test push notification functionality',
   };
   return descriptions[key];
 }

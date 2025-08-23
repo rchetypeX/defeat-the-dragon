@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       type: 'magiclink',
       email: authUser.user.email || `${address.toLowerCase()}@wallet.local`,
       options: {
-        redirectTo: process.env.NEXT_PUBLIC_URL || 'https://defeat-the-dragon-app.vercel.app'
+        redirectTo: process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz'
       }
     });
 

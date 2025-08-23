@@ -50,11 +50,7 @@ export default function HomePage() {
       description: "Gain levels, unlock new characters, backgrounds, and special abilities as you progress in your focus journey.",
       image: "/assets/images/onboarding-3.png"
     },
-    {
-      title: "🔥 Build Your Streak",
-      description: "Maintain daily focus streaks to unlock bonus rewards and special achievements. Consistency is key!",
-      image: "/assets/images/onboarding-4.png"
-    }
+
   ];
 
   const handleOnboardingNext = () => {
@@ -217,7 +213,7 @@ export default function HomePage() {
                   <span className="text-[#f2751a] mr-2">🎮</span>
                   <span className="text-[#fbbf24] text-xs font-medium">Level Up Progress</span>
                 </div>
-                <p className="text-gray-400 text-xs">Earn XP, unlock characters, and build streaks</p>
+                <p className="text-gray-400 text-xs">Earn XP, unlock characters, and progress through levels</p>
               </div>
               <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-3">
                 <div className="flex items-center mb-1">
