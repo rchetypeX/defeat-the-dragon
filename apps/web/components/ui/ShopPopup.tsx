@@ -85,24 +85,33 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       const response = await fetch('/api/user/sync');
       
       if (response.ok) {
-        const data = await response.json();
-        if (data.inventory) {
-          setUserInventory(data.inventory);
+        const result = await response.json();
+        console.log('Shop: Loaded user data:', result);
+        if (result.data && result.data.inventory) {
+          console.log('Shop: Setting inventory:', result.data.inventory);
+          setUserInventory(result.data.inventory);
+        } else {
+          console.log('Shop: No inventory data found');
+          setUserInventory([]);
         }
       } else {
         console.error('Failed to load inventory');
+        setErrorMessage('Failed to load inventory');
       }
     } catch (error) {
       console.error('Error loading inventory:', error);
+      setErrorMessage('Error loading inventory');
     } finally {
       setIsLoading(false);
     }
   };
 
   const isItemOwned = (itemId: string, itemType: string) => {
-    return userInventory.some(item => 
+    const owned = userInventory.some(item => 
       item.item_id === itemId && item.item_type === itemType
     );
+    console.log(`Shop: Checking if ${itemId} (${itemType}) is owned:`, owned, 'Inventory:', userInventory);
+    return owned;
   };
 
   const handlePurchase = async (item: ShopItem) => {

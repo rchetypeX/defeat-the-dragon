@@ -363,7 +363,7 @@ export function GameDashboard() {
                                   {/* Central Character Area */}
          <div className={`flex-1 flex items-center justify-center relative px-4 ${showSessionTimer || sessionProgress.isActive || sessionResult ? 'hidden' : ''}`}>
                                                 {/* Character positioned lower and larger */}
-            <div className="relative z-10 transform translate-y-8 sm:translate-y-12">
+            <div className="relative z-5 transform translate-y-8 sm:translate-y-12">
              <img 
                src={getCharacterImage(equippedCharacter)} 
                alt="Tiny Adventurer" 

@@ -310,12 +310,12 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
     return null;
   }
 
-  // Debug logging for character rendering
-  console.log('SessionProgress: Rendering character:', {
-    equippedCharacter,
-    characterImage: getCharacterImage(equippedCharacter),
-    isActive: sessionProgress.isActive
-  });
+  // Debug logging for character rendering (commented out to reduce console spam)
+  // console.log('SessionProgress: Rendering character:', {
+  //   equippedCharacter,
+  //   characterImage: getCharacterImage(equippedCharacter),
+  //   isActive: sessionProgress.isActive
+  // });
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -346,7 +346,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
       </div>
 
        {/* Character - Positioned in the center */}
-       <div className="fixed left-1/2 transform -translate-x-1/2 bottom-40 sm:bottom-44 z-25 overflow-hidden">
+       <div className="fixed left-1/2 transform -translate-x-1/2 bottom-40 sm:bottom-44 z-50 overflow-hidden" style={{ pointerEvents: 'none' }}>
          <img 
            src={getCharacterImage(equippedCharacter)} 
            alt="Tiny Adventurer" 
