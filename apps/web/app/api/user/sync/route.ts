@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   try {
     // Get user session from Supabase
     const cookieStore = cookies();
-    const supabase = createServerClient(
+    const supabaseAuth = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -35,8 +35,14 @@ export async function GET(request: NextRequest) {
       }
     );
     
+    // Use service role client for database operations
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    
     // Try to get user from session first
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
     
     let userId: string | null = null;
     
@@ -176,7 +182,7 @@ export async function POST(request: NextRequest) {
   try {
     // Get user session from Supabase
     const cookieStore = cookies();
-    const supabase = createServerClient(
+    const supabaseAuth = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
@@ -199,8 +205,14 @@ export async function POST(request: NextRequest) {
       }
     );
     
+    // Use service role client for database operations
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    
     // Try to get user from session first
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
     
     let userId: string | null = null;
     

@@ -36,8 +36,8 @@ export async function GET(request: Request) {
         ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION || 'Level up your productivity with this pixel-art Pomodoro RPG',
         ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE || `${URL}/og-image.png`,
       }),
-      // Remove noindex for production deployment
-      // noindex: true,
+      // Set to true for testing, false for production
+      noindex: process.env.NODE_ENV === 'development',
     };
 
     return Response.json(manifest);

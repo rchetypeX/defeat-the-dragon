@@ -6,7 +6,7 @@ import { actionMetadata } from '@defeat-the-dragon/engine';
 import { Action } from '@defeat-the-dragon/engine';
 import { createSoftShield } from '../../lib/softShield';
 import { SoftShieldWarning } from '../ui/SoftShieldWarning';
-import { showSoftShieldWarningNotification } from '../../lib/notifications';
+import { useBaseAppNotifications } from '../../hooks/useBaseAppNotifications';
 import { useAudio } from '../../contexts/AudioContext';
 import { useCharacterStore } from '../../lib/characterStore';
 import FocusSessionAudioControls from '../audio/FocusSessionAudioControls';
@@ -20,6 +20,9 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
   const { currentSession, sessionProgress, updateSessionProgress, player } = useGameStore();
   const { isBackgroundPlaying, toggleBackgroundPlayPause } = useAudio();
   const { equippedCharacter, getCharacterImage } = useCharacterStore();
+  
+  // Enhanced notification system
+  const { showSoftShieldWarning, showSessionFailed } = useBaseAppNotifications();
   const [timeLeft, setTimeLeft] = useState(0);
   const [isDisturbed, setIsDisturbed] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
@@ -182,7 +185,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
              if (!showWarning) {
                setShowWarning(true);
                setWarningStartTime(Date.now());
-               showSoftShieldWarningNotification(remainingTime);
+               showSoftShieldWarning(remainingTime);
                console.log('SessionProgress: Warning state set to true');
              }
              setWarningTimeLeft(remainingTime);

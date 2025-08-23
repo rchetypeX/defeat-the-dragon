@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import './mobile-first.css';
 import { AuthProvider } from '../contexts/AuthContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
 
@@ -61,15 +62,15 @@ export const metadata: Metadata = {
   other: {
     'fc:frame': JSON.stringify({
       version: 'next',
-      imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE,
+      imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${process.env.NEXT_PUBLIC_URL || 'https://defeat-the-dragon-app.vercel.app'}/og-image.png`,
       button: {
         title: `Launch ${process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon'}`,
         action: {
           type: 'launch_frame',
           name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
-          url: process.env.NEXT_PUBLIC_URL || 'https://your-app.vercel.app',
-          splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE,
-          splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR,
+          url: process.env.NEXT_PUBLIC_URL || 'https://defeat-the-dragon-app.vercel.app',
+          splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${process.env.NEXT_PUBLIC_URL || 'https://defeat-the-dragon-app.vercel.app'}/og-image.png`,
+          splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#1a1a2e',
         },
       },
     }),

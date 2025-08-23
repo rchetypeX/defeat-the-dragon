@@ -5,7 +5,7 @@ import { useGameStore } from '../../lib/store';
 import { SessionTimer } from './SessionTimer';
 import { SessionProgress } from './SessionProgress';
 import { SuccessMessage } from '../ui/SuccessMessage';
-import { requestNotificationPermission, showSessionCompleteNotification } from '../../lib/notifications';
+import { useBaseAppNotifications } from '../../hooks/useBaseAppNotifications';
 import { Action } from '@defeat-the-dragon/engine';
 import FocusSessionMusic from '../audio/FocusSessionMusic';
 import AudioControlsPopup from '../audio/AudioControlsPopup';
@@ -36,6 +36,22 @@ export function GameDashboard() {
   
   const { isLoading, error, lastSyncTime, forceSync, refreshData } = useDataSync();
   
+  // Enhanced notification system
+  const {
+    showSessionComplete,
+    showSessionFailed,
+    showLevelUp,
+    showAchievement,
+    showStreakMilestone,
+    showBossDefeated,
+    isBaseApp,
+    isEnabled
+  } = useBaseAppNotifications({
+    enableReEngagement: true,
+    enableDailyReminders: true,
+    enableSocialNotifications: true
+  });
+  
   const {
     backgroundVolume,
     isBackgroundPlaying,
@@ -58,8 +74,9 @@ export function GameDashboard() {
   const { equippedBackground, getBackgroundImage } = useBackgroundStore();
 
   useEffect(() => {
-    requestNotificationPermission();
-  }, []);
+    // Notification system is now handled by useBaseAppNotifications hook
+    console.log('🔔 Notification system initialized:', { isBaseApp, isEnabled });
+  }, [isBaseApp, isEnabled]);
 
   // Update session active state when session progress changes
   useEffect(() => {
@@ -89,8 +106,19 @@ export function GameDashboard() {
       setSessionResult(result);
       setShowSessionTimer(false);
       
-      // Show browser notification
-      showSessionCompleteNotification(result.xp_gained, result.coins_gained);
+      // Show enhanced notification
+      await showSessionComplete(
+        result.xp_gained, 
+        result.coins_gained, 
+        result.sparks_gained,
+        result.level_up,
+        result.new_level
+      );
+      
+      // Show level up notification if applicable
+      if (result.level_up && result.new_level) {
+        await showLevelUp(result.new_level, ['New character class', 'Enhanced abilities']);
+      }
       
       console.log('GameDashboard: handleSessionComplete finished successfully');
     } catch (error) {

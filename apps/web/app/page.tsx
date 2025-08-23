@@ -6,6 +6,7 @@ import { LoginForm } from '../components/auth/LoginForm';
 import { SignUpForm } from '../components/auth/SignUpForm';
 import { WalletLoginForm } from '../components/auth/WalletLoginForm';
 import { GameDashboard } from '../components/game/GameDashboard';
+import { GuestMode } from '../components/game/GuestMode';
 import BackgroundMusic from '../components/audio/BackgroundMusic';
 import FocusSessionMusic from '../components/audio/FocusSessionMusic';
 import { AudioProvider } from '../contexts/AudioContext';
@@ -13,7 +14,9 @@ import { useMiniKit } from '@coinbase/onchainkit/minikit';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
-  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet'>('wallet');
+  const [authMode, setAuthMode] = useState<'guest' | 'login' | 'signup' | 'wallet'>('guest');
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
   const { setFrameReady, isFrameReady } = useMiniKit();
 
   useEffect(() => {
@@ -22,6 +25,59 @@ export default function HomePage() {
       setFrameReady();
     }
   }, [isFrameReady, setFrameReady]);
+
+  // Check if this is the user's first visit
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('hasVisitedBefore');
+    if (!hasVisited && !user) {
+      setShowOnboarding(true);
+    }
+  }, [user]);
+
+  const onboardingSteps = [
+    {
+      title: "🐉 Welcome to Defeat the Dragon!",
+      description: "Transform your focus sessions into an epic adventure. Level up your productivity while training to defeat the ultimate dragon!",
+      image: "/assets/images/onboarding-1.png"
+    },
+    {
+      title: "⚔️ Complete Focus Sessions",
+      description: "Start focus sessions and earn XP, coins, and sparks. The longer you focus, the more rewards you gain!",
+      image: "/assets/images/onboarding-2.png"
+    },
+    {
+      title: "🎮 Level Up & Unlock Features",
+      description: "Gain levels, unlock new characters, backgrounds, and special abilities as you progress in your focus journey.",
+      image: "/assets/images/onboarding-3.png"
+    },
+    {
+      title: "🔥 Build Your Streak",
+      description: "Maintain daily focus streaks to unlock bonus rewards and special achievements. Consistency is key!",
+      image: "/assets/images/onboarding-4.png"
+    }
+  ];
+
+  const handleOnboardingNext = () => {
+    if (currentOnboardingStep < onboardingSteps.length - 1) {
+      setCurrentOnboardingStep(currentOnboardingStep + 1);
+    } else {
+      setShowOnboarding(false);
+      localStorage.setItem('hasVisitedBefore', 'true');
+    }
+  };
+
+  const handleOnboardingSkip = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('hasVisitedBefore', 'true');
+  };
+
+  const handleGuestMode = () => {
+    setAuthMode('guest');
+  };
+
+  const handleSignUp = () => {
+    setAuthMode('wallet');
+  };
 
   if (loading) {
     return (
@@ -42,6 +98,64 @@ export default function HomePage() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[#f2751a] mx-auto mb-4"></div>
             <p className="text-lg text-white drop-shadow-lg">Loading...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Onboarding Modal
+  if (showOnboarding) {
+    const step = onboardingSteps[currentOnboardingStep];
+    return (
+      <main className="min-h-screen relative overflow-hidden">
+        {/* Background Forest Scene */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/assets/images/forest-background.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        ></div>
+        
+        {/* Onboarding Overlay */}
+        <div className="relative z-20 min-h-screen flex items-center justify-center p-4">
+          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-6 max-w-sm w-full text-center">
+            {/* Progress Indicator */}
+            <div className="flex justify-center mb-6">
+              {onboardingSteps.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-2 h-2 rounded-full mx-1 ${
+                    index <= currentOnboardingStep ? 'bg-[#f2751a]' : 'bg-[#654321]'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Step Content */}
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-[#f2751a] mb-3">{step.title}</h2>
+              <p className="text-[#fbbf24] text-sm leading-relaxed">{step.description}</p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex space-x-3">
+              <button
+                onClick={handleOnboardingSkip}
+                className="flex-1 py-2 px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-sm"
+              >
+                Skip
+              </button>
+              <button
+                onClick={handleOnboardingNext}
+                className="flex-1 py-2 px-4 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] transition-colors text-sm"
+              >
+                {currentOnboardingStep === onboardingSteps.length - 1 ? 'Get Started' : 'Next'}
+              </button>
+            </div>
           </div>
         </div>
       </main>
@@ -71,64 +185,119 @@ export default function HomePage() {
             onError={(error) => console.error('Focus session music error:', error)}
           />
         
-        {/* Background Forest Scene */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/assets/images/forest-background.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        ></div>
-        
-        {/* Content */}
-        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
-          {/* Authentication Tabs */}
-          <div className="w-full max-w-md mb-6">
-            <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
+          {/* Background Forest Scene */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: 'url(/assets/images/forest-background.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          ></div>
+          
+          {/* Content */}
+          <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
+            {/* App Logo & Title */}
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 mx-auto mb-4 bg-[#f2751a] rounded-lg flex items-center justify-center">
+                <span className="text-3xl">🐉</span>
+              </div>
+              <h1 className="text-2xl font-bold text-[#f2751a] mb-2">Defeat the Dragon</h1>
+              <p className="text-[#fbbf24] text-sm">Focus RPG with Pomodoro</p>
+            </div>
+
+            {/* Value Props */}
+            <div className="w-full max-w-sm mb-8">
+              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-4 mb-4">
+                <div className="flex items-center mb-2">
+                  <span className="text-[#f2751a] mr-2">⚔️</span>
+                  <span className="text-[#fbbf24] text-sm font-medium">Gamified Focus</span>
+                </div>
+                <p className="text-gray-400 text-xs">Transform boring work into an epic adventure</p>
+              </div>
+              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-4 mb-4">
+                <div className="flex items-center mb-2">
+                  <span className="text-[#f2751a] mr-2">🎮</span>
+                  <span className="text-[#fbbf24] text-sm font-medium">Level Up Progress</span>
+                </div>
+                <p className="text-gray-400 text-xs">Earn XP, unlock characters, and build streaks</p>
+              </div>
+              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <span className="text-[#f2751a] mr-2">🚀</span>
+                  <span className="text-[#fbbf24] text-sm font-medium">Base App Optimized</span>
+                </div>
+                <p className="text-gray-400 text-xs">Seamless Web3 integration with gasless transactions</p>
+              </div>
+            </div>
+
+            {/* Guest Mode Button */}
+            <div className="w-full max-w-sm mb-6">
               <button
-                onClick={() => setAuthMode('wallet')}
-                className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
-                  authMode === 'wallet'
-                    ? 'bg-[#f2751a] text-white'
-                    : 'text-[#fbbf24] hover:text-white'
-                }`}
+                onClick={handleGuestMode}
+                className="w-full py-3 px-4 bg-[#f2751a] text-white rounded-lg hover:bg-[#e65a0a] transition-colors font-medium"
               >
-                🟦 Wallet
+                🎮 Try Guest Mode
               </button>
-              <button
-                onClick={() => setAuthMode('login')}
-                className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
-                  authMode === 'login'
-                    ? 'bg-[#f2751a] text-white'
-                    : 'text-[#fbbf24] hover:text-white'
-                }`}
-              >
-                📧 Email
+              <p className="text-center text-gray-400 text-xs mt-2">
+                Explore the game without signing up
+              </p>
+            </div>
+
+            {/* Authentication Tabs */}
+            <div className="w-full max-w-sm mb-6">
+              <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
+                <button
+                  onClick={() => setAuthMode('wallet')}
+                  className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+                    authMode === 'wallet'
+                      ? 'bg-[#f2751a] text-white'
+                      : 'text-[#fbbf24] hover:text-white'
+                  }`}
+                >
+                  🟦 Wallet
+                </button>
+                <button
+                  onClick={() => setAuthMode('login')}
+                  className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+                    authMode === 'login'
+                      ? 'bg-[#f2751a] text-white'
+                      : 'text-[#fbbf24] hover:text-white'
+                  }`}
+                >
+                  📧 Email
+                </button>
+              </div>
+            </div>
+            
+            {/* Authentication Form */}
+            <div className="w-full max-w-sm">
+              {authMode === 'wallet' && <WalletLoginForm />}
+              {authMode === 'login' && <LoginForm />}
+              {authMode === 'signup' && <SignUpForm />}
+              {authMode === 'guest' && <GuestMode onSignUp={handleSignUp} />}
+            </div>
+            
+            {/* Email Auth Toggle (only show when not in wallet mode) */}
+            {authMode !== 'wallet' && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+                  className="text-[#fbbf24] hover:text-white transition-colors text-sm underline"
+                >
+                  {authMode === 'login' ? "Don't have an account? Create Account" : "Already have an account? Sign In"}
+                </button>
+              </div>
+            )}
+
+            {/* Help & FAQ Link */}
+            <div className="mt-8 text-center">
+              <button className="text-[#fbbf24] hover:text-white transition-colors text-xs underline">
+                Need help? View FAQ
               </button>
             </div>
           </div>
-          
-          {/* Authentication Form */}
-          <div className="w-full max-w-md">
-            {authMode === 'wallet' && <WalletLoginForm />}
-            {authMode === 'login' && <LoginForm />}
-            {authMode === 'signup' && <SignUpForm />}
-          </div>
-          
-          {/* Email Auth Toggle (only show when not in wallet mode) */}
-          {authMode !== 'wallet' && (
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-                className="text-[#fbbf24] hover:text-white transition-colors text-sm underline"
-              >
-                {authMode === 'login' ? "Don't have an account? Create Account" : "Already have an account? Sign In"}
-              </button>
-            </div>
-          )}
-        </div>
         </main>
       </AudioProvider>
     );
