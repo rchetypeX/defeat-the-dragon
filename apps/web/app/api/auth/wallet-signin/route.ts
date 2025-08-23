@@ -56,17 +56,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For wallet authentication, we'll return the user data
-    // The frontend will handle setting the session
+    // Generate a session for the user
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: authUser.user.email || `${address.toLowerCase()}@wallet.local`,
+      options: {
+        redirectTo: process.env.NEXT_PUBLIC_URL || 'https://defeat-the-dragon-app.vercel.app'
+      }
+    });
+
+    if (sessionError) {
+      console.error('Session generation error:', sessionError);
+      return NextResponse.json(
+        { error: 'Failed to create session' },
+        { status: 500 }
+      );
+    }
+
+    // For wallet authentication, return the session URL for automatic sign-in
     return NextResponse.json({
       success: true,
       user: {
         id: existingUser.user_id,
         wallet_address: existingUser.wallet_address,
         display_name: existingUser.display_name,
-        email: `${address.toLowerCase()}@wallet.local`,
+        email: authUser.user.email || `${address.toLowerCase()}@wallet.local`,
       },
-      // Return a simple success flag for wallet auth
+      sessionUrl: sessionData.properties?.action_link,
       walletAuth: true,
     });
 

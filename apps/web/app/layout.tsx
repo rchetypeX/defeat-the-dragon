@@ -19,37 +19,37 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/icon', type: 'image/png', sizes: '32x32' },
-      { url: '/icon', type: 'image/png', sizes: '16x16' },
+      { url: '/favicon.ico', type: 'image/x-icon', sizes: '32x32' },
+      { url: '/icon.png', type: 'image/png', sizes: '192x192' },
     ],
     apple: [
-      { url: '/apple-icon', type: 'image/png', sizes: '180x180' },
+      { url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' },
     ],
-    shortcut: '/icon',
+    shortcut: '/favicon.ico',
   },
-  openGraph: {
-    title: 'Defeat the Dragon',
-    description: 'A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions',
-    url: process.env.NEXT_PUBLIC_URL || 'https://your-app.vercel.app',
-    siteName: 'Defeat the Dragon',
-    images: [
-      {
-        url: '/opengraph-image',
-        width: 1200,
-        height: 630,
-        alt: 'Defeat the Dragon - Focus RPG',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Defeat the Dragon',
-    description: 'A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions',
-    images: ['/twitter-image'],
-    creator: '@defeatdragon',
-  },
+      openGraph: {
+      title: 'Defeat the Dragon',
+      description: 'A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions',
+      url: process.env.NEXT_PUBLIC_URL || 'https://your-app.vercel.app',
+      siteName: 'Defeat the Dragon',
+      images: [
+        {
+          url: '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: 'Defeat the Dragon - Focus RPG',
+        },
+      ],
+      locale: 'en_US',
+      type: 'website',
+    },
+      twitter: {
+      card: 'summary_large_image',
+      title: 'Defeat the Dragon',
+      description: 'A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions',
+      images: ['/og-image.png'],
+      creator: '@defeatdragon',
+    },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -91,17 +91,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/icon" />
-        <link rel="apple-touch-icon" href="/apple-icon" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Defeat the Dragon" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#7c2d12" />
-        <meta name="msapplication-tap-highlight" content="no" />
-        <meta name="theme-color" content="#7c2d12" />
-      </head>
+              <head>
+          <link rel="icon" href="/favicon.ico" />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta name="apple-mobile-web-app-title" content="Defeat the Dragon" />
+          <meta name="mobile-web-app-capable" content="yes" />
+          <meta name="msapplication-TileColor" content="#7c2d12" />
+          <meta name="msapplication-tap-highlight" content="no" />
+          <meta name="theme-color" content="#7c2d12" />
+        </head>
       <body className={inter.className}>
         <MiniKitContextProvider>
           <AuthProvider>

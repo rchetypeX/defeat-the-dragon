@@ -10,53 +10,59 @@
   "scope": "/",
   "lang": "en",
   "categories": ["productivity", "games", "education"],
-  "icons": [
-    {
-      "src": "/icon",
-      "sizes": "32x32",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/apple-icon",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/opengraph-image",
-      "sizes": "1200x630",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Defeat the Dragon - Focus RPG"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Start Focus Session",
-      "short_name": "Focus",
-      "description": "Start a new focus training session",
-      "url": "/?action=focus",
       "icons": [
-        {
-          "src": "/icon",
-          "sizes": "32x32"
-        }
-      ]
-    },
-    {
-      "name": "View Progress",
-      "short_name": "Progress",
-      "description": "Check your training progress",
-      "url": "/?action=progress",
-      "icons": [
-        {
-          "src": "/icon",
-          "sizes": "32x32"
-        }
-      ]
-    }
-  ]
+      {
+        "src": "/favicon.ico",
+        "sizes": "32x32",
+        "type": "image/x-icon",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/icon.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/apple-touch-icon.png",
+        "sizes": "180x180",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ],
+      "screenshots": [
+      {
+        "src": "/og-image.png",
+        "sizes": "1200x630",
+        "type": "image/png",
+        "form_factor": "wide",
+        "label": "Defeat the Dragon - Focus RPG"
+      }
+    ],
+      "shortcuts": [
+      {
+        "name": "Start Focus Session",
+        "short_name": "Focus",
+        "description": "Start a new focus training session",
+        "url": "/?action=focus",
+        "icons": [
+          {
+            "src": "/favicon.ico",
+            "sizes": "32x32"
+          }
+        ]
+      },
+      {
+        "name": "View Progress",
+        "short_name": "Progress",
+        "description": "Check your training progress",
+        "url": "/?action=progress",
+        "icons": [
+          {
+            "src": "/favicon.ico",
+            "sizes": "32x32"
+          }
+        ]
+      }
+    ]
 }

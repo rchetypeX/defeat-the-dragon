@@ -176,8 +176,11 @@ export function useWalletAuth() {
       }
 
       // For wallet authentication, we'll handle it differently
-      if (result.walletAuth) {
-        // Store wallet user data in localStorage or state
+      if (result.walletAuth && result.sessionUrl) {
+        // Use the session URL to automatically sign in the user
+        window.location.href = result.sessionUrl;
+      } else if (result.walletAuth) {
+        // Fallback: Store wallet user data in localStorage or state
         localStorage.setItem('walletUser', JSON.stringify(result.user));
         // Trigger a page reload to update the auth state
         window.location.reload();
@@ -231,8 +234,11 @@ export function useWalletAuth() {
       }
 
       // For wallet authentication, we'll handle it differently
-      if (result.walletAuth) {
-        // Store wallet user data in localStorage or state
+      if (result.walletAuth && result.sessionUrl) {
+        // Use the session URL to automatically sign in the user
+        window.location.href = result.sessionUrl;
+      } else if (result.walletAuth) {
+        // Fallback: Store wallet user data in localStorage or state
         localStorage.setItem('walletUser', JSON.stringify(result.user));
         // Update account status
         setHasAccount(true);
