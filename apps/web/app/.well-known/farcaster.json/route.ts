@@ -4,7 +4,7 @@ function withValidProperties(properties: Record<string, undefined | string | str
   );
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const URL = process.env.NEXT_PUBLIC_URL || 'https://defeat-the-dragon-app.vercel.app';
     
@@ -15,7 +15,7 @@ export async function GET() {
         signature: process.env.FARCASTER_SIGNATURE || '',
       },
       baseBuilder: {
-        allowedAddresses: ["0x1a9Fce96e04ba06D9190339DF817b43837fa0eA9"] // Your Base Build wallet address
+        allowedAddresses: ["0xdc05E6f1d506A509C26A33C9Fcd178890DB2a97b"] // Your Base Build wallet address
       },
       frame: withValidProperties({
         version: '1',
