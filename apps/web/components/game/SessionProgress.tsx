@@ -310,6 +310,13 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
     return null;
   }
 
+  // Debug logging for character rendering
+  console.log('SessionProgress: Rendering character:', {
+    equippedCharacter,
+    characterImage: getCharacterImage(equippedCharacter),
+    isActive: sessionProgress.isActive
+  });
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -339,13 +346,24 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
       </div>
 
        {/* Character - Positioned in the center */}
-       <div className="fixed left-1/2 transform -translate-x-1/2 bottom-40 sm:bottom-44 z-25">
+       <div className="fixed left-1/2 transform -translate-x-1/2 bottom-40 sm:bottom-44 z-25 overflow-hidden">
          <img 
            src={getCharacterImage(equippedCharacter)} 
            alt="Tiny Adventurer" 
            className="w-32 h-36 sm:w-36 sm:h-40 pixel-art drop-shadow-lg object-contain"
+           style={{
+             imageRendering: 'pixelated',
+             objectPosition: 'center bottom',
+             objectFit: 'cover',
+             height: '100%',
+             width: '100%'
+           }}
            onError={(e) => {
+             console.log('Character image failed to load:', getCharacterImage(equippedCharacter));
              e.currentTarget.style.display = 'none';
+           }}
+           onLoad={() => {
+             console.log('Character image loaded successfully:', getCharacterImage(equippedCharacter));
            }}
          />
        </div>
@@ -396,12 +414,12 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
        {/* Stop Confirmation Modal */}
        {showStopConfirmation && (
          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-           <div className="pixel-card p-6 sm:p-8 border-2 border-[#ef4444] bg-[#1f2937] max-w-md w-full mx-4">
+           <div className="pixel-card p-6 sm:p-8 border-2 border-[#ef4444] bg-white max-w-md w-full mx-4">
              <div className="text-center mb-6">
-               <div className="text-white text-lg sm:text-xl font-bold mb-2">
+               <div className="text-gray-800 text-lg sm:text-xl font-bold mb-2">
                  Are you sure?
                </div>
-               <div className="text-[#fbbf24] text-sm sm:text-base">
+               <div className="text-gray-600 text-sm sm:text-base">
                  {player?.display_name || 'Adventurer'} still needs to focus...
                </div>
              </div>
