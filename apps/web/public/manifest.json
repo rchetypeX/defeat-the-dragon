@@ -12,9 +12,21 @@
   "categories": ["productivity", "games", "education"],
       "icons": [
       {
+        "src": "/favicon.svg",
+        "sizes": "32x32",
+        "type": "image/svg+xml",
+        "purpose": "any maskable"
+      },
+      {
         "src": "/favicon.ico",
         "sizes": "32x32",
         "type": "image/x-icon",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "/icon-simple.svg",
+        "sizes": "192x192",
+        "type": "image/svg+xml",
         "purpose": "any maskable"
       },
       {
@@ -47,7 +59,7 @@
         "url": "/?action=focus",
         "icons": [
           {
-            "src": "/favicon.ico",
+            "src": "/favicon.svg",
             "sizes": "32x32"
           }
         ]
@@ -59,7 +71,7 @@
         "url": "/?action=progress",
         "icons": [
           {
-            "src": "/favicon.ico",
+            "src": "/favicon.svg",
             "sizes": "32x32"
           }
         ]

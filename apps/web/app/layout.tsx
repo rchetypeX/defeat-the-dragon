@@ -20,13 +20,15 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml', sizes: '32x32' },
       { url: '/favicon.ico', type: 'image/x-icon', sizes: '32x32' },
+      { url: '/icon-simple.svg', type: 'image/svg+xml', sizes: '192x192' },
       { url: '/icon.png', type: 'image/png', sizes: '192x192' },
     ],
     apple: [
       { url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' },
     ],
-    shortcut: '/favicon.ico',
+    shortcut: '/favicon.svg',
   },
       openGraph: {
       title: 'Defeat the Dragon',
@@ -93,7 +95,8 @@ export default function RootLayout({
   return (
     <html lang="en">
               <head>
-          <link rel="icon" href="/favicon.ico" />
+          <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+          <link rel="icon" href="/favicon.ico" type="image/x-icon" />
           <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="default" />

@@ -194,13 +194,17 @@ export default function HomePage() {
             <div className="text-center mb-6">
               <div className="w-16 h-16 mx-auto mb-3">
                 <img 
-                  src="/assets/images/logo-placeholder.png" 
+                  src="/logo.svg" 
                   alt="Defeat the Dragon Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
+                    console.log('Logo image failed to load, showing fallback');
                     // Fallback to a simple colored div if image fails to load
                     e.currentTarget.style.display = 'none';
                     e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
+                  onLoad={() => {
+                    console.log('Logo image loaded successfully');
                   }}
                 />
                 <div className="w-full h-full bg-[#f2751a] rounded-lg flex items-center justify-center hidden">
