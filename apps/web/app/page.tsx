@@ -92,7 +92,7 @@ export default function HomePage() {
                     : 'text-[#fbbf24] hover:text-white'
                 }`}
               >
-                🦊 Wallet
+                🟦 Wallet
               </button>
               <button
                 onClick={() => setAuthMode('login')}

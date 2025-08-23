@@ -91,7 +91,7 @@ export function WalletLoginForm() {
               )}
             </button>
             <p className="text-sm text-center mt-2 text-[#fbbf24]">
-              Connect your MetaMask or other Web3 wallet
+              Connect your Web3 Wallet
             </p>
           </div>
         ) : (
