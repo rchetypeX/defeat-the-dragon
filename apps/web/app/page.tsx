@@ -17,7 +17,10 @@ export default function HomePage() {
   const { setFrameReady, isFrameReady } = useMiniKit();
 
   useEffect(() => {
-    if (!isFrameReady) setFrameReady();
+    // Optimize for Base App - only set frame ready once
+    if (!isFrameReady) {
+      setFrameReady();
+    }
   }, [isFrameReady, setFrameReady]);
 
   if (loading) {
