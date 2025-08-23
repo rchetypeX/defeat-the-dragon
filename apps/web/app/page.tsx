@@ -197,60 +197,60 @@ export default function HomePage() {
           ></div>
           
           {/* Content */}
-          <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
+          <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-4">
             {/* App Logo & Title */}
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 mx-auto mb-4 bg-[#f2751a] rounded-lg flex items-center justify-center">
-                <span className="text-3xl">🐉</span>
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 mx-auto mb-3 bg-[#f2751a] rounded-lg flex items-center justify-center">
+                <span className="text-2xl">🐉</span>
               </div>
-              <h1 className="text-2xl font-bold text-[#f2751a] mb-2">Defeat the Dragon</h1>
-              <p className="text-[#fbbf24] text-sm">Focus RPG with Pomodoro</p>
+              <h1 className="text-xl font-bold text-[#f2751a] mb-1">Defeat the Dragon</h1>
+              <p className="text-[#fbbf24] text-xs">Focus RPG with Pomodoro</p>
             </div>
 
-            {/* Value Props */}
-            <div className="w-full max-w-sm mb-8">
-              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-4 mb-4">
-                <div className="flex items-center mb-2">
+            {/* Value Props - More Compact */}
+            <div className="w-full max-w-sm mb-6">
+              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-3 mb-3">
+                <div className="flex items-center mb-1">
                   <span className="text-[#f2751a] mr-2">⚔️</span>
-                  <span className="text-[#fbbf24] text-sm font-medium">Gamified Focus</span>
+                  <span className="text-[#fbbf24] text-xs font-medium">Gamified Focus</span>
                 </div>
                 <p className="text-gray-400 text-xs">Transform boring work into an epic adventure</p>
               </div>
-              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-4 mb-4">
-                <div className="flex items-center mb-2">
+              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-3 mb-3">
+                <div className="flex items-center mb-1">
                   <span className="text-[#f2751a] mr-2">🎮</span>
-                  <span className="text-[#fbbf24] text-sm font-medium">Level Up Progress</span>
+                  <span className="text-[#fbbf24] text-xs font-medium">Level Up Progress</span>
                 </div>
                 <p className="text-gray-400 text-xs">Earn XP, unlock characters, and build streaks</p>
               </div>
-              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-4">
-                <div className="flex items-center mb-2">
+              <div className="bg-[#1a1a2e] border border-[#654321] rounded-lg p-3">
+                <div className="flex items-center mb-1">
                   <span className="text-[#f2751a] mr-2">🚀</span>
-                  <span className="text-[#fbbf24] text-sm font-medium">Base App Optimized</span>
+                  <span className="text-[#fbbf24] text-xs font-medium">Base App Optimized</span>
                 </div>
                 <p className="text-gray-400 text-xs">Seamless Web3 integration with gasless transactions</p>
               </div>
             </div>
 
             {/* Guest Mode Button */}
-            <div className="w-full max-w-sm mb-6">
+            <div className="w-full max-w-sm mb-4">
               <button
                 onClick={handleGuestMode}
-                className="w-full py-3 px-4 bg-[#f2751a] text-white rounded-lg hover:bg-[#e65a0a] transition-colors font-medium"
+                className="w-full py-2 px-4 bg-[#f2751a] text-white rounded-lg hover:bg-[#e65a0a] transition-colors font-medium text-sm"
               >
                 🎮 Try Guest Mode
               </button>
-              <p className="text-center text-gray-400 text-xs mt-2">
+              <p className="text-center text-gray-400 text-xs mt-1">
                 Explore the game without signing up
               </p>
             </div>
 
             {/* Authentication Tabs */}
-            <div className="w-full max-w-sm mb-6">
+            <div className="w-full max-w-sm mb-4">
               <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
                 <button
                   onClick={() => setAuthMode('wallet')}
-                  className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+                  className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors ${
                     authMode === 'wallet'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
@@ -260,7 +260,7 @@ export default function HomePage() {
                 </button>
                 <button
                   onClick={() => setAuthMode('login')}
-                  className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+                  className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors ${
                     authMode === 'login'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
@@ -281,10 +281,10 @@ export default function HomePage() {
             
             {/* Email Auth Toggle (only show when not in wallet mode) */}
             {authMode !== 'wallet' && (
-              <div className="mt-6 text-center">
+              <div className="mt-4 text-center">
                 <button
                   onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-                  className="text-[#fbbf24] hover:text-white transition-colors text-sm underline"
+                  className="text-[#fbbf24] hover:text-white transition-colors text-xs underline"
                 >
                   {authMode === 'login' ? "Don't have an account? Create Account" : "Already have an account? Sign In"}
                 </button>
@@ -292,7 +292,7 @@ export default function HomePage() {
             )}
 
             {/* Help & FAQ Link */}
-            <div className="mt-8 text-center">
+            <div className="mt-6 text-center">
               <button className="text-[#fbbf24] hover:text-white transition-colors text-xs underline">
                 Need help? View FAQ
               </button>
