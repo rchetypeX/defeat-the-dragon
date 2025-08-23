@@ -23,7 +23,7 @@ export type NotificationType =
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 // Notification configuration
-interface NotificationConfig {
+export interface NotificationConfig {
   type: NotificationType;
   priority: NotificationPriority;
   title: string;
@@ -40,7 +40,7 @@ interface NotificationConfig {
   };
 }
 
-interface NotificationAction {
+export interface NotificationAction {
   action: string;
   title: string;
   icon?: string;
@@ -156,15 +156,21 @@ export async function showNotification(config: NotificationConfig): Promise<bool
 
   // Fallback to browser notifications
   if (Notification.permission === 'granted') {
-    const notification = new Notification(config.title, {
+    const notificationOptions: NotificationOptions = {
       body: config.body,
       icon: config.icon || '/icon.png',
       badge: config.badge || '/icon.png',
       tag: config.tag || config.type,
       requireInteraction: config.requireInteraction || false,
       data: config.data,
-      actions: config.actions,
-    });
+    };
+
+    // Add actions if supported (not all browsers support this)
+    if (config.actions && 'actions' in Notification.prototype) {
+      (notificationOptions as any).actions = config.actions;
+    }
+
+    const notification = new Notification(config.title, notificationOptions);
 
     // Handle notification clicks
     notification.onclick = () => {
@@ -275,7 +281,7 @@ export function showSessionFailedNotification(
   const config: NotificationConfig = {
     type: 'session_failed',
     priority: 'medium',
-    title: '💪 Don't Give Up!',
+    title: "💪 Don't Give Up!",
     body: `Your ${sessionDuration}min session was interrupted. Every attempt makes you stronger!`,
     icon: '/icon.png',
     tag: 'session-failed',
@@ -448,7 +454,7 @@ export function showDailyReminderNotification(
     title: isStreakAtRisk ? '🔥 Streak at Risk!' : '🐉 Daily Focus Quest',
     body: isStreakAtRisk 
       ? `Don't break your ${streakCount}-day streak! Start a session today.`
-      : 'Ready for today\'s focus adventure? Every session brings you closer to defeating the dragon!',
+      : "Ready for today's focus adventure? Every session brings you closer to defeating the dragon!",
     icon: '/icon.png',
     tag: 'daily-reminder',
     requireInteraction: false,

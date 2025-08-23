@@ -95,12 +95,7 @@ export default function TestAppPage() {
             >
               Go to Main App
             </a>
-            <a 
-              href="/admin" 
-              className="inline-block bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-            >
-              Go to Admin Dashboard
-            </a>
+
           </div>
         </div>
       </div>

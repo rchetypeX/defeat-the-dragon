@@ -6,7 +6,7 @@ import { LoginForm } from '../components/auth/LoginForm';
 import { SignUpForm } from '../components/auth/SignUpForm';
 import { WalletLoginForm } from '../components/auth/WalletLoginForm';
 import { GameDashboard } from '../components/game/GameDashboard';
-import { GuestMode } from '../components/game/GuestMode';
+
 import BackgroundMusic from '../components/audio/BackgroundMusic';
 import FocusSessionMusic from '../components/audio/FocusSessionMusic';
 import { AudioProvider } from '../contexts/AudioContext';
@@ -14,7 +14,7 @@ import { useMiniKit } from '@coinbase/onchainkit/minikit';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
-  const [authMode, setAuthMode] = useState<'guest' | 'login' | 'signup' | 'wallet'>('guest');
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet'>('wallet');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
   const { setFrameReady, isFrameReady } = useMiniKit();
@@ -69,10 +69,6 @@ export default function HomePage() {
   const handleOnboardingSkip = () => {
     setShowOnboarding(false);
     localStorage.setItem('hasVisitedBefore', 'true');
-  };
-
-  const handleGuestMode = () => {
-    setAuthMode('guest');
   };
 
   const handleSignUp = () => {
@@ -232,19 +228,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Guest Mode Button */}
-            <div className="w-full max-w-sm mb-4">
-              <button
-                onClick={handleGuestMode}
-                className="w-full py-2 px-4 bg-[#f2751a] text-white rounded-lg hover:bg-[#e65a0a] transition-colors font-medium text-sm"
-              >
-                🎮 Try Guest Mode
-              </button>
-              <p className="text-center text-gray-400 text-xs mt-1">
-                Explore the game without signing up
-              </p>
-            </div>
-
             {/* Authentication Tabs */}
             <div className="w-full max-w-sm mb-4">
               <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
@@ -276,7 +259,6 @@ export default function HomePage() {
               {authMode === 'wallet' && <WalletLoginForm />}
               {authMode === 'login' && <LoginForm />}
               {authMode === 'signup' && <SignUpForm />}
-              {authMode === 'guest' && <GuestMode onSignUp={handleSignUp} />}
             </div>
             
             {/* Email Auth Toggle (only show when not in wallet mode) */}
