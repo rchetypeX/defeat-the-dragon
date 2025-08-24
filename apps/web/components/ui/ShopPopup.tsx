@@ -199,6 +199,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       
       if (response.ok) {
         const result = await response.json();
+        console.log('Inventory loaded:', result.data);
         if (result.data) {
           setUserInventory(result.data);
         } else {
@@ -218,9 +219,11 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
 
   // Memoize the ownership check to prevent unnecessary recalculations
   const isItemOwned = (itemId: string, itemType: string) => {
-    return userInventory.some(item => 
+    const owned = userInventory.some(item => 
       item.item_id === itemId && item.item_type === itemType
     );
+    console.log(`Ownership check for ${itemId} (${itemType}):`, owned, 'Inventory:', userInventory);
+    return owned;
   };
 
   const handlePurchase = async (item: ShopItem) => {

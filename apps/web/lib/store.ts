@@ -128,10 +128,14 @@ export const useGameStore = create<GameState & GameActions>()(
         setPlayer: (player) => set({ player }),
         
         updatePlayer: (updates) => set((state) => {
+          console.log('Store: updatePlayer called with updates:', updates);
           const updatedPlayer = state.player ? { ...state.player, ...updates } : null;
+          
+          console.log('Store: Updated player data:', updatedPlayer);
           
           // Auto-sync player data changes
           if (updatedPlayer) {
+            console.log('Store: Calling syncPlayerData...');
             syncService.syncPlayerData();
           }
           

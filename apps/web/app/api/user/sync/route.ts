@@ -271,12 +271,27 @@ export async function POST(request: NextRequest) {
       achievements 
     } = body;
 
+    // Debug logging for display name updates
+    console.log('POST /user/sync - Request body:', { 
+      player: player ? { 
+        display_name: player.display_name, 
+        level: player.level, 
+        xp: player.xp,
+        coins: player.coins,
+        sparks: player.sparks
+      } : null,
+      hasSettings: !!settings,
+      hasInventory: !!inventory
+    });
+
     const results: any = {};
 
     // Update player data if provided
     if (player) {
       // Update both players and profiles tables to keep them in sync
       const updatePromises = [];
+      
+      console.log('POST /user/sync - Updating player with display_name:', player.display_name);
       
       // Update players table
       updatePromises.push(
@@ -310,6 +325,7 @@ export async function POST(request: NextRequest) {
         console.error('Error updating player:', playerResult.error);
         results.player = { error: playerResult.error.message };
       } else {
+        console.log('POST /user/sync - Player update successful:', playerResult.data);
         results.player = { success: true, data: playerResult.data };
       }
       

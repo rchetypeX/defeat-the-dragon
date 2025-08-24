@@ -341,6 +341,8 @@ class SyncService {
     const gameStore = useGameStore.getState();
     if (!gameStore.player) return { success: true };
 
+    console.log('SyncService: syncPlayerData called with player:', gameStore.player);
+
     const syncData: SyncData = {
       player: {
         display_name: gameStore.player.display_name,
@@ -350,6 +352,8 @@ class SyncService {
         sparks: gameStore.player.sparks,
       }
     };
+
+    console.log('SyncService: Sending sync data:', syncData);
 
     return this.performPartialSync(syncData);
   }

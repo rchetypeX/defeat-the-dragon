@@ -164,24 +164,57 @@ export async function POST(request: NextRequest) {
       console.log('Skipping currency update for free item (price = 0)');
     }
 
-    // Add item to inventory
-    const { error: inventoryInsertError } = await supabase
+    // Check if user already owns this item
+    const { data: existingItem, error: checkError } = await supabase
       .from('user_inventory')
-      .insert({
-        user_id: userId,
-        item_id: itemId,
-        item_type: itemType,
-        quantity: 1,
-        equipped: false,
-        acquired_at: new Date().toISOString()
-      });
+      .select('id, quantity')
+      .eq('user_id', userId)
+      .eq('item_id', itemId)
+      .single();
 
-    if (inventoryInsertError) {
-      console.error('Error adding item to inventory:', inventoryInsertError);
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing inventory:', checkError);
       return NextResponse.json(
-        { error: 'Failed to add item to inventory' },
+        { error: 'Failed to check inventory' },
         { status: 500 }
       );
+    }
+
+    if (existingItem) {
+      console.log('User already owns this item, updating quantity');
+      // Update quantity if user already owns the item
+      const { error: updateError } = await supabase
+        .from('user_inventory')
+        .update({ quantity: existingItem.quantity + 1 })
+        .eq('id', existingItem.id);
+
+      if (updateError) {
+        console.error('Error updating item quantity:', updateError);
+        return NextResponse.json(
+          { error: 'Failed to update item quantity' },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Add new item to inventory
+      const { error: inventoryInsertError } = await supabase
+        .from('user_inventory')
+        .insert({
+          user_id: userId,
+          item_id: itemId,
+          item_type: itemType,
+          quantity: 1,
+          equipped: false,
+          acquired_at: new Date().toISOString()
+        });
+
+      if (inventoryInsertError) {
+        console.error('Error adding item to inventory:', inventoryInsertError);
+        return NextResponse.json(
+          { error: 'Failed to add item to inventory' },
+          { status: 500 }
+        );
+      }
     }
 
     // Record the purchase
