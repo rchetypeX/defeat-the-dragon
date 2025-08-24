@@ -13,24 +13,76 @@ export function useWalletAuth() {
   const [availableAccounts, setAvailableAccounts] = useState<string[]>([]);
   const [isSwitchingWallet, setIsSwitchingWallet] = useState(false);
   const [manualDisconnect, setManualDisconnect] = useState(false); // Flag to prevent auto-reconnection
+  const [availableProviders, setAvailableProviders] = useState<string[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+  const [showProviderSelection, setShowProviderSelection] = useState(false);
 
   // Check if MetaMask is available
   const checkIfWalletIsConnected = async () => {
     try {
-      if (typeof window !== 'undefined' && window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        setAvailableAccounts(accounts);
+      if (typeof window !== 'undefined') {
+        // Detect available wallet providers
+        const providers = [];
+        if (window.ethereum) {
+          providers.push('MetaMask');
+        }
+        if (window.coinbaseWalletExtension) {
+          providers.push('Coinbase Wallet');
+        }
+        if (window.phantom?.ethereum) {
+          providers.push('Phantom');
+        }
+        if (window.trustwallet) {
+          providers.push('Trust Wallet');
+        }
         
-        // Only auto-connect if user hasn't manually disconnected
-        if (accounts.length > 0 && !manualDisconnect) {
-          setAddress(accounts[0]);
-          setIsConnected(true);
-          // Check if this wallet has an account
-          await checkAccountExists(accounts[0]);
+        setAvailableProviders(providers);
+        console.log('Available wallet providers:', providers);
+
+        // If only one provider, auto-select it
+        if (providers.length === 1) {
+          setSelectedProvider(providers[0]);
+        } else if (providers.length > 1 && !selectedProvider) {
+          // Show provider selection if multiple providers and none selected
+          setShowProviderSelection(true);
+          return;
+        }
+
+        // Use the selected provider or default to ethereum
+        const provider = getProvider();
+        if (provider) {
+          const accounts = await provider.request({ method: 'eth_accounts' });
+          setAvailableAccounts(accounts);
+          
+          // Only auto-connect if user hasn't manually disconnected
+          if (accounts.length > 0 && !manualDisconnect) {
+            setAddress(accounts[0]);
+            setIsConnected(true);
+            // Check if this wallet has an account
+            await checkAccountExists(accounts[0]);
+          }
         }
       }
     } catch (error) {
       console.error('Error checking wallet connection:', error);
+    }
+  };
+
+  // Get the selected provider
+  const getProvider = () => {
+    if (!selectedProvider) return window.ethereum;
+    
+    switch (selectedProvider) {
+      case 'MetaMask':
+        return window.ethereum;
+      case 'Coinbase Wallet':
+        return window.coinbaseWalletExtension;
+      case 'Phantom':
+        return window.phantom?.ethereum;
+      case 'Trust Wallet':
+        return window.trustwallet;
+      default:
+        return window.ethereum;
     }
   };
 
@@ -69,7 +121,10 @@ export function useWalletAuth() {
 
   // Listen for account changes
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.ethereum) {
+    if (typeof window !== 'undefined') {
+      const provider = getProvider();
+      if (!provider) return;
+
       const handleAccountsChanged = async (accounts: string[]) => {
         console.log('Accounts changed:', accounts, 'manualDisconnect:', manualDisconnect);
         
@@ -105,20 +160,66 @@ export function useWalletAuth() {
         setManualDisconnect(true); // Set flag when MetaMask disconnects
       };
 
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('disconnect', handleDisconnect);
+      provider.on('accountsChanged', handleAccountsChanged);
+      provider.on('disconnect', handleDisconnect);
 
       return () => {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('disconnect', handleDisconnect);
+        provider.removeListener('accountsChanged', handleAccountsChanged);
+        provider.removeListener('disconnect', handleDisconnect);
       };
     }
-  }, [manualDisconnect]); // Add manualDisconnect to dependency array
+  }, [manualDisconnect, selectedProvider]); // Add selectedProvider to dependency array
+
+  const selectProvider = async (providerName: string) => {
+    setSelectedProvider(providerName);
+    setShowProviderSelection(false);
+    setAuthError(null);
+    
+    // Try to connect with the selected provider
+    await connectWallet();
+  };
+
+  const cancelProviderSelection = () => {
+    setShowProviderSelection(false);
+    setAuthError(null);
+  };
 
   const connectWallet = async () => {
-    if (typeof window === 'undefined' || !window.ethereum) {
+    if (typeof window === 'undefined') {
+      setAuthError('No wallet found. Please install a Web3 wallet.');
+      return;
+    }
+
+    // Check for available providers
+    const providers = [];
+    if (window.ethereum) {
+      providers.push('MetaMask');
+    }
+    if (window.coinbaseWalletExtension) {
+      providers.push('Coinbase Wallet');
+    }
+    if (window.phantom?.ethereum) {
+      providers.push('Phantom');
+    }
+    if (window.trustwallet) {
+      providers.push('Trust Wallet');
+    }
+
+    if (providers.length === 0) {
       setAuthError('No wallet found. Please install MetaMask or another Web3 wallet.');
       return;
+    }
+
+    // If multiple providers and none selected, show selection
+    if (providers.length > 1 && !selectedProvider) {
+      setAvailableProviders(providers);
+      setShowProviderSelection(true);
+      return;
+    }
+
+    // If only one provider, auto-select it
+    if (providers.length === 1 && !selectedProvider) {
+      setSelectedProvider(providers[0]);
     }
 
     setIsConnecting(true);
@@ -126,7 +227,12 @@ export function useWalletAuth() {
     setManualDisconnect(false); // Reset flag when user explicitly connects
 
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const provider = getProvider();
+      if (!provider) {
+        throw new Error('No wallet provider available');
+      }
+
+      const accounts = await provider.request({ method: 'eth_requestAccounts' });
       setAvailableAccounts(accounts);
       if (accounts.length > 0) {
         setAddress(accounts[0]);
@@ -179,8 +285,13 @@ export function useWalletAuth() {
       // First disconnect current wallet
       await disconnectWallet();
       
-      // Then request new accounts (this will prompt user to switch accounts in MetaMask)
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      // Then request new accounts using the selected provider
+      const provider = getProvider();
+      if (!provider) {
+        throw new Error('No wallet provider available');
+      }
+      
+      const accounts = await provider.request({ method: 'eth_requestAccounts' });
       setAvailableAccounts(accounts);
       
       if (accounts.length > 0) {
@@ -245,8 +356,13 @@ export function useWalletAuth() {
       // Create a message to sign
       const message = `Sign in to Defeat the Dragon\n\nWallet: ${address}\nTimestamp: ${Date.now()}`;
       
-      // Sign the message using MetaMask directly
-      const signature = await window.ethereum.request({
+      // Sign the message using the selected provider
+      const provider = getProvider();
+      if (!provider) {
+        throw new Error('No wallet provider available');
+      }
+      
+      const signature = await provider.request({
         method: 'personal_sign',
         params: [message, address],
       });
@@ -307,8 +423,13 @@ export function useWalletAuth() {
       // Create a message to sign
       const message = `Sign up for Defeat the Dragon\n\nWallet: ${address}\nDisplay Name: ${displayName}\nTimestamp: ${Date.now()}`;
       
-      // Sign the message using MetaMask directly
-      const signature = await window.ethereum.request({
+      // Sign the message using the selected provider
+      const provider = getProvider();
+      if (!provider) {
+        throw new Error('No wallet provider available');
+      }
+      
+      const signature = await provider.request({
         method: 'personal_sign',
         params: [message, address],
       });
@@ -369,11 +490,16 @@ export function useWalletAuth() {
     authError,
     availableAccounts,
     isSwitchingWallet,
+    availableProviders,
+    selectedProvider,
+    showProviderSelection,
     connectWallet,
     disconnectWallet,
     switchWallet,
     switchToSpecificAccount,
     signInWithWallet,
     signUpWithWallet,
+    selectProvider,
+    cancelProviderSelection,
   };
 }

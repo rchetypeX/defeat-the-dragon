@@ -16,12 +16,17 @@ export function WalletLoginForm() {
     authError,
     availableAccounts,
     isSwitchingWallet,
+    availableProviders,
+    selectedProvider,
+    showProviderSelection,
     connectWallet,
     disconnectWallet,
     switchWallet,
     switchToSpecificAccount,
     signInWithWallet,
     signUpWithWallet,
+    selectProvider,
+    cancelProviderSelection,
   } = useWalletAuth();
 
   const { isAvailable, isChecking: isCheckingName, error: nameError } = useDisplayNameCheck(displayName);
@@ -71,6 +76,37 @@ export function WalletLoginForm() {
           {authError}
         </div>
       )}
+
+      {/* Wallet Provider Selection Modal */}
+      {showProviderSelection && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-bold text-center mb-4 text-[#f2751a]">
+              Select Wallet Provider
+            </h3>
+            <p className="text-[#fbbf24] text-sm mb-4 text-center">
+              Multiple wallet extensions detected. Please choose which one to use:
+            </p>
+            <div className="space-y-3">
+              {availableProviders.map((provider) => (
+                <button
+                  key={provider}
+                  onClick={() => selectProvider(provider)}
+                  className="w-full py-3 px-4 bg-[#2d1b0e] border border-[#654321] rounded hover:bg-[#3d2b1e] transition-colors text-[#fbbf24] text-sm"
+                >
+                  {provider}
+                </button>
+              ))}
+              <button
+                onClick={cancelProviderSelection}
+                className="w-full py-2 px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="space-y-3">
         {!isConnected ? (
@@ -90,10 +126,20 @@ export function WalletLoginForm() {
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0z" clipRule="evenodd" />
                   </svg>
-                  <span>Connect your Web3 Wallet</span>
+                  <span>
+                    {selectedProvider 
+                      ? `Connect ${selectedProvider}` 
+                      : 'Connect your Web3 Wallet'
+                    }
+                  </span>
                 </>
               )}
             </button>
+            {selectedProvider && (
+              <p className="text-xs text-[#fbbf24] mt-2 text-center">
+                Selected: {selectedProvider}
+              </p>
+            )}
           </div>
         ) : (
           <div className="space-y-3">
