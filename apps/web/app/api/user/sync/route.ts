@@ -69,14 +69,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all user data in parallel
+    // Fetch user data from available tables
     const [
       { data: player, error: playerError },
-      { data: settings, error: settingsError },
-      { data: inventory, error: inventoryError },
-      { data: subscriptions, error: subscriptionsError },
-      { data: purchases, error: purchasesError },
-      { data: achievements, error: achievementsError }
+      { data: profile, error: profileError }
     ] = await Promise.all([
       supabase
         .from('players')
@@ -84,31 +80,14 @@ export async function GET(request: NextRequest) {
         .eq('user_id', userId)
         .single(),
       supabase
-        .from('user_settings')
+        .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single(),
-      supabase
-        .from('user_inventory')
-        .select('*')
-        .eq('user_id', userId),
-      supabase
-        .from('user_subscriptions')
-        .select('*')
-        .eq('user_id', userId),
-      supabase
-        .from('user_purchases')
-        .select('*')
-        .eq('user_id', userId)
-        .order('purchased_at', { ascending: false }),
-      supabase
-        .from('user_achievements')
-        .select('*')
-        .eq('user_id', userId)
+        .single()
     ]);
 
-    // Check for errors
-    if (playerError) {
+    // Check for critical errors
+    if (playerError && playerError.code !== 'PGRST116') {
       console.error('Error fetching player data:', playerError);
       return NextResponse.json(
         { error: 'Failed to fetch player data' },
@@ -116,56 +95,48 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (settingsError && settingsError.code !== 'PGRST116') {
-      console.error('Error fetching settings:', settingsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch settings' },
-        { status: 500 }
-      );
+    // If player doesn't exist, create a default one
+    let playerData = player;
+    if (playerError && playerError.code === 'PGRST116') {
+      console.log('Player not found, creating default player...');
+      const defaultPlayer = {
+        user_id: userId,
+        level: 1,
+        xp: 0,
+        coins: 100,
+        sparks: 50,
+        created_at: new Date().toISOString()
+      };
+      
+      const { data: newPlayer, error: createError } = await supabase
+        .from('players')
+        .insert(defaultPlayer)
+        .select()
+        .single();
+      
+      if (createError) {
+        console.error('Error creating default player:', createError);
+        return NextResponse.json(
+          { error: 'Failed to create default player' },
+          { status: 500 }
+        );
+      }
+      
+      playerData = newPlayer;
     }
 
-    if (inventoryError) {
-      console.error('Error fetching inventory:', inventoryError);
-      return NextResponse.json(
-        { error: 'Failed to fetch inventory' },
-        { status: 500 }
-      );
-    }
-
-    if (subscriptionsError) {
-      console.error('Error fetching subscriptions:', subscriptionsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch subscriptions' },
-        { status: 500 }
-      );
-    }
-
-    if (purchasesError) {
-      console.error('Error fetching purchases:', purchasesError);
-      return NextResponse.json(
-        { error: 'Failed to fetch purchases' },
-        { status: 500 }
-      );
-    }
-
-    if (achievementsError) {
-      console.error('Error fetching achievements:', achievementsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch achievements' },
-        { status: 500 }
-      );
-    }
-
-    // Return comprehensive user data
+    // Return user data with available information
     return NextResponse.json({
       success: true,
       data: {
-        player: player || null,
-        settings: settings || null,
-        inventory: inventory || [],
-        subscriptions: subscriptions || [],
-        purchases: purchases || [],
-        achievements: achievements || []
+        player: playerData || null,
+        profile: profile || null,
+        // Return empty arrays for tables that don't exist yet
+        settings: null,
+        inventory: [],
+        subscriptions: [],
+        purchases: [],
+        achievements: []
       }
     });
 

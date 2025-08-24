@@ -176,12 +176,7 @@ export async function getPlayerData() {
         xp: 0,
         coins: 100,
         sparks: 50,
-        total_sessions: 0,
-        total_focus_time: 0,
-        current_streak: 0,
-        longest_streak: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        created_at: new Date().toISOString()
       };
       
       const createResult = await supabase

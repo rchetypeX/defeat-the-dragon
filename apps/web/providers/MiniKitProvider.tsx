@@ -6,7 +6,7 @@ import { base } from 'wagmi/chains';
 export function MiniKitContextProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Suppress Coinbase analytics errors in development
-    if (process.env.NODE_ENV === 'development') {
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
       const originalError = console.error;
       console.error = (...args) => {
         // Filter out Coinbase analytics errors
@@ -19,27 +19,22 @@ export function MiniKitContextProvider({ children }: { children: ReactNode }) {
         }
         originalError.apply(console, args);
       };
-      
-      return () => {
-        console.error = originalError;
-      };
     }
   }, []);
 
   return (
-    <MiniKitProvider 
-      apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY} 
-      chain={base}
+    <MiniKitProvider
+      apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || ''}
       config={{
         appearance: {
           mode: 'auto',
           theme: 'snake',
-          name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME,
+          name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
           logo: process.env.NEXT_PUBLIC_APP_ICON,
         },
-        // Disable analytics in development to prevent errors
-        analytics: process.env.NODE_ENV === 'production' ? undefined : false,
+        analytics: false, // Disable analytics to prevent errors
       }}
+      chain={base}
     >
       {children}
     </MiniKitProvider>
