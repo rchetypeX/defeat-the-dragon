@@ -24,14 +24,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   const { setUser: setGameUser, resetGame } = useGameStore();
 
+  // Check for wallet user in localStorage
+  const checkWalletUser = () => {
+    const walletUserStr = localStorage.getItem('walletUser');
+    if (walletUserStr) {
+      try {
+        const walletUser = JSON.parse(walletUserStr);
+        console.log('AuthContext: Found wallet user in localStorage:', walletUser);
+        return walletUser;
+      } catch (error) {
+        console.error('Error parsing wallet user data:', error);
+        localStorage.removeItem('walletUser');
+        return null;
+      }
+    }
+    return null;
+  };
+
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
       setLoading(false);
       
       if (session?.user) {
+        // Supabase session exists - use it
+        setUser(session.user);
         setGameUser({
           id: session.user.id,
           email: session.user.email!,
@@ -46,33 +64,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('Failed to load player data:', error);
         }
       } else {
-        // Check for wallet user in localStorage
-        const walletUserStr = localStorage.getItem('walletUser');
-        if (walletUserStr) {
+        // No Supabase session - check for wallet user
+        const walletUser = checkWalletUser();
+        if (walletUser) {
+          setUser(walletUser);
+          setGameUser({
+            id: walletUser.id,
+            email: walletUser.email || `${walletUser.wallet_address}@wallet.local`,
+          });
+          // Load player data for wallet user
           try {
-            const walletUser = JSON.parse(walletUserStr);
-            console.log('AuthContext: Found wallet user in localStorage:', walletUser);
-            setUser(walletUser);
-            setGameUser({
-              id: walletUser.id,
-              email: walletUser.email || `${walletUser.wallet_address}@wallet.local`,
-            });
-            // Load player data for wallet user
-            try {
-              const playerData = await getPlayerData();
-              if (playerData) {
-                useGameStore.getState().setPlayer(playerData);
-                console.log('AuthContext: Successfully loaded player data for wallet user');
-              }
-            } catch (error) {
-              console.error('Failed to load player data for wallet user:', error);
+            const playerData = await getPlayerData();
+            if (playerData) {
+              useGameStore.getState().setPlayer(playerData);
+              console.log('AuthContext: Successfully loaded player data for wallet user');
             }
           } catch (error) {
-            console.error('Error parsing wallet user data:', error);
-            localStorage.removeItem('walletUser');
+            console.error('Failed to load player data for wallet user:', error);
           }
         } else {
           console.log('AuthContext: No wallet user found in localStorage');
+          setUser(null);
+          setGameUser(null);
         }
       }
     });
@@ -81,11 +94,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('AuthContext: Supabase auth state changed:', event, session?.user?.id);
       setSession(session);
-      setUser(session?.user ?? null);
       setLoading(false);
       
       if (session?.user) {
+        // Supabase session exists - use it
+        setUser(session.user);
         setGameUser({
           id: session.user.id,
           email: session.user.email!,
@@ -98,12 +113,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (error) {
           console.error('Failed to load player data:', error);
-          // Don't block the app if player data fails to load
-          // The user can still use the app and data will be created when needed
         }
       } else {
-        setGameUser(null);
-        resetGame();
+        // No Supabase session - check for wallet user
+        const walletUser = checkWalletUser();
+        if (walletUser) {
+          setUser(walletUser);
+          setGameUser({
+            id: walletUser.id,
+            email: walletUser.email || `${walletUser.wallet_address}@wallet.local`,
+          });
+          // Load player data for wallet user
+          try {
+            const playerData = await getPlayerData();
+            if (playerData) {
+              useGameStore.getState().setPlayer(playerData);
+              console.log('AuthContext: Successfully loaded player data for wallet user after Supabase logout');
+            }
+          } catch (error) {
+            console.error('Failed to load player data for wallet user after Supabase logout:', error);
+          }
+        } else {
+          console.log('AuthContext: No wallet user found after Supabase logout');
+          setUser(null);
+          setGameUser(null);
+          resetGame();
+        }
       }
     });
 

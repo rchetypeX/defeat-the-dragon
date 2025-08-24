@@ -391,12 +391,12 @@ export function useWalletAuth() {
         // Set a cookie for server-side access
         document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
         
-        console.log('Wallet sign-in successful, reloading page in 100ms...');
+        console.log('Wallet sign-in successful, reloading page in 500ms...');
         
-        // Add a small delay to ensure localStorage is set before reload
+        // Add a longer delay to ensure localStorage is set before reload
         setTimeout(() => {
           window.location.reload();
-        }, 100);
+        }, 500);
       }
 
     } catch (error) {
@@ -462,12 +462,12 @@ export function useWalletAuth() {
         // Update account status
         setHasAccount(true);
         
-        console.log('Wallet sign-up successful, reloading page in 100ms...');
+        console.log('Wallet sign-up successful, reloading page in 500ms...');
         
-        // Add a small delay to ensure localStorage is set before reload
+        // Add a longer delay to ensure localStorage is set before reload
         setTimeout(() => {
           window.location.reload();
-        }, 100);
+        }, 500);
       }
 
     } catch (error) {
