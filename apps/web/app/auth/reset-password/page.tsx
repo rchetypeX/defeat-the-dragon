@@ -19,30 +19,61 @@ function ResetPasswordContent() {
   useEffect(() => {
     // Check if we have a valid session from the email link
     const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (session && !error) {
-        setIsValidSession(true);
-      } else {
-        // Try to get session from URL hash (for email confirmation)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
+      try {
+        console.log('Checking session for password reset...');
+        console.log('Current URL:', window.location.href);
+        
+        // For password reset, we need to check URL parameters first
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get('access_token');
+        const refreshToken = urlParams.get('refresh_token');
+        
+        console.log('URL params - access_token:', !!accessToken, 'refresh_token:', !!refreshToken);
         
         if (accessToken && refreshToken) {
+          console.log('Setting session from URL parameters...');
           const { error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
           
           if (!sessionError) {
+            console.log('Session set successfully from URL parameters');
             setIsValidSession(true);
+            return;
           } else {
-            setError('Invalid or expired reset link. Please request a new password reset.');
+            console.error('Session error from URL parameters:', sessionError);
           }
+        }
+        
+        // Also check for hash parameters (alternative format)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashAccessToken = hashParams.get('access_token');
+        const hashRefreshToken = hashParams.get('refresh_token');
+        
+        if (hashAccessToken && hashRefreshToken) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: hashAccessToken,
+            refresh_token: hashRefreshToken,
+          });
+          
+          if (!sessionError) {
+            setIsValidSession(true);
+            return;
+          }
+        }
+        
+        // Fallback: check if we already have a session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (session && !error) {
+          setIsValidSession(true);
         } else {
           setError('Invalid or expired reset link. Please request a new password reset.');
         }
+      } catch (error) {
+        console.error('Session check error:', error);
+        setError('Invalid or expired reset link. Please request a new password reset.');
       }
     };
 
@@ -68,13 +99,16 @@ function ResetPasswordContent() {
     }
 
     try {
+      console.log('Attempting to update password...');
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
 
       if (error) {
+        console.error('Password update error:', error);
         setError(error.message);
       } else {
+        console.log('Password updated successfully');
         setSuccess(true);
         // Redirect to login after 3 seconds
         setTimeout(() => {
@@ -82,6 +116,7 @@ function ResetPasswordContent() {
         }, 3000);
       }
     } catch (err: any) {
+      console.error('Unexpected error during password update:', err);
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -125,24 +160,19 @@ function ResetPasswordContent() {
         }}
       ></div>
       
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md">
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-4 pt-16">
+        <div className="w-full max-w-sm">
           {/* App Logo */}
-          <div className="text-center mb-6">
-            <div className="w-20 h-20 mx-auto mb-3">
+          <div className="text-center mb-8">
+            <div className="w-32 h-32 mx-auto mb-4">
               <img 
                 src="/logo.svg"
                 alt="Defeat the Dragon Logo" 
                 className="w-full h-full object-contain"
-                onError={(e) => {
-                  console.log('Logo.svg failed, showing text fallback');
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                onLoad={() => {
+                  console.log('Logo.svg loaded successfully');
                 }}
               />
-              <div className="w-full h-full bg-[#f2751a] rounded-lg flex items-center justify-center hidden">
-                <span className="text-white text-lg font-bold">DTD</span>
-              </div>
             </div>
           </div>
 
