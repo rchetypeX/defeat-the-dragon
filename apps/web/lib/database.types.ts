@@ -61,6 +61,117 @@ export interface Database {
           created_at?: string
         }
       }
+      shop_items_master: {
+        Row: {
+          id: string
+          item_key: string
+          name: string
+          price: number
+          currency: 'coins' | 'sparks'
+          description: string | null
+          image_url: string | null
+          category: 'character' | 'background'
+          is_active: boolean
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          item_key: string
+          name: string
+          price: number
+          currency: 'coins' | 'sparks'
+          description?: string | null
+          image_url?: string | null
+          category: 'character' | 'background'
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          item_key?: string
+          name?: string
+          price?: number
+          currency?: 'coins' | 'sparks'
+          description?: string | null
+          image_url?: string | null
+          category?: 'character' | 'background'
+          is_active?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      character_dialogue_master: {
+        Row: {
+          id: string
+          dialogue_text: string
+          dialogue_type: 'general' | 'motivational' | 'achievement' | 'greeting'
+          weight: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          dialogue_text: string
+          dialogue_type?: 'general' | 'motivational' | 'achievement' | 'greeting'
+          weight?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          dialogue_text?: string
+          dialogue_type?: 'general' | 'motivational' | 'achievement' | 'greeting'
+          weight?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      session_rewards_master: {
+        Row: {
+          id: string
+          session_type: 'Train' | 'Quest_Study' | 'Learn' | 'Search' | 'Eat' | 'Sleep' | 'Bathe' | 'Maintain' | 'Fight' | 'Adventure'
+          duration_minutes: number
+          base_xp: number
+          base_coins: number
+          base_sparks: number
+          bonus_multiplier: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          session_type: 'Train' | 'Quest_Study' | 'Learn' | 'Search' | 'Eat' | 'Sleep' | 'Bathe' | 'Maintain' | 'Fight' | 'Adventure'
+          duration_minutes: number
+          base_xp: number
+          base_coins: number
+          base_sparks: number
+          bonus_multiplier?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          session_type?: 'Train' | 'Quest_Study' | 'Learn' | 'Search' | 'Eat' | 'Sleep' | 'Bathe' | 'Maintain' | 'Fight' | 'Adventure'
+          duration_minutes?: number
+          base_xp?: number
+          base_coins?: number
+          base_sparks?: number
+          bonus_multiplier?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
       sessions: {
         Row: {
           id: string

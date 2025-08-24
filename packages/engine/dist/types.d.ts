@@ -41,6 +41,7 @@ export declare const PlayerSchema: z.ZodObject<{
     sparks: z.ZodNumber;
     created_at: z.ZodString;
     display_name: z.ZodOptional<z.ZodString>;
+    wallet_address: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     user_id: string;
     created_at: string;
@@ -50,6 +51,7 @@ export declare const PlayerSchema: z.ZodObject<{
     coins: number;
     sparks: number;
     display_name?: string | undefined;
+    wallet_address?: string | undefined;
 }, {
     user_id: string;
     created_at: string;
@@ -59,6 +61,7 @@ export declare const PlayerSchema: z.ZodObject<{
     coins: number;
     sparks: number;
     display_name?: string | undefined;
+    wallet_address?: string | undefined;
 }>;
 export declare const SessionSchema: z.ZodObject<{
     id: z.ZodString;

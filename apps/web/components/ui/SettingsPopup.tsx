@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useGameStore } from '../../lib/store';
 import { useAuth } from '../../contexts/AuthContext';
 import { CloseButton } from './CloseButton';
+import { WalletLinkForm } from '../auth/WalletLinkForm';
+import { EmailLinkForm } from '../auth/EmailLinkForm';
 
 interface SettingsPopupProps {
   isOpen: boolean;
@@ -12,9 +14,11 @@ interface SettingsPopupProps {
 
 export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose }) => {
   const { player, updatePlayer } = useGameStore();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const [displayName, setDisplayName] = useState(player?.display_name || '');
   const [isEditing, setIsEditing] = useState(false);
+  const [showWalletLink, setShowWalletLink] = useState(false);
+  const [showEmailLink, setShowEmailLink] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
   // Update display name when player changes
@@ -75,6 +79,16 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
       console.error('Error signing out:', error);
     }
   };
+
+  const handleLinkSuccess = () => {
+    setShowWalletLink(false);
+    setShowEmailLink(false);
+    // Refresh the page to update the user state
+    window.location.reload();
+  };
+
+  const isEmailUser = user?.email && !user.email.endsWith('@wallet.local');
+  const isWalletUser = user?.email && user.email.endsWith('@wallet.local');
 
   if (!isOpen) return null;
 
@@ -145,6 +159,35 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
         {/* Divider */}
         <div className="border-t border-[#8b4513] my-6"></div>
 
+        {/* Account Linking Section */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-[#fbbf24] mb-3">🔗 Account Linking</h3>
+          
+          {isEmailUser && !player?.wallet_address && (
+            <button
+              onClick={() => setShowWalletLink(true)}
+              className="w-full px-4 py-3 bg-[#f2751a] hover:bg-[#e65a0a] transition-colors rounded text-white font-semibold mb-3"
+            >
+              🔗 Link Wallet
+            </button>
+          )}
+
+          {isWalletUser && (
+            <button
+              onClick={() => setShowEmailLink(true)}
+              className="w-full px-4 py-3 bg-[#f2751a] hover:bg-[#e65a0a] transition-colors rounded text-white font-semibold mb-3"
+            >
+              📧 Link Email
+            </button>
+          )}
+
+          {(player?.wallet_address || isEmailUser) && (
+            <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded text-sm mb-3">
+              ✅ Your account is linked! You can sign in with either method.
+            </div>
+          )}
+        </div>
+
         {/* Sign Out Section */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-[#fbbf24] mb-3">🚪 Account</h3>
@@ -168,6 +211,30 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
           <p>Your progress will be saved locally</p>
         </div>
       </div>
+
+      {/* Wallet Link Modal */}
+      {showWalletLink && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#2d1b0e] border-2 border-[#8b4513] rounded-lg p-6 max-w-md w-full mx-4 pixel-art">
+            <WalletLinkForm
+              onSuccess={handleLinkSuccess}
+              onCancel={() => setShowWalletLink(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Email Link Modal */}
+      {showEmailLink && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#2d1b0e] border-2 border-[#8b4513] rounded-lg p-6 max-w-md w-full mx-4 pixel-art">
+            <EmailLinkForm
+              onSuccess={handleLinkSuccess}
+              onCancel={() => setShowEmailLink(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

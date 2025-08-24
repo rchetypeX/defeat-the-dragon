@@ -28,22 +28,15 @@ interface ShopPopupProps {
   onClose: () => void;
 }
 
-const shopItems: Record<'character' | 'background', ShopItem[]> = {
-  character: [
-    { id: 'wizard', name: 'Wizard', price: 150, currency: 'coins', description: 'Powerful magic user', image: '/assets/sprites/wizard.png' },
-    { id: 'paladin', name: 'Paladin', price: 6, currency: 'sparks', description: 'Holy warrior with divine powers', image: '/assets/sprites/paladin.png' },
-    { id: 'rogue', name: 'Rogue', price: 150, currency: 'coins', description: 'Stealthy and agile fighter', image: '/assets/sprites/rogue.png' }
-  ],
-  background: [
-    { id: 'tundra', name: 'Tundra', price: 3, currency: 'sparks', description: 'Frozen wilderness', image: '/assets/images/tundra-background.png' },
-    { id: 'underdark', name: 'Underdark', price: 100, currency: 'coins', description: 'Dark underground realm', image: '/assets/images/underdark-background.png' },
-    { id: 'dungeon', name: 'Dungeon', price: 100, currency: 'coins', description: 'Ancient stone corridors', image: '/assets/images/dungeon-background.png' }
-  ]
-};
+// Shop items are now loaded dynamically from the master table
 
 export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   const [activeTab, setActiveTab] = useState<'character' | 'background'>('character');
   const [userInventory, setUserInventory] = useState<InventoryItem[]>([]);
+  const [shopItems, setShopItems] = useState<Record<'character' | 'background', ShopItem[]>>({
+    character: [],
+    background: []
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [purchaseStatus, setPurchaseStatus] = useState<{ [key: string]: 'idle' | 'loading' | 'success' | 'error' }>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -67,10 +60,11 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleEscape);
-      // Load user inventory when shop opens
+      // Load user inventory and shop items when shop opens
       if (user) {
         loadUserInventory();
       }
+      loadShopItems();
     }
 
     return () => {
@@ -78,6 +72,50 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose, user]);
+
+  const loadShopItems = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Load both character and background items
+      const [characterResponse, backgroundResponse] = await Promise.all([
+        fetch('/api/master/shop-items?category=character'),
+        fetch('/api/master/shop-items?category=background')
+      ]);
+
+      if (characterResponse.ok && backgroundResponse.ok) {
+        const characterData = await characterResponse.json();
+        const backgroundData = await backgroundResponse.json();
+        
+        setShopItems({
+          character: characterData.data.map((item: any) => ({
+            id: item.item_key,
+            name: item.name,
+            price: item.price,
+            currency: item.currency,
+            description: item.description,
+            image: item.image_url
+          })),
+          background: backgroundData.data.map((item: any) => ({
+            id: item.item_key,
+            name: item.name,
+            price: item.price,
+            currency: item.currency,
+            description: item.description,
+            image: item.image_url
+          }))
+        });
+      } else {
+        console.error('Failed to load shop items');
+        setErrorMessage('Failed to load shop items');
+      }
+    } catch (error) {
+      console.error('Error loading shop items:', error);
+      setErrorMessage('Error loading shop items');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loadUserInventory = async () => {
     if (!user) return;

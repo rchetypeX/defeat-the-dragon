@@ -32,7 +32,8 @@ exports.PlayerSchema = zod_1.z.object({
     coins: zod_1.z.number().int().min(0),
     sparks: zod_1.z.number().int().min(0),
     created_at: zod_1.z.string().datetime(),
-    display_name: zod_1.z.string().min(1).max(50).optional()
+    display_name: zod_1.z.string().min(1).max(50).optional(),
+    wallet_address: zod_1.z.string().optional()
 });
 exports.SessionSchema = zod_1.z.object({
     id: zod_1.z.string().uuid(),
