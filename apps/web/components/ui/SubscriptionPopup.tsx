@@ -9,14 +9,17 @@ interface SubscriptionPopupProps {
   onSuccess?: () => void;
 }
 
-const SUBSCRIPTION_PRICE = '0.0001'; // ETH
-const SUBSCRIPTION_DURATION = 30; // days
+const SUBSCRIPTION_PRICE_MONTHLY = '0.002'; // ETH
+const SUBSCRIPTION_PRICE_ANNUAL = '0.02'; // ETH
+const SUBSCRIPTION_DURATION_MONTHLY = 30; // days
+const SUBSCRIPTION_DURATION_ANNUAL = 365; // days
 const MERCHANT_WALLET = process.env.NEXT_PUBLIC_MERCHANT_WALLET || '0x1234567890123456789012345678901234567890'; // Set NEXT_PUBLIC_MERCHANT_WALLET in your .env.local
 
 export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPopupProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  const [subscriptionType, setSubscriptionType] = useState<'monthly' | 'annual'>('monthly');
   const { user } = useAuth();
 
   useEffect(() => {
@@ -75,7 +78,8 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
       }
 
       // Convert ETH to Wei (1 ETH = 10^18 Wei)
-      const valueInWei = BigInt(Math.floor(parseFloat(SUBSCRIPTION_PRICE) * 10**18));
+      const price = subscriptionType === 'monthly' ? SUBSCRIPTION_PRICE_MONTHLY : SUBSCRIPTION_PRICE_ANNUAL;
+      const valueInWei = BigInt(Math.floor(parseFloat(price) * 10**18));
       const valueInHex = '0x' + valueInWei.toString(16);
 
       // Get current gas price
@@ -116,7 +120,8 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         // Transaction successful, update user subscription in Supabase
         await updateUserSubscription();
         onSuccess?.();
-        onClose();
+        // Don't call onClose() here - let the parent component handle it
+        // This prevents the navigation issue where it goes back to home instead of shop
       } else {
         setError('Transaction failed');
       }
@@ -168,7 +173,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         },
         body: JSON.stringify({
           subscriptionType: 'inspiration_boon',
-          duration: SUBSCRIPTION_DURATION,
+          duration: subscriptionType === 'monthly' ? SUBSCRIPTION_DURATION_MONTHLY : SUBSCRIPTION_DURATION_ANNUAL,
           transactionHash,
         }),
       });
@@ -198,21 +203,54 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
           </p>
         </div>
 
+        {/* Subscription Type Toggle */}
+        <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1 mb-4">
+          <button
+            onClick={() => setSubscriptionType('monthly')}
+            className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors ${
+              subscriptionType === 'monthly'
+                ? 'bg-[#f2751a] text-white'
+                : 'text-[#fbbf24] hover:text-white'
+            }`}
+          >
+            Monthly
+          </button>
+          <button
+            onClick={() => setSubscriptionType('annual')}
+            className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors ${
+              subscriptionType === 'annual'
+                ? 'bg-[#f2751a] text-white'
+                : 'text-[#fbbf24] hover:text-white'
+            }`}
+          >
+            Annual
+          </button>
+        </div>
+
         {/* Subscription Details */}
         <div className="bg-[#e8e8d0] border-2 border-[#8B4513] rounded-lg p-4 mb-6">
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-[#8B4513] font-bold">Duration:</span>
-              <span className="text-[#654321]">{SUBSCRIPTION_DURATION} days</span>
+              <span className="text-[#654321]">
+                {subscriptionType === 'monthly' ? '30 Days' : '365 Days'}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#8B4513] font-bold">Price:</span>
-              <span className="text-[#654321] font-bold">{SUBSCRIPTION_PRICE} ETH</span>
+              <span className="text-[#654321] font-bold">
+                {subscriptionType === 'monthly' ? SUBSCRIPTION_PRICE_MONTHLY : SUBSCRIPTION_PRICE_ANNUAL} ETH
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#8B4513] font-bold">Network:</span>
               <span className="text-[#654321]">Base</span>
             </div>
+            {subscriptionType === 'annual' && (
+              <div className="bg-[#10b981] text-white p-2 rounded text-xs text-center font-bold">
+                🎉 2 months FREE! Save with annual subscription
+              </div>
+            )}
           </div>
         </div>
 
@@ -222,8 +260,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
           <ul className="space-y-2 text-sm text-[#654321]">
             <li>• Earn Sparks from successful focus sessions</li>
             <li>• Access to exclusive shop items</li>
-            <li>• Enhanced character progression</li>
-            <li>• Premium support and features</li>
+            <li>• Monthly drops of Sparks-exclusive items</li>
           </ul>
         </div>
 
@@ -275,7 +312,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
             disabled={isLoading}
             className="flex-1 pixel-button bg-[#8B4513] hover:bg-[#654321] text-white px-4 py-3 font-bold disabled:opacity-50"
           >
-            {isLoading ? 'Processing...' : 'Subscribe Now'}
+            {isLoading ? 'Processing...' : 'SUBSCRIBE'}
           </button>
         </div>
 

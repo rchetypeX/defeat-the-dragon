@@ -340,6 +340,62 @@ input:focus, textarea:focus, select:focus {
   touch-action: manipulation;
 }
 
+/* Character Dynamic Scaling */
+.character-dynamic {
+  max-width: min(32vw, 128px);
+  max-height: min(36vw, 144px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Character Dialogue Positioning */
+.character-dialogue {
+  position: absolute;
+  bottom: 10rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: 90vw;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .character-dialogue {
+    bottom: 11rem;
+    max-width: 80vw;
+  }
+}
+
+@media (min-width: 768px) {
+  .character-dialogue {
+    bottom: 12rem;
+    max-width: 70vw;
+  }
+}
+
+/* Focus Button Positioning */
+.focus-button-container {
+  padding-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+  .focus-button-container {
+    padding-bottom: 3rem;
+  }
+}
+
+.focus-button-small {
+  max-width: 200px;
+}
+
+@media (min-width: 640px) {
+  .focus-button-small {
+    max-width: 240px;
+  }
+}
+
 .pixel-button:active {
   transform: scale(0.98);
 }
@@ -514,6 +570,75 @@ select:focus {
   :root {
     /* Dark mode color adjustments if needed */
   }
+}
+
+/* Portrait Mode Enforcement */
+@media screen and (orientation: landscape) and (max-width: 768px) {
+  /* Hide all content when in landscape on mobile */
+  body > *:not(.orientation-warning) {
+    display: none !important;
+  }
+  
+  /* Show orientation warning */
+  .orientation-warning {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #1a1a2e;
+    color: #fbbf24;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--spacing-6);
+    z-index: 9999;
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+  
+  .orientation-warning::before {
+    content: "📱 Please rotate your device to portrait mode to play Defeat the Dragon!";
+    display: block;
+  }
+}
+
+/* Portrait Mode Enforcement - Alternative approach */
+@media screen and (max-width: 768px) and (min-aspect-ratio: 1/1) {
+  /* Hide all content when aspect ratio indicates landscape on mobile */
+  body > *:not(.orientation-warning) {
+    display: none !important;
+  }
+  
+  /* Show orientation warning */
+  .orientation-warning {
+    display: flex !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #1a1a2e;
+    color: #fbbf24;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--spacing-6);
+    z-index: 9999;
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+  
+  .orientation-warning::before {
+    content: "📱 Please rotate your device to portrait mode to play Defeat the Dragon!";
+    display: block;
+  }
+}
+
+/* Hide orientation warning by default */
+.orientation-warning {
+  display: none;
 }
 
 /* Mobile-First Print Styles */

@@ -76,17 +76,17 @@ export default function HomePage() {
 
   const onboardingSteps = [
     {
-      title: "🐉 Welcome to Defeat the Dragon!",
+      title: "Welcome to Defeat the Dragon!",
       description: "Transform your focus sessions into an epic adventure. Level up your productivity while training to defeat the ultimate dragon!",
       image: "/assets/images/onboarding-1.png"
     },
     {
-      title: "⚔️ Complete Focus Sessions",
+      title: "Complete Focus Sessions",
       description: "Start focus sessions and earn XP, coins, and sparks. The longer you focus, the more rewards you gain!",
       image: "/assets/images/onboarding-2.png"
     },
     {
-      title: "🎮 Level Up & Unlock Features",
+      title: "Level Up & Unlock Features",
       description: "Gain levels, unlock new characters, backgrounds, and special abilities as you progress in your focus journey.",
       image: "/assets/images/onboarding-3.png"
     },
@@ -302,7 +302,7 @@ export default function HomePage() {
                     // Try the uploaded logo.svg first
                     e.currentTarget.src = '/logo.svg';
                     e.currentTarget.onerror = () => {
-                      console.log('Logo.svg also failed, showing final fallback');
+                      console.log('Logo.svg also failed, showing text fallback');
                       e.currentTarget.style.display = 'none';
                       e.currentTarget.nextElementSibling?.classList.remove('hidden');
                     };
@@ -312,7 +312,7 @@ export default function HomePage() {
                   }}
                 />
                 <div className="w-full h-full bg-[#f2751a] rounded-lg flex items-center justify-center hidden">
-                  <span className="text-2xl">🐉</span>
+                  <span className="text-white text-lg font-bold">DTD</span>
                 </div>
               </div>
             </div>
@@ -322,23 +322,30 @@ export default function HomePage() {
               <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
                 <button
                   onClick={() => setAuthMode('wallet')}
-                  className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors ${
+                  className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
                     authMode === 'wallet'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
                   }`}
                 >
-                  🟦 Wallet
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0z" clipRule="evenodd" />
+                  </svg>
+                  <span>Wallet</span>
                 </button>
                 <button
                   onClick={() => setAuthMode('login')}
-                  className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors ${
+                  className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
                     authMode === 'login'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
                   }`}
                 >
-                  📧 Email
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                  </svg>
+                  <span>Email</span>
                 </button>
               </div>
             </div>

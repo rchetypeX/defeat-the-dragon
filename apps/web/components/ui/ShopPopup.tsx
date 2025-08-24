@@ -180,6 +180,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   const handleSubscriptionSuccess = () => {
     // Refresh inventory to show updated subscription status
     loadUserInventory();
+    // Close the subscription popup but keep the shop open
     setShowSubscriptionPopup(false);
   };
 

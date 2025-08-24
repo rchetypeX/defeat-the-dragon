@@ -153,9 +153,9 @@ export function CharacterDialogue({ isVisible, triggerQuoteChangeCount }: Charac
   }
 
   return (
-    <div className="absolute bottom-32 sm:bottom-36 left-1/2 transform -translate-x-1/2 z-20 max-w-sm sm:max-w-md lg:max-w-lg">
+    <div className="character-dialogue">
       {/* Speech bubble */}
-      <div className="relative bg-[#f5f5dc] border-2 border-[#8B4513] rounded-lg p-3 sm:p-4 shadow-lg animate-fade-in min-w-[280px] sm:min-w-[320px]">
+      <div className="relative bg-[#f5f5dc] border-2 border-[#8B4513] rounded-lg p-3 sm:p-4 shadow-lg animate-fade-in min-w-[240px] sm:min-w-[280px]">
         {/* Speech bubble tail */}
         <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#8B4513]"></div>
         <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-3 border-r-3 border-t-3 border-transparent border-t-[#f5f5dc] mt-0.5"></div>

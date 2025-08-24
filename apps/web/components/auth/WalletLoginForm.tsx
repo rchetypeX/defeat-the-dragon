@@ -77,7 +77,9 @@ export function WalletLoginForm() {
                 </>
               ) : (
                 <>
-                  <span>🟦</span>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0z" clipRule="evenodd" />
+                  </svg>
                   <span>Connect your Web3 Wallet</span>
                 </>
               )}

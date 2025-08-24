@@ -408,13 +408,13 @@ export function GameDashboard() {
          )}
         
                                   {/* Central Character Area */}
-         <div className={`flex-1 flex items-center justify-center relative px-4 ${showSessionTimer || sessionProgress.isActive || sessionResult ? 'hidden' : ''}`}>
-                                                {/* Character positioned lower and larger */}
-            <div className="relative z-5 transform translate-y-8 sm:translate-y-12">
+         <div className={`flex-1 flex items-center justify-center relative px-4 ${showSessionTimer || sessionProgress.isActive || sessionResult || showSettings || showShop || showInventory || showAudioControls ? 'hidden' : ''}`}>
+                                                {/* Character positioned just below center with dynamic scaling */}
+            <div className="relative z-5 transform translate-y-4 sm:translate-y-6">
              <img 
                src={getCharacterImage(equippedCharacter)} 
                alt="Tiny Adventurer" 
-               className="w-28 h-32 sm:w-32 sm:h-36 pixel-art drop-shadow-lg object-contain cursor-pointer hover:opacity-90 transition-opacity"
+               className="character-dynamic pixel-art drop-shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
                onClick={handleCharacterClick}
                onError={(e) => {
                  // Fallback to CSS character if image fails to load
@@ -423,16 +423,16 @@ export function GameDashboard() {
                }}
              />
              
-             {/* Character Dialogue */}
+             {/* Character Dialogue - Positioned above character with padding */}
              <CharacterDialogue 
-               isVisible={!showSessionTimer && !sessionProgress.isActive && !sessionResult}
+               isVisible={!showSessionTimer && !sessionProgress.isActive && !sessionResult && !showSettings && !showShop && !showInventory && !showAudioControls}
                triggerQuoteChangeCount={quoteTriggerCount}
              />
            </div>
         </div>
         
-                         {/* Bottom Action Area */}
-        <div className={`p-3 sm:p-4 ${showSessionTimer || sessionResult ? 'hidden' : ''}`}>
+                         {/* Bottom Action Area - Positioned higher up */}
+        <div className={`focus-button-container ${showSessionTimer || sessionResult || showSettings || showShop || showInventory || showAudioControls ? 'hidden' : ''}`}>
           {sessionProgress.isActive ? (
             <SessionProgress
               onSessionComplete={handleSessionComplete}
@@ -440,8 +440,8 @@ export function GameDashboard() {
             />
           ) : (
             <div className="text-center">
-              {/* Main FOCUS Button */}
-              <div className="w-full max-w-[280px] sm:max-w-[320px] mx-auto">
+              {/* Main FOCUS Button - Smaller and positioned higher */}
+              <div className="w-full focus-button-small mx-auto">
                  <img 
                    src="/assets/ui/focus-button.png" 
                    alt="FOCUS" 
@@ -454,7 +454,7 @@ export function GameDashboard() {
                  />
                  <button
                    onClick={() => setShowSessionTimer(true)}
-                   className="w-full max-w-[280px] sm:max-w-[320px] mx-auto bg-[#f5f5dc] border-4 border-[#8B4513] text-[#8B4513] font-bold text-base sm:text-lg py-2 sm:py-3 px-4 sm:px-6 hover:bg-[#e8e8d0] transition-colors shadow-lg hidden"
+                   className="w-full focus-button-small mx-auto bg-[#f5f5dc] border-4 border-[#8B4513] text-[#8B4513] font-bold text-sm sm:text-base py-2 px-4 hover:bg-[#e8e8d0] transition-colors shadow-lg hidden"
                  >
                    FOCUS
                  </button>
