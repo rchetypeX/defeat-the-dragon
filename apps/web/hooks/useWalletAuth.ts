@@ -63,24 +63,30 @@ export function useWalletAuth() {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
       const handleAccountsChanged = async (accounts: string[]) => {
+        console.log('Accounts changed:', accounts);
         setAvailableAccounts(accounts);
         if (accounts.length === 0) {
           // User disconnected wallet
           setAddress(null);
           setIsConnected(false);
           setHasAccount(null);
+          setAuthError(null);
         } else {
           // User switched accounts
           setAddress(accounts[0]);
           setIsConnected(true);
+          setAuthError(null);
           await checkAccountExists(accounts[0]);
         }
       };
 
       const handleDisconnect = () => {
+        console.log('Wallet disconnected by user');
         setAddress(null);
         setIsConnected(false);
         setHasAccount(null);
+        setAuthError(null);
+        setAvailableAccounts([]);
       };
 
       window.ethereum.on('accountsChanged', handleAccountsChanged);
@@ -126,11 +132,17 @@ export function useWalletAuth() {
       // Clear the cookie
       document.cookie = 'wallet-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       
-      // Reset state
+      // Reset all state
       setAddress(null);
       setIsConnected(false);
       setHasAccount(null);
       setAuthError(null);
+      setAvailableAccounts([]);
+      setIsConnecting(false);
+      setIsSwitchingWallet(false);
+      setIsCheckingAccount(false);
+      
+      console.log('Wallet disconnected - all state cleared');
       
       // Note: We can't programmatically disconnect MetaMask
       // The user needs to disconnect manually from their wallet
@@ -145,7 +157,10 @@ export function useWalletAuth() {
     setAuthError(null);
     
     try {
-      // Request new accounts (this will prompt user to switch accounts in MetaMask)
+      // First disconnect current wallet
+      await disconnectWallet();
+      
+      // Then request new accounts (this will prompt user to switch accounts in MetaMask)
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       setAvailableAccounts(accounts);
       
@@ -153,6 +168,7 @@ export function useWalletAuth() {
         setAddress(accounts[0]);
         setIsConnected(true);
         await checkAccountExists(accounts[0]);
+        console.log('Switched to new wallet:', accounts[0]);
       }
     } catch (error) {
       console.error('Wallet switching error:', error);
@@ -172,8 +188,10 @@ export function useWalletAuth() {
         setAddress(targetAddress);
         setIsConnected(true);
         await checkAccountExists(targetAddress);
+        console.log('Switched to specific account:', targetAddress);
       } else {
-        // Request new accounts and hope the user selects the right one
+        // If the target address is not in available accounts, 
+        // we need to request new accounts from MetaMask
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         setAvailableAccounts(accounts);
         
@@ -181,6 +199,7 @@ export function useWalletAuth() {
           setAddress(targetAddress);
           setIsConnected(true);
           await checkAccountExists(targetAddress);
+          console.log('Switched to specific account after request:', targetAddress);
         } else {
           setAuthError('Selected wallet not found. Please make sure it\'s connected in MetaMask.');
         }

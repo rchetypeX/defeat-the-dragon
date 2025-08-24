@@ -31,7 +31,13 @@ export function WalletLoginForm() {
   };
 
   const handleDisconnect = async () => {
+    console.log('Disconnecting wallet...');
     await disconnectWallet();
+  };
+
+  const handleSwitchWallet = async () => {
+    console.log('Switching wallet...');
+    await switchWallet();
   };
 
   const handleSignIn = async () => {
@@ -138,7 +144,7 @@ export function WalletLoginForm() {
 
               {/* Switch wallet button */}
               <button
-                onClick={switchWallet}
+                onClick={handleSwitchWallet}
                 disabled={isSwitchingWallet || isConnecting}
                 className="w-full px-3 py-1 bg-[#f2751a] text-white text-xs rounded hover:bg-[#e65a0a] disabled:opacity-50 flex items-center justify-center"
               >

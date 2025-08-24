@@ -25,6 +25,7 @@ export default function HomePage() {
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet'>('wallet');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
+  const [walletKey, setWalletKey] = useState(0); // Key to force remount of WalletLoginForm
   const { setFrameReady, isFrameReady } = useMiniKit();
   
   // Base App Authentication
@@ -153,6 +154,13 @@ export default function HomePage() {
     { text: onboardingPrimaryButtonConfig.text },
     onboardingPrimaryButtonConfig.action
   );
+
+  // Reset wallet key when authMode changes away from 'wallet'
+  useEffect(() => {
+    if (authMode !== 'wallet') {
+      setWalletKey(prev => prev + 1);
+    }
+  }, [authMode]);
 
   if (loading) {
     return (
@@ -377,7 +385,7 @@ export default function HomePage() {
             
             {/* Authentication Form */}
             <div className="w-full max-w-sm mb-3">
-              {authMode === 'wallet' && <WalletLoginForm />}
+              {authMode === 'wallet' && <WalletLoginForm key={walletKey} />}
               {authMode === 'login' && <LoginForm />}
               {authMode === 'signup' && <SignUpForm />}
             </div>
