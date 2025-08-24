@@ -11,6 +11,7 @@ import BackgroundMusic from '../components/audio/BackgroundMusic';
 import FocusSessionMusic from '../components/audio/FocusSessionMusic';
 import { AudioProvider } from '../contexts/AudioContext';
 import { useMiniKit } from '@coinbase/onchainkit/minikit';
+import { ExternalLink } from '../components/ui/ExternalLink';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -148,6 +149,18 @@ export default function HomePage() {
                 {currentOnboardingStep === onboardingSteps.length - 1 ? 'Get Started' : 'Next'}
               </button>
             </div>
+            
+            {/* External Link Example (Base App) */}
+            {currentOnboardingStep === onboardingSteps.length - 1 && (
+              <div className="mt-4 pt-4 border-t border-[#654321]">
+                <ExternalLink 
+                  href="https://docs.base.org/mini-apps/quickstart/launch-guide"
+                  className="text-[#f2751a] hover:text-[#e65a0a] text-sm underline"
+                >
+                  Learn more about Base App →
+                </ExternalLink>
+              </div>
+            )}
           </div>
         </div>
       </main>

@@ -8,6 +8,14 @@ export function MiniKitContextProvider({ children }: { children: ReactNode }) {
     <MiniKitProvider 
       apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY} 
       chain={base}
+      config={{
+        appearance: {
+          mode: 'auto',
+          theme: 'snake',
+          name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME,
+          logo: process.env.NEXT_PUBLIC_APP_ICON,
+        },
+      }}
     >
       {children}
     </MiniKitProvider>

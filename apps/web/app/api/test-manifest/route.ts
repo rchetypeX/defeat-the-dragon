@@ -25,7 +25,7 @@ export async function GET() {
         primaryCategory: process.env.NEXT_PUBLIC_APP_PRIMARY_CATEGORY || 'gaming',
         tags: ['productivity', 'pomodoro', 'rpg', 'focus', 'gamification'],
         heroImageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${URL}/assets/images/forest-background.png`,
-        tagline: process.env.NEXT_PUBLIC_APP_TAGLINE || 'Defeat procrastination, one focus session at a time',
+        tagline: process.env.NEXT_PUBLIC_APP_TAGLINE || 'Turn focus into adventure!',
         ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || 'Defeat the Dragon - Focus RPG',
         ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION || 'Level up your productivity with this pixel-art Pomodoro RPG',
         ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE || `${URL}/assets/images/forest-background.png`,

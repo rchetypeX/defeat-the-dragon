@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGameStore } from '../../lib/store';
 import { useAuth } from '../../contexts/AuthContext';
+import { CloseButton } from './CloseButton';
 
 interface SettingsPopupProps {
   isOpen: boolean;
@@ -149,10 +150,17 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
           <h3 className="text-lg font-semibold text-[#fbbf24] mb-3">🚪 Account</h3>
           <button
             onClick={handleSignOut}
-            className="w-full px-4 py-3 bg-[#dc2626] hover:bg-[#b91c1c] transition-colors rounded text-white font-semibold"
+            className="w-full px-4 py-3 bg-[#dc2626] hover:bg-[#b91c1c] transition-colors rounded text-white font-semibold mb-3"
           >
             Sign Out
           </button>
+          
+          {/* Close App Button (Base App) */}
+          <CloseButton
+            className="w-full px-4 py-3 bg-[#6b7280] hover:bg-[#4b5563] transition-colors rounded text-white font-semibold"
+          >
+            Close App
+          </CloseButton>
         </div>
 
         {/* Footer */}

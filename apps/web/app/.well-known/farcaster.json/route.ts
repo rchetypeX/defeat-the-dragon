@@ -22,7 +22,11 @@ export async function GET(request: Request) {
         name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
         subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE || 'Focus RPG with Pomodoro',
         description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A pixel-art, ad-free, Pomodoro-style Focus RPG PWA that gamifies productivity',
-        screenshotUrls: [],
+        screenshotUrls: [
+          `${URL}/screenshots/gameplay-1.png`,
+          `${URL}/screenshots/focus-session.png`,
+          `${URL}/screenshots/character-select.png`
+        ],
         iconUrl: process.env.NEXT_PUBLIC_APP_ICON || `${URL}/icon.png`,
         splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${URL}/og-image.png`,
         splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#1a1a2e',
@@ -31,7 +35,7 @@ export async function GET(request: Request) {
         primaryCategory: process.env.NEXT_PUBLIC_APP_PRIMARY_CATEGORY || 'gaming',
         tags: ['productivity', 'pomodoro', 'rpg', 'focus', 'gamification'],
         heroImageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${URL}/og-image.png`,
-        tagline: process.env.NEXT_PUBLIC_APP_TAGLINE || 'Defeat procrastination, one focus session at a time',
+        tagline: process.env.NEXT_PUBLIC_APP_TAGLINE || 'Turn focus into adventure!',
         ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || 'Defeat the Dragon - Focus RPG',
         ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION || 'Level up your productivity with this pixel-art Pomodoro RPG',
         ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE || `${URL}/og-image.png`,
