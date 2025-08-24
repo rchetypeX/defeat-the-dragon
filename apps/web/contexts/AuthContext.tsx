@@ -176,7 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           data: {
             display_name: displayName,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz'}/auth/callback`,
         },
       });
 

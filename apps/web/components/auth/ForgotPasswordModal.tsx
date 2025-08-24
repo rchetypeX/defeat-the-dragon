@@ -51,7 +51,7 @@ export function ForgotPasswordModal({ isOpen, onClose, defaultEmail = '' }: Forg
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz'}/auth/reset-password`,
       });
 
       if (error) {
