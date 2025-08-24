@@ -13,10 +13,10 @@ import {
 } from '@defeat-the-dragon/engine';
 // Moved calculateSessionRewards function inline to avoid import issues
 
-// Initialize Supabase client for server-side operations
+// Initialize Supabase client for server-side operations (service role for bypassing RLS)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 // Helper function to calculate rewards based on session completion
@@ -79,37 +79,59 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract the JWT token
+    // Extract the token
     const token = authHeader.substring(7);
     
-    // Check if this is a mock token for development
-    if (token === 'mock-token-for-development') {
+    let userId: string | null = null;
+    let isWalletUser = false;
+    
+    // Check if this is a wallet user token
+    if (token.startsWith('wallet:')) {
+      try {
+        const walletData = JSON.parse(token.substring(7)); // Remove 'wallet:'
+        userId = walletData.id;
+        isWalletUser = true;
+        console.log('API: Wallet user detected, user ID:', userId);
+      } catch (e) {
+        console.error('API: Error parsing wallet token:', e);
+        return NextResponse.json(
+          { error: 'Invalid wallet token format' },
+          { status: 401 }
+        );
+      }
+    } else if (token === 'mock-token-for-development') {
       console.log('API: Using mock token, skipping Supabase auth');
-      // Continue with mock user data
+      userId = 'mock-user-id';
     } else {
-      // Verify the JWT token and get user info
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-      if (authError || !user) {
+      // Standard Supabase JWT token
+      console.log('API: Standard JWT token detected');
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (error || !user) {
+          console.error('API: JWT token validation failed:', error);
+          return NextResponse.json(
+            { error: 'Invalid or expired token' },
+            { status: 401 }
+          );
+        }
+        userId = user.id;
+        console.log('API: JWT user validated, user ID:', userId);
+      } catch (e) {
+        console.error('API: Error validating JWT token:', e);
         return NextResponse.json(
           { error: 'Invalid or expired token' },
           { status: 401 }
         );
       }
     }
-
-    // Create an authenticated client for this request
-    const authenticatedSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      }
-    );
-
+    
+    if (!userId) {
+      console.log('API: No user ID found');
+      return NextResponse.json(
+        { error: 'Unable to determine user identity' },
+        { status: 401 }
+      );
+    }
     // Parse and validate the request body
     const body = await request.json();
     const validationResult = CompleteSessionRequest.safeParse(body);
@@ -125,9 +147,8 @@ export async function POST(request: NextRequest) {
 
     let session;
     let player;
-    let user = null;
 
-    if (token === 'mock-token-for-development') {
+    if (userId === 'mock-user-id') {
       // Use mock data for development
       session = {
         id: session_id,
@@ -150,22 +171,12 @@ export async function POST(request: NextRequest) {
         created_at: new Date().toISOString()
       };
     } else {
-      // Verify the JWT token and get user info first
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
-      if (authError || !authUser) {
-        return NextResponse.json(
-          { error: 'Invalid or expired token' },
-          { status: 401 }
-        );
-      }
-      user = authUser;
-
-      // Get the session from the database
-      const { data: dbSession, error: sessionError } = await authenticatedSupabase
+      // Get the session from the database using service role client
+      const { data: dbSession, error: sessionError } = await supabase
         .from('sessions')
         .select('*')
         .eq('id', session_id)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
       if (sessionError || !dbSession) {
@@ -185,10 +196,10 @@ export async function POST(request: NextRequest) {
       }
 
       // Get current player data
-      const { data: dbPlayer, error: playerError } = await authenticatedSupabase
+      const { data: dbPlayer, error: playerError } = await supabase
         .from('players')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
       if (playerError || !dbPlayer) {
@@ -251,12 +262,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Update session and player data
-    if (token === 'mock-token-for-development') {
+    if (userId === 'mock-user-id') {
       // For mock tokens, just simulate the update
       console.log('API: Mock session completion - simulating database updates');
     } else {
       // Update session with completion data
-      const { error: updateSessionError } = await authenticatedSupabase
+      const { error: updateSessionError } = await supabase
         .from('sessions')
         .update({
           ended_at: new Date().toISOString(),
@@ -274,7 +285,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Update player data
-      const { error: updatePlayerError } = await authenticatedSupabase
+      const { error: updatePlayerError } = await supabase
         .from('players')
         .update({
           xp: player.xp + xpGained,
@@ -282,7 +293,7 @@ export async function POST(request: NextRequest) {
           sparks: player.sparks + sparksGained,
           level: newLevel
         })
-        .eq('user_id', user?.id);
+        .eq('user_id', userId);
 
       if (updatePlayerError) {
         console.error('Error updating player:', updatePlayerError);

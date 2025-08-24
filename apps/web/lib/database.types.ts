@@ -280,6 +280,41 @@ export interface Database {
           updated_at?: string
         }
       }
+      level_progression_master: {
+        Row: {
+          id: string
+          level: number
+          xp_to_next: number
+          cumulative_xp: number
+          is_active: boolean
+          description: string | null
+          rewards: string[] | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          level: number
+          xp_to_next: number
+          cumulative_xp: number
+          is_active?: boolean
+          description?: string | null
+          rewards?: string[] | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          level?: number
+          xp_to_next?: number
+          cumulative_xp?: number
+          is_active?: boolean
+          description?: string | null
+          rewards?: string[] | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       subscription_pricing_master: {
         Row: {
           id: string

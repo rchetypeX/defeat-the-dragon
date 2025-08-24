@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       success: true,
       user: {
         id: existingUser.user_id,
+        address: existingUser.wallet_address, // Include address for client-side use
         wallet_address: existingUser.wallet_address,
         display_name: existingUser.display_name,
         email: authUser.user.email || `${address.toLowerCase()}@wallet.local`,

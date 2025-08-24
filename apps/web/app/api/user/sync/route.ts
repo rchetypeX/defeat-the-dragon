@@ -112,7 +112,12 @@ export async function GET(request: NextRequest) {
     let playerData = player;
     if (playerError && playerError.code === 'PGRST116') {
       console.log('Player not found, creating default player...');
-      const defaultPlayer = {
+      
+      // Check if this is a wallet user
+      const authHeader = request.headers.get('authorization');
+      const isWalletUser = authHeader && authHeader.startsWith('Bearer wallet:');
+      
+      let defaultPlayer: any = {
         user_id: userId,
         level: 1,
         xp: 0,
@@ -120,6 +125,17 @@ export async function GET(request: NextRequest) {
         sparks: 50,
         created_at: new Date().toISOString()
       };
+      
+      // If it's a wallet user, add wallet address
+      if (isWalletUser) {
+        try {
+          const walletData = JSON.parse(authHeader.substring(15));
+          defaultPlayer.wallet_address = walletData.address;
+          defaultPlayer.display_name = walletData.display_name || 'Adventurer';
+        } catch (e) {
+          console.error('Error parsing wallet data:', e);
+        }
+      }
       
       const { data: newPlayer, error: createError } = await supabase
         .from('players')
@@ -136,6 +152,23 @@ export async function GET(request: NextRequest) {
       }
       
       playerData = newPlayer;
+      
+      // Also create profile if it doesn't exist
+      if (profileError && profileError.code === 'PGRST116') {
+        const defaultProfile = {
+          user_id: userId,
+          display_name: defaultPlayer.display_name || 'Adventurer',
+          created_at: new Date().toISOString()
+        };
+        
+        const { error: profileCreateError } = await supabase
+          .from('profiles')
+          .insert(defaultProfile);
+        
+        if (profileCreateError) {
+          console.error('Error creating default profile:', profileCreateError);
+        }
+      }
     }
 
     // Return user data with available information
@@ -233,9 +266,24 @@ export async function POST(request: NextRequest) {
           console.error('Error parsing wallet user data:', e);
         }
       }
+      
+      // Also check for wallet user in request headers (for API calls)
+      if (!userId) {
+        const authHeader = request.headers.get('authorization');
+        if (authHeader && authHeader.startsWith('Bearer wallet:')) {
+          try {
+            const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
+            userId = walletData.id;
+          } catch (e) {
+            console.error('Error parsing wallet user from header:', e);
+          }
+        }
+      }
     }
     
     if (!userId) {
+      console.error('POST: No user ID found. Auth header:', request.headers.get('authorization'));
+      console.error('POST: Cookie wallet user:', cookieStore.get('wallet-user'));
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

@@ -84,26 +84,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create player record in our database
-    const { data: player, error: playerError } = await supabase
-      .from('players')
-      .insert({
-        user_id: authUser.user.id,
-        wallet_address: address.toLowerCase(),
-        display_name: displayName,
-        level: 1,
-        xp: 0,
-        coins: 100,
-        sparks: 50,
-      })
-      .select()
-      .single();
+    // Create player and profile records in our database
+    const [playerResult, profileResult] = await Promise.all([
+      supabase
+        .from('players')
+        .insert({
+          user_id: authUser.user.id,
+          wallet_address: address.toLowerCase(),
+          display_name: displayName,
+          level: 1,
+          xp: 0,
+          coins: 100,
+          sparks: 50,
+        })
+        .select()
+        .single(),
+      supabase
+        .from('profiles')
+        .insert({
+          user_id: authUser.user.id,
+          display_name: displayName,
+        })
+        .select()
+        .single()
+    ]);
 
-    if (playerError) {
+    if (playerResult.error) {
       // Clean up the auth user if player creation fails
       await supabase.auth.admin.deleteUser(authUser.user.id);
       return NextResponse.json(
         { error: 'Failed to create player profile' },
+        { status: 500 }
+      );
+    }
+
+    if (profileResult.error) {
+      // Clean up the auth user and player if profile creation fails
+      await supabase.auth.admin.deleteUser(authUser.user.id);
+      return NextResponse.json(
+        { error: 'Failed to create user profile' },
         { status: 500 }
       );
     }
@@ -114,6 +133,7 @@ export async function POST(request: NextRequest) {
       success: true,
       user: {
         id: authUser.user.id,
+        address: address.toLowerCase(), // Include address for client-side use
         wallet_address: address.toLowerCase(),
         display_name: displayName,
         email: uniqueEmail,

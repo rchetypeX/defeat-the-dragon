@@ -4,10 +4,10 @@ import { z } from 'zod';
 import { StartSessionRequest, StartSessionResponse } from '@defeat-the-dragon/engine';
 import { actionForMinutes } from '@defeat-the-dragon/engine';
 
-// Initialize Supabase client for server-side operations
+// Initialize Supabase client for server-side operations (service role for bypassing RLS)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export async function POST(request: NextRequest) {
@@ -25,31 +25,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract the JWT token
+    // Extract the token
     const token = authHeader.substring(7);
     console.log('API: Token extracted, length:', token.length);
     
-    // Check if this is a mock token for development
-    if (token === 'mock-token-for-development') {
-      console.log('API: Using mock token, skipping Supabase auth');
-      // Continue with mock user data
-    } else {
-      // We'll verify the user later when creating the session
-      console.log('API: Will verify user token when creating session');
-    }
-
-    // Create an authenticated client for this request
-    const authenticatedSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+    let userId: string | null = null;
+    let isWalletUser = false;
+    
+    // Check if this is a wallet user token
+    if (token.startsWith('wallet:')) {
+      try {
+        const walletData = JSON.parse(token.substring(7)); // Remove 'wallet:'
+        userId = walletData.id;
+        isWalletUser = true;
+        console.log('API: Wallet user detected, user ID:', userId);
+      } catch (e) {
+        console.error('API: Error parsing wallet token:', e);
+        return NextResponse.json(
+          { error: 'Invalid wallet token format' },
+          { status: 401 }
+        );
       }
-    );
+    } else if (token === 'mock-token-for-development') {
+      console.log('API: Using mock token, skipping Supabase auth');
+      userId = 'mock-user-id';
+    } else {
+      // Standard Supabase JWT token
+      console.log('API: Standard JWT token detected');
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (error || !user) {
+          console.error('API: JWT token validation failed:', error);
+          return NextResponse.json(
+            { error: 'Invalid or expired token' },
+            { status: 401 }
+          );
+        }
+        userId = user.id;
+        console.log('API: JWT user validated, user ID:', userId);
+      } catch (e) {
+        console.error('API: Error validating JWT token:', e);
+        return NextResponse.json(
+          { error: 'Invalid or expired token' },
+          { status: 401 }
+        );
+      }
+    }
+    
+    if (!userId) {
+      console.log('API: No user ID found');
+      return NextResponse.json(
+        { error: 'Unable to determine user identity' },
+        { status: 401 }
+      );
+    }
 
     // Parse and validate the request body
     console.log('API: Parsing request body...');
@@ -92,9 +121,8 @@ export async function POST(request: NextRequest) {
     
     let session;
     let sessionError;
-    let user = null;
     
-    if (token === 'mock-token-for-development') {
+    if (userId === 'mock-user-id') {
       // Create mock session data
       session = {
         id: crypto.randomUUID(),
@@ -108,21 +136,11 @@ export async function POST(request: NextRequest) {
       sessionError = null;
       console.log('API: Created mock session');
     } else {
-      // Get user info first
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
-      if (authError || !authUser) {
-        return NextResponse.json(
-          { error: 'Invalid or expired token' },
-          { status: 401 }
-        );
-      }
-      user = authUser;
-
-      // Create real session in database
-      const { data: dbSession, error: dbError } = await authenticatedSupabase
+      // Create real session in database using service role client
+      const { data: dbSession, error: dbError } = await supabase
         .from('sessions')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           action,
           started_at: startedAt.toISOString(),
           disturbed_seconds: 0,
@@ -134,6 +152,7 @@ export async function POST(request: NextRequest) {
       
       session = dbSession;
       sessionError = dbError;
+      console.log('API: Database session creation result:', { hasSession: !!session, hasError: !!sessionError });
     }
 
     console.log('API: Database result:', { hasSession: !!session, hasError: !!sessionError });
