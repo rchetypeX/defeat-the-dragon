@@ -242,14 +242,21 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
               Hash: {transactionHash}
             </div>
             <div className="text-xs mt-1">
-              <a 
-                href={`https://basescan.org/tx/${transactionHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:no-underline"
+              <button
+                onClick={() => {
+                  try {
+                    // Use proper external navigation following Base App guidelines
+                    if (typeof window !== 'undefined') {
+                      window.open(`https://basescan.org/tx/${transactionHash}`, '_blank', 'noopener,noreferrer');
+                    }
+                  } catch (error) {
+                    console.error('Failed to open transaction link:', error);
+                  }
+                }}
+                className="underline hover:no-underline cursor-pointer"
               >
                 View on BaseScan →
-              </a>
+              </button>
             </div>
           </div>
         )}

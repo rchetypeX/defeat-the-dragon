@@ -19,19 +19,23 @@ export function ExternalLink({ href, children, className = '', onClick }: Extern
     // Call custom onClick if provided
     onClick?.();
     
-    // Use Base App's native browser
-    openUrl(href);
+    try {
+      // Use SDK action for cross-client compatibility
+      openUrl(href);
+    } catch (error) {
+      // Fallback behavior for unsupported clients
+      console.log('External navigation not supported, using fallback');
+      window.open(href, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
-    <a 
-      href={href} 
+    <button 
       onClick={handleClick}
-      className={className}
-      target="_blank"
-      rel="noopener noreferrer"
+      className={`${className} cursor-pointer`}
+      type="button"
     >
       {children}
-    </a>
+    </button>
   );
 }

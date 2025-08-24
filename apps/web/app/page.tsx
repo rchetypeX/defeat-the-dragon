@@ -12,6 +12,11 @@ import FocusSessionMusic from '../components/audio/FocusSessionMusic';
 import { AudioProvider } from '../contexts/AudioContext';
 import { useMiniKit } from '@coinbase/onchainkit/minikit';
 import { ExternalLink } from '../components/ui/ExternalLink';
+import { useBaseAppAuth } from '../hooks/useBaseAppAuth';
+import { useContextAware } from '../hooks/useContextAware';
+import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
+import { SocialAcknowledgment } from '../components/social/SocialAcknowledgment';
+import { EntryPointExperience } from '../components/context/EntryPointExperience';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -19,6 +24,24 @@ export default function HomePage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
   const { setFrameReady, isFrameReady } = useMiniKit();
+  
+  // Base App Authentication
+  const {
+    verifiedUser,
+    isAuthenticated: isBaseAppAuthenticated,
+    contextFid,
+    isBaseApp,
+    isLoading: isBaseAppLoading,
+  } = useBaseAppAuth();
+
+  // Context-aware features
+  const {
+    entryType,
+    isViralEntry,
+    isReturningUser,
+    platformType,
+    isAvailable: isContextAvailable,
+  } = useContextAware();
 
   useEffect(() => {
     // Optimize for Base App - only set frame ready once
@@ -34,6 +57,22 @@ export default function HomePage() {
       setShowOnboarding(true);
     }
   }, [user]);
+
+  // Log Base App authentication status for development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔐 Base App Auth Status:', {
+        isBaseApp,
+        isBaseAppAuthenticated,
+        contextFid,
+        verifiedUser: !!verifiedUser,
+        entryType,
+        isViralEntry,
+        isReturningUser,
+        platformType,
+      });
+    }
+  }, [isBaseApp, isBaseAppAuthenticated, contextFid, verifiedUser, entryType, isViralEntry, isReturningUser, platformType]);
 
   const onboardingSteps = [
     {
@@ -74,26 +113,28 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen relative overflow-hidden">
-        {/* Background Forest Scene */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/assets/images/forest-background.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        ></div>
-        
-        {/* Loading Content */}
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[#f2751a] mx-auto mb-4"></div>
-            <p className="text-lg text-white drop-shadow-lg">Loading...</p>
+      <ContextAwareLayout>
+        <main className="relative overflow-hidden">
+          {/* Background Forest Scene */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: 'url(/assets/images/forest-background.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          ></div>
+          
+          {/* Loading Content */}
+          <div className="relative z-10 min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[#f2751a] mx-auto mb-4"></div>
+              <p className="text-lg text-white drop-shadow-lg">Loading...</p>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </ContextAwareLayout>
     );
   }
 
@@ -101,17 +142,18 @@ export default function HomePage() {
   if (showOnboarding) {
     const step = onboardingSteps[currentOnboardingStep];
     return (
-      <main className="min-h-screen relative overflow-hidden">
-        {/* Background Forest Scene */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url(/assets/images/forest-background.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        ></div>
+      <ContextAwareLayout>
+        <main className="relative overflow-hidden">
+          {/* Background Forest Scene */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: 'url(/assets/images/forest-background.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          ></div>
         
         {/* Onboarding Overlay */}
         <div className="relative z-20 min-h-screen flex items-center justify-center p-4">
@@ -164,13 +206,17 @@ export default function HomePage() {
           </div>
         </div>
       </main>
+      </ContextAwareLayout>
     );
   }
 
   if (!user) {
     return (
-      <AudioProvider>
-        <main className="min-h-screen relative overflow-hidden">
+      <ContextAwareLayout>
+        <SocialAcknowledgment />
+        <EntryPointExperience>
+          <AudioProvider>
+            <main className="relative overflow-hidden">
           {/* Background Music */}
           <BackgroundMusic 
             src="/assets/audio/background-music.mp3"
@@ -279,29 +325,36 @@ export default function HomePage() {
           </div>
         </main>
       </AudioProvider>
+        </EntryPointExperience>
+      </ContextAwareLayout>
     );
   }
 
   // User is authenticated - show game dashboard
   return (
-    <AudioProvider>
-      <BackgroundMusic 
-        src="/assets/audio/background-music.mp3"
-        volume={0.3}
-        loop={true}
-        autoPlay={true}
-        onLoad={() => console.log('Background music loaded')}
-        onError={(error) => console.error('Background music error:', error)}
-      />
-      <FocusSessionMusic 
-        src="/assets/audio/focus-session-music.mp3"
-        volume={0.4}
-        loop={true}
-        autoPlay={false}
-        onLoad={() => console.log('Focus session music loaded')}
-        onError={(error) => console.error('Focus session music error:', error)}
-      />
-      <GameDashboard />
-    </AudioProvider>
+    <ContextAwareLayout>
+      <SocialAcknowledgment />
+      <EntryPointExperience>
+        <AudioProvider>
+          <BackgroundMusic 
+            src="/assets/audio/background-music.mp3"
+            volume={0.3}
+            loop={true}
+            autoPlay={true}
+            onLoad={() => console.log('Background music loaded')}
+            onError={(error) => console.error('Background music error:', error)}
+          />
+          <FocusSessionMusic 
+            src="/assets/audio/focus-session-music.mp3"
+            volume={0.4}
+            loop={true}
+            autoPlay={false}
+            onLoad={() => console.log('Focus session music loaded')}
+            onError={(error) => console.error('Focus session music error:', error)}
+          />
+          <GameDashboard />
+        </AudioProvider>
+      </EntryPointExperience>
+    </ContextAwareLayout>
   );
 }
