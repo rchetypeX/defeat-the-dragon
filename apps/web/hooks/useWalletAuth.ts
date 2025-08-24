@@ -10,12 +10,15 @@ export function useWalletAuth() {
   const [isConnected, setIsConnected] = useState(false);
   const [hasAccount, setHasAccount] = useState<boolean | null>(null);
   const [isCheckingAccount, setIsCheckingAccount] = useState(false);
+  const [availableAccounts, setAvailableAccounts] = useState<string[]>([]);
+  const [isSwitchingWallet, setIsSwitchingWallet] = useState(false);
 
   // Check if MetaMask is available
   const checkIfWalletIsConnected = async () => {
     try {
       if (typeof window !== 'undefined' && window.ethereum) {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        setAvailableAccounts(accounts);
         if (accounts.length > 0) {
           setAddress(accounts[0]);
           setIsConnected(true);
@@ -60,6 +63,7 @@ export function useWalletAuth() {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
       const handleAccountsChanged = async (accounts: string[]) => {
+        setAvailableAccounts(accounts);
         if (accounts.length === 0) {
           // User disconnected wallet
           setAddress(null);
@@ -100,6 +104,7 @@ export function useWalletAuth() {
 
     try {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      setAvailableAccounts(accounts);
       if (accounts.length > 0) {
         setAddress(accounts[0]);
         setIsConnected(true);
@@ -133,8 +138,56 @@ export function useWalletAuth() {
   };
 
   const switchWallet = async () => {
-    await disconnectWallet();
-    await connectWallet();
+    setIsSwitchingWallet(true);
+    setAuthError(null);
+    
+    try {
+      // Request new accounts (this will prompt user to switch accounts in MetaMask)
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      setAvailableAccounts(accounts);
+      
+      if (accounts.length > 0) {
+        setAddress(accounts[0]);
+        setIsConnected(true);
+        await checkAccountExists(accounts[0]);
+      }
+    } catch (error) {
+      console.error('Wallet switching error:', error);
+      setAuthError('Failed to switch wallet. Please try again.');
+    } finally {
+      setIsSwitchingWallet(false);
+    }
+  };
+
+  const switchToSpecificAccount = async (targetAddress: string) => {
+    setIsSwitchingWallet(true);
+    setAuthError(null);
+    
+    try {
+      // Check if the target address is in available accounts
+      if (availableAccounts.includes(targetAddress)) {
+        setAddress(targetAddress);
+        setIsConnected(true);
+        await checkAccountExists(targetAddress);
+      } else {
+        // Request new accounts and hope the user selects the right one
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        setAvailableAccounts(accounts);
+        
+        if (accounts.includes(targetAddress)) {
+          setAddress(targetAddress);
+          setIsConnected(true);
+          await checkAccountExists(targetAddress);
+        } else {
+          setAuthError('Selected wallet not found. Please make sure it\'s connected in MetaMask.');
+        }
+      }
+    } catch (error) {
+      console.error('Account switching error:', error);
+      setAuthError('Failed to switch to selected wallet.');
+    } finally {
+      setIsSwitchingWallet(false);
+    }
   };
 
   const signInWithWallet = async () => {
@@ -265,9 +318,12 @@ export function useWalletAuth() {
     isCheckingAccount,
     hasAccount,
     authError,
+    availableAccounts,
+    isSwitchingWallet,
     connectWallet,
     disconnectWallet,
     switchWallet,
+    switchToSpecificAccount,
     signInWithWallet,
     signUpWithWallet,
   };

@@ -14,8 +14,12 @@ export function WalletLoginForm() {
     isCheckingAccount,
     hasAccount,
     authError,
+    availableAccounts,
+    isSwitchingWallet,
     connectWallet,
     disconnectWallet,
+    switchWallet,
+    switchToSpecificAccount,
     signInWithWallet,
     signUpWithWallet,
   } = useWalletAuth();
@@ -87,20 +91,65 @@ export function WalletLoginForm() {
           </div>
         ) : (
           <div className="space-y-3">
-            {/* Compact wallet display */}
-            <div className="flex items-center justify-between bg-[#1a1a2e] p-2 border border-[#654321] rounded">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-[#fbbf24] mb-1">Connected Wallet</p>
-                <p className="text-xs text-white font-mono truncate">
+            {/* Enhanced wallet display with switching options */}
+            <div className="bg-[#1a1a2e] p-3 border border-[#654321] rounded">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-[#fbbf24] font-medium">Connected Wallet</p>
+                <button
+                  onClick={handleDisconnect}
+                  disabled={isConnecting}
+                  className="px-2 py-1 bg-[#ef4444] text-white text-xs rounded hover:bg-[#dc2626] disabled:opacity-50"
+                >
+                  Disconnect
+                </button>
+              </div>
+              
+              {/* Current wallet address */}
+              <div className="mb-3">
+                <p className="text-xs text-white font-mono break-all">
                   {address}
                 </p>
               </div>
+
+              {/* Available accounts dropdown */}
+              {availableAccounts.length > 1 && (
+                <div className="mb-3">
+                  <label className="block text-xs text-[#fbbf24] mb-1">
+                    Switch to different wallet:
+                  </label>
+                  <select
+                    value={address || ''}
+                    onChange={(e) => {
+                      if (e.target.value !== address) {
+                        switchToSpecificAccount(e.target.value);
+                      }
+                    }}
+                    disabled={isSwitchingWallet}
+                    className="w-full bg-[#2d1b0e] border border-[#8b4513] rounded px-2 py-1 text-white text-xs"
+                  >
+                    {availableAccounts.map((acc) => (
+                      <option key={acc} value={acc}>
+                        {acc.slice(0, 6)}...{acc.slice(-4)} {acc === address ? '(Current)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Switch wallet button */}
               <button
-                onClick={handleDisconnect}
-                disabled={isConnecting}
-                className="ml-2 px-2 py-1 bg-[#ef4444] text-white text-xs rounded hover:bg-[#dc2626] disabled:opacity-50"
+                onClick={switchWallet}
+                disabled={isSwitchingWallet || isConnecting}
+                className="w-full px-3 py-1 bg-[#f2751a] text-white text-xs rounded hover:bg-[#e65a0a] disabled:opacity-50 flex items-center justify-center"
               >
-                Disconnect
+                {isSwitchingWallet ? (
+                  <>
+                    <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Switching...
+                  </>
+                ) : (
+                  'Switch Wallet'
+                )}
               </button>
             </div>
             

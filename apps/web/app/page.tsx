@@ -292,23 +292,18 @@ export default function HomePage() {
           <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-4">
             {/* App Logo */}
             <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto mb-3">
+              <div className="w-20 h-20 mx-auto mb-3">
                 <img 
-                  src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><rect width='64' height='64' rx='8' fill='%23f2751a'/><text x='32' y='42' font-family='Arial' font-size='24' font-weight='bold' text-anchor='middle' fill='white'>DTD</text></svg>"
+                  src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    console.log('Primary logo failed, trying logo.svg');
-                    // Try the uploaded logo.svg first
-                    e.currentTarget.src = '/logo.svg';
-                    e.currentTarget.onerror = () => {
-                      console.log('Logo.svg also failed, showing text fallback');
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                    };
+                    console.log('Logo.svg failed, showing text fallback');
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
                   }}
                   onLoad={() => {
-                    console.log('Logo image loaded successfully');
+                    console.log('Logo.svg loaded successfully');
                   }}
                 />
                 <div className="w-full h-full bg-[#f2751a] rounded-lg flex items-center justify-center hidden">

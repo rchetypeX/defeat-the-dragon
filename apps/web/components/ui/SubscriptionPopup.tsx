@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface SubscriptionPopupProps {
@@ -20,7 +20,39 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
   const [error, setError] = useState<string | null>(null);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [subscriptionType, setSubscriptionType] = useState<'monthly' | 'annual'>('monthly');
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const { user } = useAuth();
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Check wallet connection
+  const checkWalletConnection = async () => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+          setIsWalletConnected(true);
+          setWalletAddress(accounts[0]);
+        } else {
+          setIsWalletConnected(false);
+          setWalletAddress(null);
+        }
+      } catch (error) {
+        console.error('Error checking wallet connection:', error);
+        setIsWalletConnected(false);
+        setWalletAddress(null);
+      }
+    } else {
+      setIsWalletConnected(false);
+      setWalletAddress(null);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      checkWalletConnection();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -30,8 +62,33 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
     }
   }, [isOpen]);
 
+  // Handle click outside modal
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   const handleSubscribe = async () => {
-    if (!user) {
+    if (!isWalletConnected) {
       setError('Please connect your wallet first');
       return;
     }
@@ -45,9 +102,12 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
     setError(null);
 
     try {
-      // Request account access
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const account = accounts[0];
+      // Use the already connected wallet address
+      const account = walletAddress;
+      if (!account) {
+        setError('No wallet address found. Please connect your wallet.');
+        return;
+      }
 
       // Switch to Base Network (Chain ID 8453)
       try {
@@ -193,7 +253,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-6 w-full max-w-md pixel-art">
+      <div ref={modalRef} className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-6 w-full max-w-md pixel-art">
         {/* Header */}
         <div className="text-center mb-6">
           <div className="text-2xl mb-2">✨</div>
@@ -202,6 +262,39 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
             Unlock Sparks rewards from your focus sessions!
           </p>
         </div>
+
+        {/* Wallet Connection Status */}
+        {!isWalletConnected ? (
+          <div className="text-center mb-6">
+            <div className="bg-[#1a1a2e] border-2 border-[#8B4513] rounded-lg p-4 mb-4">
+              <div className="text-[#fbbf24] text-lg mb-2">🔗</div>
+              <h3 className="text-[#f2751a] font-bold mb-2">Wallet Required</h3>
+              <p className="text-[#fbbf24] text-sm mb-4">
+                To subscribe to the Inspiration Boon, you need to connect your Web3 wallet.
+              </p>
+              <button
+                onClick={() => {
+                  // Close this popup and redirect to wallet connection
+                  onClose();
+                  // You might want to add a callback to open wallet connection
+                }}
+                className="w-full pixel-button bg-[#f2751a] hover:bg-[#e65a0a] text-white px-4 py-2 font-bold"
+              >
+                Connect Wallet
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Connected Wallet Info */}
+            <div className="bg-[#1a1a2e] border-2 border-[#8B4513] rounded-lg p-3 mb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[#fbbf24] text-sm font-medium">Connected Wallet:</span>
+                <span className="text-white text-xs font-mono">
+                  {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
+                </span>
+              </div>
+            </div>
 
         {/* Subscription Type Toggle */}
         <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1 mb-4">
@@ -322,6 +415,8 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
             Make sure you're connected to Base Network
           </p>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
