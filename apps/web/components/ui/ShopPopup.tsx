@@ -47,13 +47,21 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        onClose();
+        // Only close if no modal is open
+        if (!showSubscriptionPopup) {
+          onClose();
+        }
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose();
+        // Close subscription modal first, then shop
+        if (showSubscriptionPopup) {
+          setShowSubscriptionPopup(false);
+        } else {
+          onClose();
+        }
       }
     };
 
@@ -71,7 +79,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, onClose, user]);
+  }, [isOpen, onClose, user, showSubscriptionPopup]);
 
   const loadShopItems = async () => {
     try {
@@ -221,6 +229,17 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     // Close the subscription popup but keep the shop open
     setShowSubscriptionPopup(false);
   };
+
+  const handleSubscriptionClose = () => {
+    setShowSubscriptionPopup(false);
+  };
+
+  // Reset modal states when shop popup closes
+  useEffect(() => {
+    if (!isOpen) {
+      setShowSubscriptionPopup(false);
+    }
+  }, [isOpen]);
 
   const getButtonText = (item: ShopItem) => {
     const status = purchaseStatus[item.id];
@@ -400,7 +419,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       {/* Subscription Popup */}
       <SubscriptionPopup
         isOpen={showSubscriptionPopup}
-        onClose={() => setShowSubscriptionPopup(false)}
+        onClose={handleSubscriptionClose}
         onSuccess={handleSubscriptionSuccess}
       />
     </div>
