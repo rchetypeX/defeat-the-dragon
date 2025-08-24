@@ -346,7 +346,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
       </div>
 
        {/* Character - Positioned in the center */}
-       <div className="fixed left-1/2 transform -translate-x-1/2 bottom-40 sm:bottom-44 z-50 overflow-hidden" style={{ pointerEvents: 'none' }}>
+       <div className="fixed left-1/2 transform -translate-x-1/2 top-1/2 transform -translate-y-1/2 z-50 overflow-hidden" style={{ pointerEvents: 'none' }}>
          <img 
            src={getCharacterImage(equippedCharacter)} 
            alt="Tiny Adventurer" 
@@ -369,7 +369,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
        </div>
 
        {/* Dialog Balloon - Above the character */}
-       <div className="fixed left-1/2 transform -translate-x-1/2 bottom-80 sm:bottom-84 z-30">
+       <div className="fixed left-1/2 transform -translate-x-1/2 top-1/2 transform -translate-y-1/2 -translate-y-20 sm:-translate-y-24 z-30">
          <div className="pixel-card p-3 sm:p-4 bg-white border-2 border-gray-800 max-w-xs sm:max-w-sm text-center relative overflow-hidden">
            {/* Speech bubble tail */}
            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-white"></div>

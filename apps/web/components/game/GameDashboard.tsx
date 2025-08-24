@@ -407,29 +407,31 @@ export function GameDashboard() {
            </div>
          )}
         
-                                  {/* Central Character Area */}
-         <div className={`flex-1 flex items-center justify-center relative px-4 ${showSessionTimer || sessionProgress.isActive || sessionResult || showSettings || showShop || showInventory || showAudioControls ? 'hidden' : ''}`}>
-                                                {/* Character positioned just below center with dynamic scaling */}
+        {/* Central Character Area - Hidden during Focus Session */}
+        {!sessionProgress.isActive && !showSessionTimer && !sessionResult && !showSettings && !showShop && !showInventory && !showAudioControls && (
+          <div className="flex-1 flex items-center justify-center relative px-4">
+            {/* Character positioned just below center with dynamic scaling */}
             <div className="relative z-5 transform translate-y-4 sm:translate-y-6">
-             <img 
-               src={getCharacterImage(equippedCharacter)} 
-               alt="Tiny Adventurer" 
-               className="character-dynamic pixel-art drop-shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
-               onClick={handleCharacterClick}
-               onError={(e) => {
-                 // Fallback to CSS character if image fails to load
-                 e.currentTarget.style.display = 'none';
-                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
-               }}
-             />
-             
-             {/* Character Dialogue - Positioned above character with padding */}
-             <CharacterDialogue 
-               isVisible={!showSessionTimer && !sessionProgress.isActive && !sessionResult && !showSettings && !showShop && !showInventory && !showAudioControls}
-               triggerQuoteChangeCount={quoteTriggerCount}
-             />
-           </div>
-        </div>
+              <img 
+                src={getCharacterImage(equippedCharacter)} 
+                alt="Tiny Adventurer" 
+                className="character-dynamic pixel-art drop-shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={handleCharacterClick}
+                onError={(e) => {
+                  // Fallback to CSS character if image fails to load
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              
+              {/* Character Dialogue - Positioned above character with padding */}
+              <CharacterDialogue 
+                isVisible={true}
+                triggerQuoteChangeCount={quoteTriggerCount}
+              />
+            </div>
+          </div>
+        )}
         
                          {/* Bottom Action Area - Positioned higher up */}
         <div className={`focus-button-container ${showSessionTimer || sessionResult || showSettings || showShop || showInventory || showAudioControls ? 'hidden' : ''}`}>
