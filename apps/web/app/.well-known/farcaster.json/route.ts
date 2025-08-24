@@ -23,9 +23,9 @@ export async function GET(request: Request) {
         subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE || 'Focus RPG with Pomodoro',
         description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A pixel-art, ad-free, Pomodoro-style Focus RPG PWA that gamifies productivity',
         screenshotUrls: [
-          `${URL}/screenshots/gameplay-1.png`,
-          `${URL}/screenshots/focus-session.png`,
-          `${URL}/screenshots/character-select.png`
+          `${URL.replace(/\/$/, '')}/screenshots/gameplay-1.png`,
+          `${URL.replace(/\/$/, '')}/screenshots/focus-session.png`,
+          `${URL.replace(/\/$/, '')}/screenshots/character-select.png`
         ],
         iconUrl: process.env.NEXT_PUBLIC_APP_ICON || `${URL}/icon.png`,
         splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${URL}/og-image.png`,
