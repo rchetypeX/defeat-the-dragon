@@ -9,11 +9,20 @@ interface SubscriptionPopupProps {
   onSuccess?: () => void;
 }
 
-const SUBSCRIPTION_PRICE_MONTHLY = '0.002'; // ETH
-const SUBSCRIPTION_PRICE_ANNUAL = '0.02'; // ETH
-const SUBSCRIPTION_DURATION_MONTHLY = 30; // days
-const SUBSCRIPTION_DURATION_ANNUAL = 365; // days
 const MERCHANT_WALLET = process.env.NEXT_PUBLIC_MERCHANT_WALLET || '0x1234567890123456789012345678901234567890'; // Set NEXT_PUBLIC_MERCHANT_WALLET in your .env.local
+
+interface SubscriptionPricing {
+  id: string;
+  subscription_type: string;
+  price_eth: number;
+  price_usd: number;
+  duration_days: number;
+  description: string;
+  benefits: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPopupProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,8 +31,33 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
   const [subscriptionType, setSubscriptionType] = useState<'monthly' | 'annual'>('monthly');
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [pricing, setPricing] = useState<Record<string, SubscriptionPricing>>({});
+  const [isLoadingPricing, setIsLoadingPricing] = useState(false);
   const { user } = useAuth();
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // Load subscription pricing from API
+  const loadPricing = async () => {
+    try {
+      setIsLoadingPricing(true);
+      const response = await fetch('/api/master/subscription-pricing');
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data) {
+          setPricing(result.data);
+        }
+      } else {
+        console.error('Failed to load subscription pricing');
+        setError('Failed to load subscription pricing');
+      }
+    } catch (error) {
+      console.error('Error loading subscription pricing:', error);
+      setError('Error loading subscription pricing');
+    } finally {
+      setIsLoadingPricing(false);
+    }
+  };
 
   // Check wallet connection
   const checkWalletConnection = async () => {
@@ -120,6 +154,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
 
   useEffect(() => {
     if (isOpen) {
+      loadPricing();
       checkWalletConnection();
     }
     
@@ -228,8 +263,15 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         }
       }
 
+      // Get pricing from the loaded data
+      const currentPricing = pricing[subscriptionType];
+      if (!currentPricing) {
+        setError('Pricing not available. Please try again.');
+        return;
+      }
+
       // Convert ETH to Wei (1 ETH = 10^18 Wei)
-      const price = subscriptionType === 'monthly' ? SUBSCRIPTION_PRICE_MONTHLY : SUBSCRIPTION_PRICE_ANNUAL;
+      const price = currentPricing.price_eth.toString();
       const valueInWei = BigInt(Math.floor(parseFloat(price) * 10**18));
       const valueInHex = '0x' + valueInWei.toString(16);
 
@@ -317,6 +359,11 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
 
   const updateUserSubscription = async () => {
     try {
+      const currentPricing = pricing[subscriptionType];
+      if (!currentPricing) {
+        throw new Error('Pricing not available');
+      }
+
       const response = await fetch('/api/subscriptions/create', {
         method: 'POST',
         headers: {
@@ -324,7 +371,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         },
         body: JSON.stringify({
           subscriptionType: 'inspiration_boon',
-          duration: subscriptionType === 'monthly' ? SUBSCRIPTION_DURATION_MONTHLY : SUBSCRIPTION_DURATION_ANNUAL,
+          duration: currentPricing.duration_days,
           transactionHash,
         }),
       });
@@ -408,42 +455,55 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
           </button>
         </div>
 
-        {/* Subscription Details */}
-        <div className="bg-[#e8e8d0] border-2 border-[#8B4513] rounded-lg p-4 mb-6">
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-[#8B4513] font-bold">Duration:</span>
-              <span className="text-[#654321]">
-                {subscriptionType === 'monthly' ? '30 Days' : '365 Days'}
-              </span>
+        {/* Loading Pricing */}
+        {isLoadingPricing && (
+          <div className="bg-[#e8e8d0] border-2 border-[#8B4513] rounded-lg p-4 mb-6">
+            <div className="text-center text-[#8B4513]">
+              Loading pricing...
             </div>
-            <div className="flex justify-between">
-              <span className="text-[#8B4513] font-bold">Price:</span>
-              <span className="text-[#654321] font-bold">
-                {subscriptionType === 'monthly' ? SUBSCRIPTION_PRICE_MONTHLY : SUBSCRIPTION_PRICE_ANNUAL} ETH
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[#8B4513] font-bold">Network:</span>
-              <span className="text-[#654321]">Base</span>
-            </div>
-            {subscriptionType === 'annual' && (
-              <div className="bg-[#10b981] text-white p-2 rounded text-xs text-center font-bold">
-                🎉 2 months FREE! Save with annual subscription
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
-        {/* Benefits */}
-        <div className="mb-6">
-          <h3 className="text-[#8B4513] font-bold mb-3">✨ What you get:</h3>
-          <ul className="space-y-2 text-sm text-[#654321]">
-            <li>• Earn Sparks from successful focus sessions</li>
-            <li>• Access to exclusive shop items</li>
-            <li>• Monthly drops of Sparks-exclusive items</li>
-          </ul>
-        </div>
+        {/* Subscription Details */}
+        {!isLoadingPricing && pricing[subscriptionType] && (
+          <>
+            <div className="bg-[#e8e8d0] border-2 border-[#8B4513] rounded-lg p-4 mb-6">
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-[#8B4513] font-bold">Duration:</span>
+                  <span className="text-[#654321]">
+                    {pricing[subscriptionType].duration_days} Days
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#8B4513] font-bold">Price:</span>
+                  <span className="text-[#654321] font-bold">
+                    {pricing[subscriptionType].price_eth} ETH
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#8B4513] font-bold">Network:</span>
+                  <span className="text-[#654321]">Base</span>
+                </div>
+                {subscriptionType === 'annual' && (
+                  <div className="bg-[#10b981] text-white p-2 rounded text-xs text-center font-bold">
+                    🎉 2 months FREE! Save with annual subscription
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Benefits */}
+            <div className="mb-6">
+              <h3 className="text-[#8B4513] font-bold mb-3">✨ What you get:</h3>
+              <ul className="space-y-2 text-sm text-[#654321]">
+                {pricing[subscriptionType].benefits.map((benefit, index) => (
+                  <li key={index}>• {benefit}</li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
 
         {/* Error Message */}
         {error && (

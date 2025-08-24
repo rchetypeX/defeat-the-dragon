@@ -280,6 +280,44 @@ export interface Database {
           updated_at?: string
         }
       }
+      subscription_pricing_master: {
+        Row: {
+          id: string
+          subscription_type: string
+          price_eth: number
+          price_usd: number
+          duration_days: number
+          is_active: boolean
+          description: string | null
+          benefits: string[] | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          subscription_type: string
+          price_eth: number
+          price_usd?: number
+          duration_days: number
+          is_active?: boolean
+          description?: string | null
+          benefits?: string[] | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          subscription_type?: string
+          price_eth?: number
+          price_usd?: number
+          duration_days?: number
+          is_active?: boolean
+          description?: string | null
+          benefits?: string[] | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
       user_settings: {
         Row: {
           user_id: string

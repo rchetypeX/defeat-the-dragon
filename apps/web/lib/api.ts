@@ -8,9 +8,27 @@ import { StartSessionRequest, StartSessionResponse, CompleteSessionRequest, Comp
 async function getAuthToken(): Promise<string | null> {
   console.log('API: Getting auth token...');
   
-  // Always use mock token for now to avoid Supabase issues
-  console.log('API: Using mock token for development');
-  return 'mock-token-for-development';
+  // Check if we have a wallet user in localStorage
+  const walletUserStr = localStorage.getItem('walletUser');
+  if (walletUserStr) {
+    try {
+      const walletUser = JSON.parse(walletUserStr);
+      console.log('API: Found wallet user, using wallet auth');
+      return `wallet:${JSON.stringify(walletUser)}`;
+    } catch (e) {
+      console.error('API: Error parsing wallet user:', e);
+    }
+  }
+  
+  // Check for Supabase session
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    console.log('API: Found Supabase session');
+    return session.access_token;
+  }
+  
+  console.log('API: No auth token found');
+  return null;
 }
 
 /**
@@ -22,7 +40,7 @@ async function apiRequest<T>(
 ): Promise<T> {
   console.log('API: Making request to:', endpoint);
   const token = await getAuthToken();
-  console.log('API: Got token, length:', token.length);
+  console.log('API: Got token:', token ? 'yes' : 'no');
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
@@ -32,14 +50,19 @@ async function apiRequest<T>(
 
   try {
     console.log('API: Making fetch request...');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`/api${endpoint}`, {
       ...options,
       signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        ...options.headers,
-      },
+      headers,
     });
 
     clearTimeout(timeoutId);
@@ -146,22 +169,44 @@ export async function getCurrentSession() {
 export async function getPlayerData() {
   console.log('API: getPlayerData called');
   try {
+    // Try to get user from Supabase auth first
     const { data: { user } } = await supabase.auth.getUser();
     console.log('API: Auth user check completed, user:', user ? 'exists' : 'not found');
     
-    if (!user) {
+    let userId: string | null = null;
+    
+    if (user) {
+      // Standard Supabase auth user
+      userId = user.id;
+    } else {
+      // Check if this is a wallet user by looking for wallet user data in localStorage
+      if (typeof window !== 'undefined') {
+        const walletUserStr = localStorage.getItem('walletUser');
+        if (walletUserStr) {
+          try {
+            const walletUser = JSON.parse(walletUserStr);
+            userId = walletUser.id;
+            console.log('API: Found wallet user, using wallet auth');
+          } catch (e) {
+            console.error('API: Error parsing wallet user from localStorage:', e);
+          }
+        }
+      }
+    }
+    
+    if (!userId) {
       console.log('API: No authenticated user found');
       throw new Error('No authenticated user found');
     }
 
-    console.log('API: Starting database queries for user:', user.id);
+    console.log('API: Starting database queries for user:', userId);
     
     // First, try to get existing player data
     console.log('API: Querying players table...');
     const playerResult = await supabase
       .from('players')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
     
     console.log('API: Players query completed, error:', playerResult.error);
@@ -171,7 +216,7 @@ export async function getPlayerData() {
       console.log('API: Player record not found, creating default player...');
       
       const defaultPlayer = {
-        user_id: user.id,
+        user_id: userId,
         level: 1,
         xp: 0,
         coins: 100,
@@ -197,18 +242,25 @@ export async function getPlayerData() {
       throw new Error(`Players query failed: ${playerResult.error.message}`);
     }
     
-    console.log('API: Querying profiles table...');
-    const profileResult = await supabase
-      .from('profiles')
-      .select('display_name')
-      .eq('user_id', user.id)
-      .single();
-    console.log('API: Profiles query completed, error:', profileResult.error);
-    
     console.log('API: All database queries completed');
 
-    // Don't throw for profile errors, just use default name
-    const displayName = profileResult.data?.display_name || 'Adventurer';
+    // Prioritize display_name from players table, fallback to profiles table
+    let displayName = playerResult.data?.display_name || 'Adventurer';
+    
+    // If no display_name in players table, try profiles table
+    if (!playerResult.data?.display_name) {
+      console.log('API: Querying profiles table for display_name...');
+      const profileResult = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', userId)
+        .single();
+      console.log('API: Profiles query completed, error:', profileResult.error);
+      
+      if (profileResult.data?.display_name) {
+        displayName = profileResult.data.display_name;
+      }
+    }
 
     // Combine player data with display name
     const player = {

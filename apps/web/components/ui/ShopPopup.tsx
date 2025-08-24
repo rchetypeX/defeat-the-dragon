@@ -44,6 +44,15 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   const popupRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
+  // Separate useEffect for data loading to prevent unnecessary re-fetches
+  useEffect(() => {
+    if (isOpen && userInventory.length === 0 && shopItems.character.length === 0) {
+      loadUserInventory();
+      loadShopItems();
+    }
+  }, [isOpen]); // Only depend on isOpen
+
+  // Separate useEffect for event listeners
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
@@ -68,16 +77,13 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleEscape);
-      // Load user inventory and shop items when shop opens
-      loadUserInventory();
-      loadShopItems();
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, onClose, user, showSubscriptionPopup]);
+  }, [isOpen, onClose, showSubscriptionPopup]);
 
   const loadShopItems = async () => {
     try {
@@ -130,12 +136,9 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       
       if (response.ok) {
         const result = await response.json();
-        console.log('Shop: Loaded inventory data:', result);
         if (result.data) {
-          console.log('Shop: Setting inventory:', result.data);
           setUserInventory(result.data);
         } else {
-          console.log('Shop: No inventory data found');
           setUserInventory([]);
         }
       } else {
@@ -150,12 +153,11 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     }
   };
 
+  // Memoize the ownership check to prevent unnecessary recalculations
   const isItemOwned = (itemId: string, itemType: string) => {
-    const owned = userInventory.some(item => 
+    return userInventory.some(item => 
       item.item_id === itemId && item.item_type === itemType
     );
-    console.log(`Shop: Checking if ${itemId} (${itemType}) is owned:`, owned, 'Inventory:', userInventory);
-    return owned;
   };
 
   const handlePurchase = async (item: ShopItem) => {

@@ -109,6 +109,7 @@ export async function POST(request: NextRequest) {
     }
 
     // For wallet authentication, return the user data for localStorage approach
+    // The session will be handled by the client-side auth context
     return NextResponse.json({
       success: true,
       user: {

@@ -228,14 +228,12 @@ export function useWalletAuth() {
         throw new Error(result.error || 'Authentication failed');
       }
 
-      // For wallet authentication, use localStorage approach to avoid redirect issues
+      // For wallet authentication, the session is now created server-side
       if (result.walletAuth) {
-        // Store wallet user data in localStorage and cookies
+        // Store wallet user data in localStorage for client-side access
         localStorage.setItem('walletUser', JSON.stringify(result.user));
-        // Also store in a cookie for server-side access
-        document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
-        // Trigger a page reload to update the auth state
-        window.location.reload();
+        // The session cookies are set by the server, so we can redirect to the app
+        window.location.href = '/';
       }
 
     } catch (error) {
@@ -285,16 +283,14 @@ export function useWalletAuth() {
         throw new Error(result.error || 'Registration failed');
       }
 
-      // For wallet authentication, use localStorage approach to avoid redirect issues
+      // For wallet authentication, the session is now created server-side
       if (result.walletAuth) {
-        // Store wallet user data in localStorage and cookies
+        // Store wallet user data in localStorage for client-side access
         localStorage.setItem('walletUser', JSON.stringify(result.user));
-        // Also store in a cookie for server-side access
-        document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
         // Update account status
         setHasAccount(true);
-        // Trigger a page reload to update the auth state
-        window.location.reload();
+        // The session cookies are set by the server, so we can redirect to the app
+        window.location.href = '/';
       }
 
     } catch (error) {

@@ -60,6 +60,19 @@ export async function GET(request: NextRequest) {
           console.error('Error parsing wallet user data:', e);
         }
       }
+      
+      // Also check for wallet user in request headers (for API calls)
+      if (!userId) {
+        const authHeader = request.headers.get('authorization');
+        if (authHeader && authHeader.startsWith('Bearer wallet:')) {
+          try {
+            const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
+            userId = walletData.id;
+          } catch (e) {
+            console.error('Error parsing wallet user from header:', e);
+          }
+        }
+      }
     }
     
     if (!userId) {
@@ -242,24 +255,54 @@ export async function POST(request: NextRequest) {
 
     // Update player data if provided
     if (player) {
-      const { data, error } = await supabase
-        .from('players')
-        .update({
-          display_name: player.display_name,
-          level: player.level,
-          xp: player.xp,
-          coins: player.coins,
-          sparks: player.sparks
-        })
-        .eq('user_id', userId)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating player:', error);
-        results.player = { error: error.message };
+      // Update both players and profiles tables to keep them in sync
+      const updatePromises = [];
+      
+      // Update players table
+      updatePromises.push(
+        supabase
+          .from('players')
+          .update({
+            display_name: player.display_name,
+            level: player.level,
+            xp: player.xp,
+            coins: player.coins,
+            sparks: player.sparks
+          })
+          .eq('user_id', userId)
+          .select()
+          .single()
+      );
+      
+      // Update profiles table if display_name is provided
+      if (player.display_name) {
+        updatePromises.push(
+          supabase
+            .from('profiles')
+            .update({
+              display_name: player.display_name
+            })
+            .eq('user_id', userId)
+            .select()
+            .single()
+        );
+      }
+      
+      // Wait for both updates to complete
+      const [playerResult, profileResult] = await Promise.all(updatePromises);
+      
+      if (playerResult.error) {
+        console.error('Error updating player:', playerResult.error);
+        results.player = { error: playerResult.error.message };
       } else {
-        results.player = { success: true, data };
+        results.player = { success: true, data: playerResult.data };
+      }
+      
+      // Log profile update result (but don't fail the whole operation if it fails)
+      if (profileResult && profileResult.error) {
+        console.error('Error updating profile:', profileResult.error);
+      } else if (profileResult) {
+        console.log('Profile updated successfully');
       }
     }
 
