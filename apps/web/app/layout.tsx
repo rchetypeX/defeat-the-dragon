@@ -100,25 +100,46 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-              <head>
-          <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>" type="image/svg+xml" />
-          <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-          <link rel="icon" href="/favicon.ico" type="image/x-icon" />
-          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-          <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-          <meta name="apple-mobile-web-app-title" content="Defeat the Dragon" />
-          <meta name="mobile-web-app-capable" content="yes" />
-          <meta name="msapplication-TileColor" content="#7c2d12" />
-          <meta name="msapplication-tap-highlight" content="no" />
-          <meta name="theme-color" content="#7c2d12" />
-          {/* Lock to portrait mode */}
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-          <meta name="full-screen" content="yes" />
-          <meta name="x5-fullscreen" content="true" />
-          <meta name="360-fullscreen" content="true" />
-
-        </head>
+      <head>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Defeat the Dragon" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#7c2d12" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="theme-color" content="#7c2d12" />
+        {/* Lock to portrait mode */}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="full-screen" content="yes" />
+        <meta name="x5-fullscreen" content="true" />
+        <meta name="360-fullscreen" content="true" />
+        
+        {/* Global error handler script */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            // Suppress non-critical network errors in development
+            if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+              const originalError = console.error;
+              console.error = function(...args) {
+                const message = args.join(' ');
+                // Filter out Coinbase analytics and other non-critical errors
+                if (message.includes('cca-lite.coinbase.com') || 
+                    message.includes('net::ERR_ABORTED 401') ||
+                    message.includes('analyticsTracker') ||
+                    message.includes('POST https://cca-lite.coinbase.com/metrics')) {
+                  // Silently ignore these errors in development
+                  return;
+                }
+                originalError.apply(console, args);
+              };
+            }
+          `
+        }} />
+      </head>
       <body className={inter.className}>
         {/* Orientation warning for mobile landscape */}
         <div className="orientation-warning"></div>
@@ -126,7 +147,6 @@ export default function RootLayout({
         <MiniKitContextProvider>
           <AuthProvider>
             {children}
-
           </AuthProvider>
         </MiniKitContextProvider>
       </body>
