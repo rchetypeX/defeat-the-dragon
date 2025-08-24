@@ -122,7 +122,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{
           __html: `
             // Suppress non-critical network errors in development
-            if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+            if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
               const originalError = console.error;
               console.error = function(...args) {
                 const message = args.join(' ');

@@ -228,12 +228,9 @@ export function useWalletAuth() {
         throw new Error(result.error || 'Authentication failed');
       }
 
-      // For wallet authentication, we'll handle it differently
-      if (result.walletAuth && result.sessionUrl) {
-        // Use the session URL to automatically sign in the user
-        window.location.href = result.sessionUrl;
-      } else if (result.walletAuth) {
-        // Fallback: Store wallet user data in localStorage and cookies
+      // For wallet authentication, use localStorage approach to avoid redirect issues
+      if (result.walletAuth) {
+        // Store wallet user data in localStorage and cookies
         localStorage.setItem('walletUser', JSON.stringify(result.user));
         // Also store in a cookie for server-side access
         document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
@@ -288,12 +285,9 @@ export function useWalletAuth() {
         throw new Error(result.error || 'Registration failed');
       }
 
-      // For wallet authentication, we'll handle it differently
-      if (result.walletAuth && result.sessionUrl) {
-        // Use the session URL to automatically sign in the user
-        window.location.href = result.sessionUrl;
-      } else if (result.walletAuth) {
-        // Fallback: Store wallet user data in localStorage and cookies
+      // For wallet authentication, use localStorage approach to avoid redirect issues
+      if (result.walletAuth) {
+        // Store wallet user data in localStorage and cookies
         localStorage.setItem('walletUser', JSON.stringify(result.user));
         // Also store in a cookie for server-side access
         document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;

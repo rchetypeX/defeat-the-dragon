@@ -108,21 +108,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate a session for the new user
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: uniqueEmail,
-      options: {
-        redirectTo: process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz'
-      }
-    });
-
-    if (sessionError) {
-      console.error('Session generation error:', sessionError);
-      // Don't fail the signup, just proceed without auto-login
-    }
-
-    // For wallet authentication, return the user data and session URL
+    // For wallet authentication, return the user data for localStorage approach
     return NextResponse.json({
       success: true,
       user: {
@@ -131,7 +117,6 @@ export async function POST(request: NextRequest) {
         display_name: displayName,
         email: uniqueEmail,
       },
-      sessionUrl: sessionData?.properties?.action_link,
       walletAuth: true,
     });
 
