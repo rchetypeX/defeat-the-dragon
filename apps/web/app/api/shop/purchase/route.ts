@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
 
     // Debug logging
     console.log('Purchase request body:', { itemId, itemType, price, currency });
+    console.log('User ID:', userId);
 
     if (!itemId || !itemType || price === undefined || price === null || !currency) {
       console.log('Validation failed:', { 
@@ -126,35 +127,41 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+    
+    console.log('Player data fetched:', { coins: player.coins, sparks: player.sparks });
 
-    // Check if user has enough currency
-    const currentBalance = currency === 'coins' ? player.coins : player.sparks;
-    if (currentBalance < price) {
-      return NextResponse.json(
-        { error: `Insufficient ${currency}. You have ${currentBalance} ${currency}, but need ${price} ${currency}.` },
-        { status: 402 }
-      );
-    }
+    // Check if user has enough currency (only for paid items)
+    if (price > 0) {
+      const currentBalance = currency === 'coins' ? player.coins : player.sparks;
+      if (currentBalance < price) {
+        return NextResponse.json(
+          { error: `Insufficient ${currency}. You have ${currentBalance} ${currency}, but need ${price} ${currency}.` },
+          { status: 402 }
+        );
+      }
 
-    // Update player currency
-    const updateData: any = {};
-    if (currency === 'coins') {
-      updateData.coins = player.coins - price;
-    } else if (currency === 'sparks') {
-      updateData.sparks = player.sparks - price;
-    }
+      // Update player currency (only for paid items)
+      const updateData: any = {};
+      if (currency === 'coins') {
+        updateData.coins = player.coins - price;
+      } else if (currency === 'sparks') {
+        updateData.sparks = player.sparks - price;
+      }
 
-    const { error: updateError } = await supabase
-      .from('players')
-      .update(updateData)
-      .eq('user_id', userId);
+      const { error: updateError } = await supabase
+        .from('players')
+        .update(updateData)
+        .eq('user_id', userId);
 
-    if (updateError) {
-      console.error('Error updating player currency:', updateError);
-      return NextResponse.json(
-        { error: 'Failed to update currency' },
-        { status: 500 }
-      );
+      if (updateError) {
+        console.error('Error updating player currency:', updateError);
+        return NextResponse.json(
+          { error: 'Failed to update currency' },
+          { status: 500 }
+        );
+      }
+    } else {
+      console.log('Skipping currency update for free item (price = 0)');
     }
 
     // Add item to inventory
