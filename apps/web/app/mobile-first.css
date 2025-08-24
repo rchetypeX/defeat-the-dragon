@@ -1262,3 +1262,110 @@ html, body {
     opacity: 0.5;
   }
 }
+
+/* Focus Session Dialogue Balloon */
+.focus-session-dialogue {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) translateY(-8rem);
+  z-index: 30;
+  max-width: 90vw;
+  padding: 0 1rem;
+  pointer-events: none;
+  animation: dialogueFadeIn 0.5s ease-out;
+}
+
+@keyframes dialogueFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-8rem) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-8rem) scale(1);
+  }
+}
+
+.focus-session-dialogue .pixel-card {
+  background: white;
+  border: 2px solid #374151;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  max-width: 20rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.focus-session-dialogue .pixel-card::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid white;
+}
+
+.focus-session-dialogue .pixel-card::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #374151;
+  margin-top: -1px;
+}
+
+.focus-session-dialogue .text-content {
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25;
+  word-break: break-words;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  transition: opacity 0.3s ease-in-out;
+}
+
+@media (min-width: 640px) {
+  .focus-session-dialogue {
+    transform: translate(-50%, -50%) translateY(-9rem);
+  }
+  
+  .focus-session-dialogue {
+    animation: dialogueFadeInDesktop 0.5s ease-out;
+  }
+  
+  @keyframes dialogueFadeInDesktop {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) translateY(-9rem) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) translateY(-9rem) scale(1);
+    }
+  }
+  
+  .focus-session-dialogue .pixel-card {
+    max-width: 24rem;
+    padding: 1rem 1.5rem;
+  }
+  
+  .focus-session-dialogue .text-content {
+    font-size: 1rem;
+  }
+}
