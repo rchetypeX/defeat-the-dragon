@@ -4,6 +4,7 @@ export async function GET(request: NextRequest) {
   try {
     // For now, return default inventory data
     // In a real app, this would check user authentication and return user-specific inventory
+    // Using item_key values that match the shop_items_master table
     const defaultInventory = [
       {
         id: 'default-fighter',
