@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { SubscriptionPopup } from './SubscriptionPopup';
 
 interface ShopItem {
   id: string;
@@ -46,6 +47,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [purchaseStatus, setPurchaseStatus] = useState<{ [key: string]: 'idle' | 'loading' | 'success' | 'error' }>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
@@ -172,9 +174,13 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   };
 
   const handleSubscription = () => {
-    // TODO: Implement Inspiration Boon purchase logic
-    console.log('Inspiration Boon purchase clicked');
-    alert('Inspiration Boon purchase coming soon! This will allow you to earn Sparks from successful focus sessions.');
+    setShowSubscriptionPopup(true);
+  };
+
+  const handleSubscriptionSuccess = () => {
+    // Refresh inventory to show updated subscription status
+    loadUserInventory();
+    setShowSubscriptionPopup(false);
   };
 
   const getButtonText = (item: ShopItem) => {
@@ -351,6 +357,13 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
           </p>
         </div>
       </div>
+
+      {/* Subscription Popup */}
+      <SubscriptionPopup
+        isOpen={showSubscriptionPopup}
+        onClose={() => setShowSubscriptionPopup(false)}
+        onSuccess={handleSubscriptionSuccess}
+      />
     </div>
   );
 }

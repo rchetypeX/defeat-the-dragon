@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
         xp: 0,
         coins: 3,
         sparks: 0,
-
+        is_inspired: false,
         created_at: new Date().toISOString()
       };
     } else {
@@ -163,16 +163,18 @@ export async function POST(request: NextRequest) {
       xpGained = computeXP(actual_duration_minutes, session.action, 0);
       coinsGained = computeCoins(actual_duration_minutes);
       
-      // Sparks are not implemented yet (subscription feature)
-      sparksGained = 0;
+      // Calculate Sparks for inspired users
+      if (player.is_inspired) {
+        sparksGained = computeSparks(actual_duration_minutes, true);
+      } else {
+        sparksGained = 0;
+      }
 
       // Check for level up
       const newTotalXP = player.xp + xpGained;
       const newLevelCalculated = computeLevel(newTotalXP);
       levelUp = newLevelCalculated > player.level;
       newLevel = newLevelCalculated;
-
-
     }
 
     // Update session and player data
