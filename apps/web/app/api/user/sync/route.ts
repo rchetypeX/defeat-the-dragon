@@ -131,9 +131,28 @@ export async function GET(request: NextRequest) {
       data: {
         player: playerData || null,
         profile: profile || null,
-        // Return empty arrays for tables that don't exist yet
+        // Return default inventory for new users
         settings: null,
-        inventory: [],
+        inventory: [
+          {
+            id: 'default-fighter',
+            user_id: userId,
+            item_id: 'fighter',
+            item_type: 'character',
+            quantity: 1,
+            equipped: true,
+            acquired_at: new Date().toISOString()
+          },
+          {
+            id: 'default-forest',
+            user_id: userId,
+            item_id: 'forest',
+            item_type: 'background',
+            quantity: 1,
+            equipped: true,
+            acquired_at: new Date().toISOString()
+          }
+        ],
         subscriptions: [],
         purchases: [],
         achievements: []

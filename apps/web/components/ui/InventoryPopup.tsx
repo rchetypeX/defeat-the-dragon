@@ -19,19 +19,19 @@ interface InventoryPopupProps {
   onClose: () => void;
 }
 
-// Mock inventory data - in a real app, this would come from the user's owned items
-const inventoryItems = {
+// Default inventory data - only fighter and forest should be owned by default
+const defaultInventoryItems = {
   character: [
-    { id: 'fighter', name: 'Fighter', description: 'Default warrior character', isOwned: true, isEquipped: false, category: 'character' as const, image: '/assets/sprites/fighter.png' },
-    { id: 'wizard', name: 'Wizard', description: 'Powerful magic user', isOwned: true, isEquipped: false, category: 'character' as const, image: '/assets/sprites/wizard.png' },
-    { id: 'paladin', name: 'Paladin', description: 'Holy warrior with divine powers', isOwned: true, isEquipped: false, category: 'character' as const, image: '/assets/sprites/paladin.png' },
-    { id: 'rogue', name: 'Rogue', description: 'Stealthy and agile fighter', isOwned: true, isEquipped: false, category: 'character' as const, image: '/assets/sprites/rogue.png' }
+    { id: 'fighter', name: 'Fighter', description: 'Default warrior character', isOwned: true, isEquipped: true, category: 'character' as const, image: '/assets/sprites/fighter.png' },
+    { id: 'wizard', name: 'Wizard', description: 'Powerful magic user', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/wizard.png' },
+    { id: 'paladin', name: 'Paladin', description: 'Holy warrior with divine powers', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/paladin.png' },
+    { id: 'rogue', name: 'Rogue', description: 'Stealthy and agile fighter', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/rogue.png' }
   ],
   background: [
-    { id: 'forest', name: 'Forest', description: 'Default forest scene', isOwned: true, isEquipped: false, category: 'background' as const, image: '/assets/images/forest-background.png' },
-    { id: 'tundra', name: 'Tundra', description: 'Frozen wilderness', isOwned: true, isEquipped: false, category: 'background' as const, image: '/assets/images/tundra-background.png' },
-    { id: 'underdark', name: 'Underdark', description: 'Dark underground realm', isOwned: true, isEquipped: false, category: 'background' as const, image: '/assets/images/underdark-background.png' },
-    { id: 'dungeon', name: 'Dungeon', description: 'Ancient stone corridors', isOwned: true, isEquipped: false, category: 'background' as const, image: '/assets/images/dungeon-background.png' }
+    { id: 'forest', name: 'Forest', description: 'Default forest scene', isOwned: true, isEquipped: true, category: 'background' as const, image: '/assets/images/forest-background.png' },
+    { id: 'tundra', name: 'Tundra', description: 'Frozen wilderness', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/tundra-background.png' },
+    { id: 'underdark', name: 'Underdark', description: 'Dark underground realm', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/underdark-background.png' },
+    { id: 'dungeon', name: 'Dungeon', description: 'Ancient stone corridors', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/dungeon-background.png' }
   ]
 };
 
@@ -88,7 +88,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
 
   const getEquippedItem = (category: 'character' | 'background') => {
     const equippedId = equippedItems[category];
-    return inventoryItems[category].find(item => item.id === equippedId);
+    return defaultInventoryItems[category].find(item => item.id === equippedId);
   };
 
   if (!isOpen) return null;
@@ -139,7 +139,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
                          {/* Items Grid - Mobile Optimized */}
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-2 gap-2 pb-2">
-            {inventoryItems[activeTab]
+            {defaultInventoryItems[activeTab]
               .filter(item => item.isOwned) // Only show owned items
               .map((item) => (
                 <div

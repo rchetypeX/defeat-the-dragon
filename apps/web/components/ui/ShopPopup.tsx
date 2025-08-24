@@ -69,9 +69,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleEscape);
       // Load user inventory and shop items when shop opens
-      if (user) {
-        loadUserInventory();
-      }
+      loadUserInventory();
       loadShopItems();
     }
 
@@ -126,18 +124,16 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   };
 
   const loadUserInventory = async () => {
-    if (!user) return;
-    
     try {
       setIsLoading(true);
-      const response = await fetch('/api/user/sync');
+      const response = await fetch('/api/inventory');
       
       if (response.ok) {
         const result = await response.json();
-        console.log('Shop: Loaded user data:', result);
-        if (result.data && result.data.inventory) {
-          console.log('Shop: Setting inventory:', result.data.inventory);
-          setUserInventory(result.data.inventory);
+        console.log('Shop: Loaded inventory data:', result);
+        if (result.data) {
+          console.log('Shop: Setting inventory:', result.data);
+          setUserInventory(result.data);
         } else {
           console.log('Shop: No inventory data found');
           setUserInventory([]);

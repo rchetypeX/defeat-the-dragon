@@ -24,13 +24,13 @@ export function MiniKitContextProvider({ children }: { children: ReactNode }) {
 
   return (
     <MiniKitProvider
-      apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || ''}
+      apiKey=""
       config={{
         appearance: {
           mode: 'auto',
           theme: 'snake',
-          name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
-          logo: process.env.NEXT_PUBLIC_APP_ICON,
+          name: 'Defeat the Dragon',
+          logo: undefined,
         },
         analytics: false, // Disable analytics to prevent errors
       }}
