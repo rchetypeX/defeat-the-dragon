@@ -182,61 +182,95 @@ export default function HomePage() {
   // Onboarding Modal
   if (showOnboarding) {
     const step = onboardingSteps[currentOnboardingStep];
+    
     return (
       <ContextAwareLayout>
-        <main className="relative overflow-hidden">
-          {/* Background Forest Scene */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: 'url(/assets/images/forest-background.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          ></div>
-        
-        {/* Onboarding Overlay */}
-        <div className="relative z-20 min-h-screen flex items-center justify-center p-4">
-          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-6 max-w-sm w-full text-center">
-            {/* Progress Indicator */}
-            <div className="flex justify-center mb-6">
-              {onboardingSteps.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-2 h-2 rounded-full mx-1 ${
-                    index <= currentOnboardingStep ? 'bg-[#f2751a]' : 'bg-[#654321]'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Step Content */}
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-[#f2751a] mb-3">{step.title}</h2>
-              <p className="text-[#fbbf24] text-sm leading-relaxed">{step.description}</p>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex space-x-3">
-              <button
-                onClick={handleOnboardingSkip}
-                className="flex-1 py-2 px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-sm"
-              >
-                Skip
-              </button>
-              <button
-                onClick={handleOnboardingNext}
-                className="flex-1 py-2 px-4 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] transition-colors text-sm"
-              >
-                {currentOnboardingStep === onboardingSteps.length - 1 ? 'Get Started' : 'Next'}
-              </button>
-            </div>
+        <AudioProvider>
+          <main className="relative overflow-hidden">
+            {/* Background Music */}
+            <BackgroundMusic 
+              src="/assets/audio/background-music.mp3"
+              volume={0.2}
+              loop={true}
+              autoPlay={true}
+              onLoad={() => console.log('Background music loaded')}
+              onError={(error) => console.error('Background music error:', error)}
+            />
+            {/* Focus Session Music */}
+            <FocusSessionMusic 
+              src="/assets/audio/focus-session-music.mp3"
+              volume={0.4}
+              loop={true}
+              autoPlay={false}
+              onLoad={() => console.log('Focus session music loaded')}
+              onError={(error) => console.error('Focus session music error:', error)}
+            />
+          
+            {/* Background Forest Scene */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: 'url(/assets/images/forest-background.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            ></div>
             
+            {/* Onboarding Content */}
+            <div className="relative z-20 min-h-screen flex items-center justify-center p-4">
+              <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-6 max-w-sm w-full text-center">
+                {/* Large Logo */}
+                <div className="text-center mb-6">
+                  <div className="w-48 h-48 mx-auto mb-4">
+                    <img 
+                      src="/logo.svg"
+                      alt="Defeat the Dragon Logo" 
+                      className="w-full h-full object-contain"
+                      onLoad={() => {
+                        console.log('Logo.svg loaded successfully on onboarding');
+                      }}
+                    />
+                  </div>
+                </div>
 
-          </div>
-        </div>
-      </main>
+                {/* Progress Indicator */}
+                <div className="flex justify-center mb-6">
+                  {onboardingSteps.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-2 h-2 rounded-full mx-1 ${
+                        index <= currentOnboardingStep ? 'bg-[#f2751a]' : 'bg-[#654321]'
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Step Content */}
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-[#f2751a] mb-3">{step.title}</h2>
+                  <p className="text-[#fbbf24] text-sm leading-relaxed">{step.description}</p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleOnboardingSkip}
+                    className="flex-1 py-2 px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-sm"
+                  >
+                    Skip
+                  </button>
+                  <button
+                    onClick={handleOnboardingNext}
+                    className="flex-1 py-2 px-4 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] transition-colors text-sm"
+                  >
+                    {currentOnboardingStep === onboardingSteps.length - 1 ? 'Get Started' : 'Next'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </main>
+        </AudioProvider>
       </ContextAwareLayout>
     );
   }
@@ -282,7 +316,7 @@ export default function HomePage() {
           <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-4 pt-16">
             {/* App Logo */}
             <div className="text-center mb-8">
-              <div className="w-32 h-32 mx-auto mb-4">
+              <div className="w-48 h-48 mx-auto mb-4">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
