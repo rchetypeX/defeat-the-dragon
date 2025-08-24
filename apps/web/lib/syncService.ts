@@ -2,6 +2,56 @@ import { useGameStore } from './store';
 import { useCharacterStore } from './characterStore';
 import { useBackgroundStore } from './backgroundStore';
 
+// Import the apiRequest function for proper authentication
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  // Get auth token
+  let token: string | null = null;
+  
+  // Check if we have a wallet user in localStorage
+  if (typeof window !== 'undefined') {
+    const walletUserStr = localStorage.getItem('walletUser');
+    if (walletUserStr) {
+      try {
+        const walletUser = JSON.parse(walletUserStr);
+        token = `wallet:${JSON.stringify(walletUser)}`;
+      } catch (e) {
+        console.error('Error parsing wallet user:', e);
+      }
+    }
+  }
+  
+  // If no wallet token, try to get Supabase session
+  if (!token && typeof window !== 'undefined') {
+    const { supabase } = await import('./supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      token = session.access_token;
+    }
+  }
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`/api${endpoint}`, {
+    ...options,
+    headers,
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `API request failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export interface SyncData {
   player?: {
     display_name?: string;
@@ -74,26 +124,14 @@ class SyncService {
    */
   async loadUserData(): Promise<SyncResult> {
     try {
-      const response = await fetch('/api/user/sync', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const response = await apiRequest<SyncResult>('/user/sync');
       
-      if (result.success && result.data) {
+      if (response.success && response.data) {
         // Update local stores with data from Supabase
-        this.updateLocalStores(result.data);
+        this.updateLocalStores(response.data);
       }
 
-      return result;
+      return response;
     } catch (error) {
       console.error('Failed to load user data:', error);
       return {
@@ -134,27 +172,17 @@ class SyncService {
     try {
       const syncData = this.collectLocalData();
       
-      const response = await fetch('/api/user/sync', {
+      const response = await apiRequest<SyncResult>('/user/sync', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(syncData),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
       // Process any sync results
-      if (result.success && result.results) {
-        this.handleSyncResults(result.results);
+      if (response.success && response.results) {
+        this.handleSyncResults(response.results);
       }
 
-      return result;
+      return response;
     } catch (error) {
       console.error('Failed to save user data:', error);
       return {
@@ -349,20 +377,12 @@ class SyncService {
 
   private async performPartialSync(syncData: SyncData): Promise<SyncResult> {
     try {
-      const response = await fetch('/api/user/sync', {
+      const response = await apiRequest<SyncResult>('/user/sync', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
         body: JSON.stringify(syncData),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
+      return response;
     } catch (error) {
       console.error('Partial sync failed:', error);
       return {

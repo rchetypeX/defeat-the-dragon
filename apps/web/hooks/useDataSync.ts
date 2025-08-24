@@ -108,9 +108,22 @@ export function useDataSync() {
     const handleBeforeUnload = () => {
       if (user) {
         console.log('Page unloading, syncing data...');
-        // Use sendBeacon for reliable sync on page unload
-        const syncData = syncService.collectLocalData();
-        navigator.sendBeacon('/api/user/sync', JSON.stringify(syncData));
+        
+        // Check if this is a wallet user
+        const walletUserStr = localStorage.getItem('walletUser');
+        if (walletUserStr) {
+          // For wallet users, use syncService instead of sendBeacon
+          // since sendBeacon doesn't support custom headers
+          try {
+            syncService.saveUserData();
+          } catch (error) {
+            console.error('Failed to sync wallet user data on unload:', error);
+          }
+        } else {
+          // For regular Supabase users, use sendBeacon for reliable sync
+          const syncData = syncService.collectLocalData();
+          navigator.sendBeacon('/api/user/sync', JSON.stringify(syncData));
+        }
       }
     };
 
