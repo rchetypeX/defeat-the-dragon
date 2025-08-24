@@ -4,7 +4,7 @@ import './globals.css';
 import './mobile-first.css';
 import { AuthProvider } from '../contexts/AuthContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
-import { DebugPanel } from '../components/debugging/DebugPanel';
+
 
 
 const inter = Inter({ subsets: ['latin'] });
@@ -131,7 +131,7 @@ export default function RootLayout({
         <MiniKitContextProvider>
           <AuthProvider>
             {children}
-            {process.env.NODE_ENV === 'development' && <DebugPanel />}
+
           </AuthProvider>
         </MiniKitContextProvider>
       </body>
