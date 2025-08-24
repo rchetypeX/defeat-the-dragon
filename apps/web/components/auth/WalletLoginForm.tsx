@@ -66,40 +66,40 @@ export function WalletLoginForm() {
     true;
 
   return (
-    <div className="max-w-md mx-auto pixel-card p-4">
-      <h2 className="text-xl font-bold text-center mb-4 text-[#f2751a]">
+    <div className="max-w-md mx-auto pixel-card p-2 sm:p-4">
+      <h2 className="text-lg sm:text-xl font-bold text-center mb-3 sm:mb-4 text-[#f2751a]">
         {shouldShowSignUp ? 'Create Account' : 'Sign In'}
       </h2>
       
       {authError && (
-        <div className="bg-[#ef4444] text-white p-2 mb-3 border-2 border-[#654321] text-sm">
+        <div className="bg-[#ef4444] text-white p-2 mb-2 sm:mb-3 border-2 border-[#654321] text-xs sm:text-sm">
           {authError}
         </div>
       )}
 
       {/* Wallet Provider Selection Modal */}
       {showProviderSelection && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-center mb-4 text-[#f2751a]">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-4 sm:p-6 max-w-sm w-full">
+            <h3 className="text-base sm:text-lg font-bold text-center mb-3 sm:mb-4 text-[#f2751a]">
               Select Wallet Provider
             </h3>
-            <p className="text-[#fbbf24] text-sm mb-4 text-center">
+            <p className="text-[#fbbf24] text-xs sm:text-sm mb-3 sm:mb-4 text-center">
               Multiple wallet extensions detected. Please choose which one to use:
             </p>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {availableProviders.map((provider) => (
                 <button
                   key={provider}
                   onClick={() => selectProvider(provider)}
-                  className="w-full py-3 px-4 bg-[#2d1b0e] border border-[#654321] rounded hover:bg-[#3d2b1e] transition-colors text-[#fbbf24] text-sm"
+                  className="w-full py-2 sm:py-3 px-3 sm:px-4 bg-[#2d1b0e] border border-[#654321] rounded hover:bg-[#3d2b1e] transition-colors text-[#fbbf24] text-xs sm:text-sm"
                 >
                   {provider}
                 </button>
               ))}
               <button
                 onClick={cancelProviderSelection}
-                className="w-full py-2 px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-sm"
+                className="w-full py-2 px-3 sm:px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-xs sm:text-sm"
               >
                 Cancel
               </button>
@@ -108,7 +108,7 @@ export function WalletLoginForm() {
         </div>
       )}
       
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {!isConnected ? (
           <div>
             <button
@@ -142,9 +142,9 @@ export function WalletLoginForm() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {/* Enhanced wallet display with switching options */}
-            <div className="bg-[#1a1a2e] p-3 border border-[#654321] rounded">
+            <div className="bg-[#1a1a2e] p-2 sm:p-3 border border-[#654321] rounded">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-[#fbbf24] font-medium">Connected Wallet</p>
                 <button
@@ -157,7 +157,7 @@ export function WalletLoginForm() {
               </div>
               
               {/* Current wallet address */}
-              <div className="mb-3">
+              <div className="mb-2 sm:mb-3">
                 <p className="text-xs text-white font-mono break-all">
                   {address}
                 </p>
@@ -165,7 +165,7 @@ export function WalletLoginForm() {
 
               {/* Available accounts dropdown */}
               {availableAccounts.length > 1 && (
-                <div className="mb-3">
+                <div className="mb-2 sm:mb-3">
                   <label className="block text-xs text-[#fbbf24] mb-1">
                     Switch to different wallet:
                   </label>
@@ -192,7 +192,7 @@ export function WalletLoginForm() {
               <button
                 onClick={handleSwitchWallet}
                 disabled={isSwitchingWallet || isConnecting}
-                className="w-full px-3 py-1 bg-[#f2751a] text-white text-xs rounded hover:bg-[#e65a0a] disabled:opacity-50 flex items-center justify-center"
+                className="w-full px-2 sm:px-3 py-1 bg-[#f2751a] text-white text-xs rounded hover:bg-[#e65a0a] disabled:opacity-50 flex items-center justify-center"
               >
                 {isSwitchingWallet ? (
                   <>

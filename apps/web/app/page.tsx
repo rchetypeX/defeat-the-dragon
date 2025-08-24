@@ -247,10 +247,10 @@ export default function HomePage() {
             <AudioInfo />
             
             {/* Onboarding Content */}
-            <div className="relative z-20 min-h-screen flex flex-col items-center justify-center p-4">
+            <div className="relative z-20 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
               {/* Large Logo - Outside the card */}
-              <div className="text-center mb-8">
-                <div className="w-64 h-64 mx-auto mb-4">
+              <div className="text-center mb-4 sm:mb-8">
+                <div className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 mx-auto mb-2 sm:mb-4">
                   <img 
                     src="/logo.svg"
                     alt="Defeat the Dragon Logo" 
@@ -262,9 +262,9 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-6 max-w-sm w-full text-center">
+              <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-3 sm:p-6 max-w-sm w-full text-center">
                 {/* Progress Indicator */}
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-3 sm:mb-6">
                   {onboardingSteps.map((_, index) => (
                     <div
                       key={index}
@@ -276,22 +276,22 @@ export default function HomePage() {
                 </div>
 
                 {/* Step Content */}
-                <div className="mb-6">
-                  <h2 className="text-xl font-bold text-[#f2751a] mb-3">{step.title}</h2>
-                  <p className="text-[#fbbf24] text-sm leading-relaxed">{step.description}</p>
+                <div className="mb-3 sm:mb-6">
+                  <h2 className="text-lg sm:text-xl font-bold text-[#f2751a] mb-2 sm:mb-3">{step.title}</h2>
+                  <p className="text-[#fbbf24] text-xs sm:text-sm leading-relaxed">{step.description}</p>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex space-x-3">
+                <div className="flex space-x-2 sm:space-x-3">
                   <button
                     onClick={handleOnboardingSkip}
-                    className="flex-1 py-2 px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-sm"
+                    className="flex-1 py-2 px-3 sm:px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-xs sm:text-sm"
                   >
                     Skip
                   </button>
                   <button
                     onClick={handleOnboardingNext}
-                    className="flex-1 py-2 px-4 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] transition-colors text-sm"
+                    className="flex-1 py-2 px-3 sm:px-4 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] transition-colors text-xs sm:text-sm"
                   >
                     {currentOnboardingStep === onboardingSteps.length - 1 ? 'Get Started' : 'Next'}
                   </button>
@@ -348,10 +348,10 @@ export default function HomePage() {
           <AudioInfo />
           
           {/* Content */}
-          <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-4 pt-16">
+          <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-2 sm:px-4 pt-8 sm:pt-16">
             {/* App Logo */}
-            <div className="text-center mb-8">
-              <div className="w-64 h-64 mx-auto mb-4">
+            <div className="text-center mb-4 sm:mb-8">
+              <div className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 mx-auto mb-2 sm:mb-4">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
@@ -364,7 +364,7 @@ export default function HomePage() {
             </div>
 
             {/* Authentication Tabs */}
-            <div className="w-full max-w-sm mb-3">
+            <div className="w-full max-w-sm mb-2 sm:mb-3">
               <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
                 <button
                   onClick={() => setAuthMode('wallet')}
@@ -397,7 +397,7 @@ export default function HomePage() {
             </div>
             
             {/* Authentication Form */}
-            <div className="w-full max-w-sm mb-3">
+            <div className="w-full max-w-sm mb-2 sm:mb-3">
               {authMode === 'wallet' && <WalletLoginForm key={walletKey} />}
               {authMode === 'login' && <LoginForm />}
               {authMode === 'signup' && <SignUpForm />}
@@ -405,7 +405,7 @@ export default function HomePage() {
             
             {/* Email Auth Toggle (only show when not in wallet mode) */}
             {authMode !== 'wallet' && (
-              <div className="mt-3 text-center">
+              <div className="mt-2 sm:mt-3 text-center">
                 <button
                   onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
                   className="text-[#fbbf24] hover:text-white transition-colors text-xs underline"

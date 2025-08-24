@@ -42,11 +42,8 @@ export function useWalletAuth() {
         // If only one provider, auto-select it
         if (providers.length === 1) {
           setSelectedProvider(providers[0]);
-        } else if (providers.length > 1 && !selectedProvider) {
-          // Show provider selection if multiple providers and none selected
-          setShowProviderSelection(true);
-          return;
         }
+        // Remove automatic modal display - only show when user clicks connect
 
         // Use the selected provider or default to ethereum
         const provider = getProvider();
