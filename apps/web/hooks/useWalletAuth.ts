@@ -67,20 +67,32 @@ export function useWalletAuth() {
 
   // Get the selected provider
   const getProvider = () => {
-    if (!selectedProvider) return window.ethereum;
+    console.log('getProvider called with selectedProvider:', selectedProvider);
+    if (!selectedProvider) {
+      console.log('No selectedProvider, returning window.ethereum');
+      return window.ethereum;
+    }
     
+    let provider: any = null;
     switch (selectedProvider) {
       case 'MetaMask':
-        return window.ethereum;
+        provider = window.ethereum;
+        break;
       case 'Coinbase Wallet':
-        return window.coinbaseWalletExtension;
+        provider = window.coinbaseWalletExtension;
+        break;
       case 'Phantom':
-        return window.phantom?.ethereum;
+        provider = window.phantom?.ethereum;
+        break;
       case 'Trust Wallet':
-        return window.trustwallet;
+        provider = window.trustwallet;
+        break;
       default:
-        return window.ethereum;
+        provider = window.ethereum;
     }
+    
+    console.log(`getProvider returning ${selectedProvider}:`, provider);
+    return provider;
   };
 
   // Check if a wallet address has an existing account
@@ -176,11 +188,30 @@ export function useWalletAuth() {
     setIsConnecting(true);
     
     try {
-      const provider = getProvider();
-      if (!provider) {
-        throw new Error('No wallet provider available');
+      // Get the provider directly based on the selected name, not from state
+      let provider: any = null;
+      switch (providerName) {
+        case 'MetaMask':
+          provider = window.ethereum;
+          break;
+        case 'Coinbase Wallet':
+          provider = window.coinbaseWalletExtension;
+          break;
+        case 'Phantom':
+          provider = window.phantom?.ethereum;
+          break;
+        case 'Trust Wallet':
+          provider = window.trustwallet;
+          break;
+        default:
+          provider = window.ethereum;
       }
 
+      if (!provider) {
+        throw new Error(`No ${providerName} provider available`);
+      }
+
+      console.log(`Connecting to ${providerName}...`);
       const accounts = await provider.request({ method: 'eth_requestAccounts' });
       setAvailableAccounts(accounts);
       if (accounts.length > 0) {
@@ -209,6 +240,12 @@ export function useWalletAuth() {
 
     // Check for available providers
     const providers = [];
+    console.log('Checking for wallet providers...');
+    console.log('window.ethereum:', !!window.ethereum);
+    console.log('window.coinbaseWalletExtension:', !!window.coinbaseWalletExtension);
+    console.log('window.phantom?.ethereum:', !!window.phantom?.ethereum);
+    console.log('window.trustwallet:', !!window.trustwallet);
+    
     if (window.ethereum) {
       providers.push('MetaMask');
     }
@@ -221,6 +258,8 @@ export function useWalletAuth() {
     if (window.trustwallet) {
       providers.push('Trust Wallet');
     }
+    
+    console.log('Available providers:', providers);
 
     if (providers.length === 0) {
       setAuthError('No wallet found. Please install MetaMask or another Web3 wallet.');
