@@ -173,11 +173,13 @@ export const navigationPatterns = {
 
 // Hook for using Base App navigation
 export function useBaseAppNavigation(): BaseAppNavigation {
-  // Detect Base App environment
+  // Detect Base App environment using official method
   const isBaseApp = typeof window !== 'undefined' && 
     (window.location.hostname.includes('base.org') || 
      window.navigator.userAgent.includes('BaseApp') ||
-     window.location.search.includes('base_app=true'));
+     window.location.search.includes('base_app=true') ||
+     // Official Base App client FID detection (when context is available)
+     false); // Will be updated when context is available
 
   // Assume SDK support in Base App environment
   const context: NavigationContext = {

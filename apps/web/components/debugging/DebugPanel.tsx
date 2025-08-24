@@ -9,6 +9,11 @@ import {
   initializeDebugging,
   debugLog
 } from '../../lib/debugging';
+import { 
+  useBaseAppCompatibility, 
+  logBaseAppCompatibility,
+  BASE_APP_DEVELOPMENT_NOTES 
+} from '../../lib/baseAppCompatibility';
 
 /**
  * Debug Panel Component
@@ -25,6 +30,9 @@ export function DebugPanel({ className = '' }: DebugPanelProps) {
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
+  
+  // Base App compatibility checking
+  const compatibility = useBaseAppCompatibility();
 
   // Initialize debugging on mount
   useEffect(() => {
@@ -66,6 +74,7 @@ export function DebugPanel({ className = '' }: DebugPanelProps) {
 
   const refreshDebugInfo = () => {
     setDebugInfo(collectDebugInfo());
+    logBaseAppCompatibility();
   };
 
   const clearLogs = () => {
@@ -216,31 +225,58 @@ export function DebugPanel({ className = '' }: DebugPanelProps) {
         </div>
       )}
 
-      {/* Debug Information */}
-      {debugInfo && (
-        <div className="mb-6 p-4 bg-gray-800 rounded">
-          <h3 className="text-lg font-semibold mb-3">Environment Info</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <div className="font-semibold">Environment:</div>
-              <div className="space-y-1">
-                <div>Base App: {debugInfo.isBaseApp ? '✅ Yes' : '❌ No'}</div>
-                <div>Mobile: {debugInfo.isMobile ? '✅ Yes' : '❌ No'}</div>
-                <div>Wallet: {debugInfo.walletConnection ? '✅ Connected' : '❌ Not Connected'}</div>
-                <div>Frame Metadata: {debugInfo.frameMetadata ? '✅ Present' : '❌ Missing'}</div>
-              </div>
-            </div>
-            <div>
-              <div className="font-semibold">Viewport:</div>
-              <div className="space-y-1">
-                <div>Width: {debugInfo.viewport.width}px</div>
-                <div>Height: {debugInfo.viewport.height}px</div>
-                <div>Manifest URL: {debugInfo.manifestUrl}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+             {/* Debug Information */}
+       {debugInfo && (
+         <div className="mb-6 p-4 bg-gray-800 rounded">
+           <h3 className="text-lg font-semibold mb-3">Environment Info</h3>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+             <div>
+               <div className="font-semibold">Environment:</div>
+               <div className="space-y-1">
+                 <div>Base App: {debugInfo.isBaseApp ? '✅ Yes' : '❌ No'}</div>
+                 <div>Client FID: {compatibility.clientFid || 'Not detected'}</div>
+                 <div>Mobile: {debugInfo.isMobile ? '✅ Yes' : '❌ No'}</div>
+                 <div>Wallet: {debugInfo.walletConnection ? '✅ Connected' : '❌ Not Connected'}</div>
+                 <div>Frame Metadata: {debugInfo.frameMetadata ? '✅ Present' : '❌ Missing'}</div>
+               </div>
+             </div>
+             <div>
+               <div className="font-semibold">Viewport:</div>
+               <div className="space-y-1">
+                 <div>Width: {debugInfo.viewport.width}px</div>
+                 <div>Height: {debugInfo.viewport.height}px</div>
+                 <div>Manifest URL: {debugInfo.manifestUrl}</div>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
+
+       {/* Base App Compatibility */}
+       <div className="mb-6 p-4 bg-gray-800 rounded">
+         <h3 className="text-lg font-semibold mb-3">Base App Compatibility</h3>
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+           <div>
+             <div className="font-semibold">Feature Support:</div>
+             <div className="space-y-1">
+               <div>Notifications: {compatibility.supportsNotifications ? '✅ Supported' : '❌ Not Supported'}</div>
+               <div>Mini App Actions: {compatibility.supportsMiniAppActions ? '✅ Supported' : '❌ Not Supported'}</div>
+               <div>Camera Access: {compatibility.supportsCameraAccess ? '✅ Supported' : '❌ Not Supported'}</div>
+               <div>Open URL: {compatibility.supportsOpenUrl ? '✅ Supported' : '❌ Not Supported'}</div>
+               <div>Compose Cast: {compatibility.supportsComposeCast ? '✅ Supported' : '❌ Not Supported'}</div>
+               <div>View Profile: {compatibility.supportsViewProfile ? '✅ Supported' : '❌ Not Supported'}</div>
+             </div>
+           </div>
+           <div>
+             <div className="font-semibold">Wallet Methods:</div>
+             <div className="space-y-1">
+               <div>OnchainKit: {compatibility.supportsOnchainKit ? '✅ Supported' : '❌ Not Supported'}</div>
+               <div>Wagmi: {compatibility.supportsWagmi ? '✅ Supported' : '❌ Not Supported'}</div>
+               <div>Window Ethereum: {compatibility.supportsWindowEthereum ? '✅ Supported' : '❌ Not Supported'}</div>
+             </div>
+           </div>
+         </div>
+       </div>
 
       {/* User Agent */}
       {debugInfo && (

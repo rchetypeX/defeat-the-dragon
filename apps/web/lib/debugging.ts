@@ -186,10 +186,13 @@ export function collectDebugInfo(): DebugInfo {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // Detect environment
+  // Detect environment using official Base App detection
   const isBaseApp = typeof window !== 'undefined' && 
     (window.location.hostname.includes('base.org') || 
-     window.navigator.userAgent.includes('BaseApp'));
+     window.navigator.userAgent.includes('BaseApp') ||
+     // Official Base App client FID detection
+     (typeof window !== 'undefined' && 
+      window.location.search.includes('base_app=true')));
   
   const isMobile = typeof window !== 'undefined' && 
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);

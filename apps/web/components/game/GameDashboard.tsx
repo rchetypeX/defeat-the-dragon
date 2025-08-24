@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGameStore } from '../../lib/store';
 import { SessionTimer } from './SessionTimer';
 import { SessionProgress } from './SessionProgress';
@@ -17,6 +17,7 @@ import { useCharacterStore } from '../../lib/characterStore';
 import { useBackgroundStore } from '../../lib/backgroundStore';
 import { CharacterDialogue } from './CharacterDialogue';
 import { useDataSync } from '../../hooks/useDataSync';
+import { usePrimaryButton } from '@coinbase/onchainkit/minikit';
 
 interface SessionResult {
   xp_gained: number;
@@ -71,6 +72,52 @@ export function GameDashboard() {
   
   const { equippedCharacter, getCharacterImage } = useCharacterStore();
   const { equippedBackground, getBackgroundImage } = useBackgroundStore();
+
+  // Primary Button Configuration
+  const getPrimaryButtonConfig = useCallback(() => {
+    if (sessionProgress.isActive) {
+      return {
+        text: 'PAUSE SESSION',
+        action: () => {
+          // Handle pause session logic
+          console.log('Primary button: Pause session clicked');
+          // TODO: Implement pause session functionality
+        }
+      };
+    } else if (sessionResult) {
+      return {
+        text: 'CONTINUE FOCUSING',
+        action: () => {
+          console.log('Primary button: Continue focusing clicked');
+          handleDismissSuccess();
+        }
+      };
+    } else if (showSessionTimer) {
+      return {
+        text: 'START FOCUS SESSION',
+        action: () => {
+          console.log('Primary button: Start focus session clicked');
+          // This will be handled by the SessionTimer component
+        }
+      };
+    } else {
+      return {
+        text: 'START FOCUSING',
+        action: () => {
+          console.log('Primary button: Start focusing clicked');
+          setShowSessionTimer(true);
+        }
+      };
+    }
+  }, [sessionProgress.isActive, sessionResult, showSessionTimer]);
+
+  const primaryButtonConfig = getPrimaryButtonConfig();
+
+  // Configure primary button based on game state
+  usePrimaryButton(
+    { text: primaryButtonConfig.text },
+    primaryButtonConfig.action
+  );
 
   useEffect(() => {
     // Notification system is now handled by useBaseAppNotifications hook

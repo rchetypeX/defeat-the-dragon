@@ -10,7 +10,7 @@ import { GameDashboard } from '../components/game/GameDashboard';
 import BackgroundMusic from '../components/audio/BackgroundMusic';
 import FocusSessionMusic from '../components/audio/FocusSessionMusic';
 import { AudioProvider } from '../contexts/AudioContext';
-import { useMiniKit } from '@coinbase/onchainkit/minikit';
+import { useMiniKit, usePrimaryButton } from '@coinbase/onchainkit/minikit';
 import { ExternalLink } from '../components/ui/ExternalLink';
 import { useBaseAppAuth } from '../hooks/useBaseAppAuth';
 import { useContextAware } from '../hooks/useContextAware';
@@ -110,6 +110,47 @@ export default function HomePage() {
   const handleSignUp = () => {
     setAuthMode('wallet');
   };
+
+  // Primary Button Configuration for Onboarding
+  const getOnboardingPrimaryButtonConfig = () => {
+    if (showOnboarding) {
+      if (currentOnboardingStep < onboardingSteps.length - 1) {
+        return {
+          text: 'NEXT',
+          action: handleOnboardingNext
+        };
+      } else {
+        return {
+          text: 'GET STARTED',
+          action: handleOnboardingNext
+        };
+      }
+    } else if (!user && !loading) {
+      return {
+        text: 'CONNECT WALLET',
+        action: () => {
+          // This will be handled by the wallet connection flow
+          console.log('Primary button: Connect wallet clicked');
+        }
+      };
+    } else {
+      return {
+        text: 'START FOCUSING',
+        action: () => {
+          // This will be handled by the game dashboard
+          console.log('Primary button: Start focusing clicked');
+        }
+      };
+    }
+  };
+
+  const onboardingPrimaryButtonConfig = getOnboardingPrimaryButtonConfig();
+
+  // Configure primary button for onboarding and authentication
+  usePrimaryButton(
+    { text: onboardingPrimaryButtonConfig.text },
+    onboardingPrimaryButtonConfig.action
+  );
 
   if (loading) {
     return (

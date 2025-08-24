@@ -31,17 +31,23 @@ export function useBaseAppAuth(): BaseAppAuthState {
   // Detect if we're in Base App environment
   useEffect(() => {
     const detectBaseApp = () => {
-      const baseAppDetected = typeof window !== 'undefined' && 
+      // Official Base App detection method
+      const isBaseApp = context?.client?.clientFid === 309857;
+      
+      // Fallback detection methods
+      const fallbackDetection = typeof window !== 'undefined' && 
         (window.location.hostname.includes('base.org') || 
          window.navigator.userAgent.includes('BaseApp') ||
          window.location.search.includes('base_app=true'));
       
+      const baseAppDetected = isBaseApp || fallbackDetection;
+      
       setIsBaseApp(baseAppDetected);
-      console.log('Base App detected:', baseAppDetected);
+      console.log('Base App detected:', baseAppDetected, 'Client FID:', context?.client?.clientFid);
     };
 
     detectBaseApp();
-  }, []);
+  }, [context?.client?.clientFid]);
 
   // Extract context data for analytics (safe to use)
   const contextUser = context?.user || null;
