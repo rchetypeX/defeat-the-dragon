@@ -244,23 +244,8 @@ export async function getPlayerData() {
     
     console.log('API: All database queries completed');
 
-    // Prioritize display_name from players table, fallback to profiles table
+    // Get display_name from players table
     let displayName = playerResult.data?.display_name || 'Adventurer';
-    
-    // If no display_name in players table, try profiles table
-    if (!playerResult.data?.display_name) {
-      console.log('API: Querying profiles table for display_name...');
-      const profileResult = await supabase
-        .from('profiles')
-        .select('display_name')
-        .eq('user_id', userId)
-        .single();
-      console.log('API: Profiles query completed, error:', profileResult.error);
-      
-      if (profileResult.data?.display_name) {
-        displayName = profileResult.data.display_name;
-      }
-    }
 
     // Combine player data with display name
     const player = {

@@ -82,22 +82,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch user data from available tables
-    const [
-      { data: player, error: playerError },
-      { data: profile, error: profileError }
-    ] = await Promise.all([
-      supabase
-        .from('players')
-        .select('*')
-        .eq('user_id', userId)
-        .single(),
-      supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
-    ]);
+    // Fetch user data from players table only
+    const { data: player, error: playerError } = await supabase
+      .from('players')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
 
     // Check for critical errors
     if (playerError && playerError.code !== 'PGRST116') {
@@ -151,32 +141,14 @@ export async function GET(request: NextRequest) {
         );
       }
       
-      playerData = newPlayer;
-      
-      // Also create profile if it doesn't exist
-      if (profileError && profileError.code === 'PGRST116') {
-        const defaultProfile = {
-          user_id: userId,
-          display_name: defaultPlayer.display_name || 'Adventurer',
-          created_at: new Date().toISOString()
-        };
-        
-        const { error: profileCreateError } = await supabase
-          .from('profiles')
-          .insert(defaultProfile);
-        
-        if (profileCreateError) {
-          console.error('Error creating default profile:', profileCreateError);
-        }
-      }
+             playerData = newPlayer;
     }
 
-    // Return user data with available information
-    return NextResponse.json({
-      success: true,
-      data: {
-        player: playerData || null,
-        profile: profile || null,
+         // Return user data with available information
+     return NextResponse.json({
+       success: true,
+       data: {
+         player: playerData || null,
         // Return default inventory for new users
         settings: null,
         inventory: [
@@ -322,22 +294,17 @@ export async function POST(request: NextRequest) {
           .single()
       );
       
-      // Update profiles table if display_name is provided
+      // Update Supabase Auth Users table with display_name if provided
       if (player.display_name) {
         updatePromises.push(
-          supabase
-            .from('profiles')
-            .update({
-              display_name: player.display_name
-            })
-            .eq('user_id', userId)
-            .select()
-            .single()
+          supabase.auth.admin.updateUserById(userId, {
+            user_metadata: { display_name: player.display_name }
+          })
         );
       }
       
-      // Wait for both updates to complete
-      const [playerResult, profileResult] = await Promise.all(updatePromises);
+      // Wait for all updates to complete
+      const [playerResult, authResult] = await Promise.all(updatePromises);
       
       if (playerResult.error) {
         console.error('Error updating player:', playerResult.error);
@@ -346,11 +313,11 @@ export async function POST(request: NextRequest) {
         results.player = { success: true, data: playerResult.data };
       }
       
-      // Log profile update result (but don't fail the whole operation if it fails)
-      if (profileResult && profileResult.error) {
-        console.error('Error updating profile:', profileResult.error);
-      } else if (profileResult) {
-        console.log('Profile updated successfully');
+      // Log auth update result (but don't fail the whole operation if it fails)
+      if (authResult && authResult.error) {
+        console.error('Error updating auth user:', authResult.error);
+      } else if (authResult) {
+        console.log('Auth user updated successfully');
       }
     }
 
