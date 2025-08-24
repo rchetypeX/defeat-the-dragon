@@ -233,17 +233,7 @@ export default function HomePage() {
               </button>
             </div>
             
-            {/* External Link Example (Base App) */}
-            {currentOnboardingStep === onboardingSteps.length - 1 && (
-              <div className="mt-4 pt-4 border-t border-[#654321]">
-                <ExternalLink 
-                  href="https://docs.base.org/mini-apps/quickstart/launch-guide"
-                  className="text-[#f2751a] hover:text-[#e65a0a] text-sm underline"
-                >
-                  Learn more about Base App →
-                </ExternalLink>
-              </div>
-            )}
+
           </div>
         </div>
       </main>
@@ -289,26 +279,18 @@ export default function HomePage() {
           ></div>
           
           {/* Content */}
-          <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-4">
+          <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-4 pt-16">
             {/* App Logo */}
-            <div className="text-center mb-6">
-              <div className="w-20 h-20 mx-auto mb-3">
+            <div className="text-center mb-8">
+              <div className="w-32 h-32 mx-auto mb-4">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
                   className="w-full h-full object-contain"
-                  onError={(e) => {
-                    console.log('Logo.svg failed, showing text fallback');
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                  }}
                   onLoad={() => {
                     console.log('Logo.svg loaded successfully');
                   }}
                 />
-                <div className="w-full h-full bg-[#f2751a] rounded-lg flex items-center justify-center hidden">
-                  <span className="text-white text-lg font-bold">DTD</span>
-                </div>
               </div>
             </div>
 

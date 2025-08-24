@@ -144,65 +144,63 @@ export async function getCurrentSession() {
  * Get current user's player data
  */
 export async function getPlayerData() {
+  console.log('API: getPlayerData called');
   try {
-    console.log('API: getPlayerData called');
-    
-    // Check if Supabase is properly configured
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
-    // If Supabase is not configured, return mock data immediately
-    if (!supabaseUrl || !supabaseAnonKey || 
-        supabaseUrl === 'https://placeholder.supabase.co' || 
-        supabaseAnonKey === 'placeholder-key') {
-      console.log('API: Supabase not configured, returning mock data');
-      console.log('API: To use real Supabase, create a .env.local file with:');
-      console.log('API: NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co');
-      console.log('API: NEXT_PUBLIC_SUPABASE_ANON_KEY=your_actual_anon_key');
-      return {
-        id: 'mock-player-id',
-        user_id: 'mock-user-id',
-        level: 1,
-        xp: 0,
-        coins: 3,
-        sparks: 0,
-
-        created_at: new Date().toISOString(),
-        display_name: 'Adventurer' // Default name for testing
-      };
-    }
-    
-                   // No timeout - let Supabase calls take their time
-    console.log('API: Starting getPlayerData execution');
     const { data: { user } } = await supabase.auth.getUser();
-    console.log('API: Auth user check completed, user:', user ? 'exists' : 'null');
+    console.log('API: Auth user check completed, user:', user ? 'exists' : 'not found');
     
     if (!user) {
-      console.log('API: No authenticated user, returning mock data');
-      // Return mock data for development when no user is authenticated
-      return {
-        id: 'mock-player-id',
-        user_id: 'mock-user-id',
-        level: 1,
-        xp: 0,
-        coins: 3,
-        sparks: 0,
-
-        created_at: new Date().toISOString(),
-        display_name: 'Adventurer' // Default name for testing
-      };
+      console.log('API: No authenticated user found');
+      throw new Error('No authenticated user found');
     }
 
     console.log('API: Starting database queries for user:', user.id);
     
-    // Get player data and profile data in parallel with individual logging
+    // First, try to get existing player data
     console.log('API: Querying players table...');
     const playerResult = await supabase
       .from('players')
       .select('*')
       .eq('user_id', user.id)
       .single();
+    
     console.log('API: Players query completed, error:', playerResult.error);
+    
+    // If player doesn't exist, create a default player record
+    if (playerResult.error && playerResult.error.code === 'PGRST116') {
+      console.log('API: Player record not found, creating default player...');
+      
+      const defaultPlayer = {
+        user_id: user.id,
+        level: 1,
+        xp: 0,
+        coins: 100,
+        sparks: 50,
+        total_sessions: 0,
+        total_focus_time: 0,
+        current_streak: 0,
+        longest_streak: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      const createResult = await supabase
+        .from('players')
+        .insert(defaultPlayer)
+        .select()
+        .single();
+      
+      if (createResult.error) {
+        console.error('API: Failed to create default player:', createResult.error);
+        throw new Error(`Failed to create player record: ${createResult.error.message}`);
+      }
+      
+      console.log('API: Default player created successfully');
+      playerResult.data = createResult.data;
+    } else if (playerResult.error) {
+      console.error('API: Players table query failed:', playerResult.error);
+      throw new Error(`Players query failed: ${playerResult.error.message}`);
+    }
     
     console.log('API: Querying profiles table...');
     const profileResult = await supabase
@@ -214,20 +212,13 @@ export async function getPlayerData() {
     
     console.log('API: All database queries completed');
 
-    if (playerResult.error) {
-      console.error('API: Players table query failed:', playerResult.error);
-      throw new Error(`Players query failed: ${playerResult.error.message}`);
-    }
-
-    if (profileResult.error) {
-      console.error('API: Profiles table query failed:', profileResult.error);
-      // Don't throw for profile errors, just use default name
-    }
+    // Don't throw for profile errors, just use default name
+    const displayName = profileResult.data?.display_name || 'Adventurer';
 
     // Combine player data with display name
     const player = {
       ...playerResult.data,
-      display_name: profileResult.data?.display_name || 'Adventurer'
+      display_name: displayName
     };
 
     console.log('API: Successfully retrieved player data:', {

@@ -91,8 +91,6 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   themeColor: '#7c2d12',
-  // Lock to portrait mode
-  orientation: 'portrait',
 };
 
 export default function RootLayout({
@@ -115,14 +113,11 @@ export default function RootLayout({
           <meta name="msapplication-tap-highlight" content="no" />
           <meta name="theme-color" content="#7c2d12" />
           {/* Lock to portrait mode */}
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=portrait" />
-          <meta name="screen-orientation" content="portrait" />
-          <meta name="x5-orientation" content="portrait" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
           <meta name="full-screen" content="yes" />
           <meta name="x5-fullscreen" content="true" />
           <meta name="360-fullscreen" content="true" />
-          {/* Orientation lock script */}
-          <script src="/orientation-lock.js" defer></script>
+
         </head>
       <body className={inter.className}>
         {/* Orientation warning for mobile landscape */}

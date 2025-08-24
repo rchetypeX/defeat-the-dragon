@@ -94,6 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (error) {
           console.error('Failed to load player data:', error);
+          // Don't block the app if player data fails to load
+          // The user can still use the app and data will be created when needed
         }
       } else {
         setGameUser(null);
@@ -105,11 +107,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [setGameUser, resetGame]);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        // Provide more specific error messages for common cases
+        if (error.message.includes('Invalid login credentials') || 
+            error.message.includes('Invalid email or password') ||
+            error.message.includes('Email not confirmed') ||
+            error.message.includes('User not found')) {
+          return { 
+            error: { 
+              message: 'No account found with this email. Please create an account first.' 
+            } 
+          };
+        }
+        if (error.message.includes('Email not confirmed')) {
+          return { 
+            error: { 
+              message: 'Please check your email and click the confirmation link before signing in.' 
+            } 
+          };
+        }
+        return { error };
+      }
+      
+      return { error: null };
+    } catch (error) {
+      console.error('Sign in error:', error);
+      return { 
+        error: { 
+          message: 'An unexpected error occurred. Please try again.' 
+        } 
+      };
+    }
   };
 
   const signUp = async (email: string, password: string, displayName: string) => {
