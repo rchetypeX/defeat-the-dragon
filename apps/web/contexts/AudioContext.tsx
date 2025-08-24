@@ -67,14 +67,11 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
     // Listen for user interaction to enable audio
     const handleUserInteraction = () => {
       if (!hasUserInteracted) {
-        console.log('AudioContext: User interaction detected - enabling audio');
+        console.log('AudioContext: User interaction detected - audio system ready');
         setHasUserInteracted(true);
         
-        // Enable background music by default after user interaction
-        setAudioState(prev => ({
-          ...prev,
-          isBackgroundPlaying: true,
-        }));
+        // Don't automatically enable background music - let user choose
+        // This complies with browser autoplay policies
         
         // Remove listeners after first interaction
         document.removeEventListener('click', handleUserInteraction);

@@ -17,6 +17,8 @@ import { useContextAware } from '../hooks/useContextAware';
 import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
 import { SocialAcknowledgment } from '../components/social/SocialAcknowledgment';
 import { EntryPointExperience } from '../components/context/EntryPointExperience';
+import { SoundToggle } from '../components/ui/SoundToggle';
+import { AudioInfo } from '../components/ui/AudioInfo';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -217,6 +219,12 @@ export default function HomePage() {
               }}
             ></div>
             
+            {/* Sound Toggle */}
+            <SoundToggle />
+            
+            {/* Audio Info */}
+            <AudioInfo />
+            
             {/* Onboarding Content */}
             <div className="relative z-20 min-h-screen flex items-center justify-center p-4">
               <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-6 max-w-sm w-full text-center">
@@ -312,6 +320,12 @@ export default function HomePage() {
             }}
           ></div>
           
+          {/* Sound Toggle */}
+          <SoundToggle />
+          
+          {/* Audio Info */}
+          <AudioInfo />
+          
           {/* Content */}
           <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-4 pt-16">
             {/* App Logo */}
@@ -395,6 +409,8 @@ export default function HomePage() {
       <SocialAcknowledgment />
       <EntryPointExperience>
         <AudioProvider>
+          <SoundToggle />
+          <AudioInfo />
           <BackgroundMusic 
             src="/assets/audio/background-music.mp3"
             volume={0.3}
