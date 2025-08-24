@@ -51,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (walletUserStr) {
           try {
             const walletUser = JSON.parse(walletUserStr);
+            console.log('AuthContext: Found wallet user in localStorage:', walletUser);
             setUser(walletUser);
             setGameUser({
               id: walletUser.id,
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               const playerData = await getPlayerData();
               if (playerData) {
                 useGameStore.getState().setPlayer(playerData);
+                console.log('AuthContext: Successfully loaded player data for wallet user');
               }
             } catch (error) {
               console.error('Failed to load player data for wallet user:', error);
@@ -69,6 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error('Error parsing wallet user data:', error);
             localStorage.removeItem('walletUser');
           }
+        } else {
+          console.log('AuthContext: No wallet user found in localStorage');
         }
       }
     });

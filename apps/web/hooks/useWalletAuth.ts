@@ -12,6 +12,7 @@ export function useWalletAuth() {
   const [isCheckingAccount, setIsCheckingAccount] = useState(false);
   const [availableAccounts, setAvailableAccounts] = useState<string[]>([]);
   const [isSwitchingWallet, setIsSwitchingWallet] = useState(false);
+  const [manualDisconnect, setManualDisconnect] = useState(false); // Flag to prevent auto-reconnection
 
   // Check if MetaMask is available
   const checkIfWalletIsConnected = async () => {
@@ -19,7 +20,9 @@ export function useWalletAuth() {
       if (typeof window !== 'undefined' && window.ethereum) {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         setAvailableAccounts(accounts);
-        if (accounts.length > 0) {
+        
+        // Only auto-connect if user hasn't manually disconnected
+        if (accounts.length > 0 && !manualDisconnect) {
           setAddress(accounts[0]);
           setIsConnected(true);
           // Check if this wallet has an account
@@ -57,13 +60,25 @@ export function useWalletAuth() {
 
   useEffect(() => {
     checkIfWalletIsConnected();
+  }, [manualDisconnect]); // Re-run when manualDisconnect changes
+
+  // Reset manual disconnect flag when component mounts (e.g., when switching tabs)
+  useEffect(() => {
+    setManualDisconnect(false);
   }, []);
 
   // Listen for account changes
   useEffect(() => {
     if (typeof window !== 'undefined' && window.ethereum) {
       const handleAccountsChanged = async (accounts: string[]) => {
-        console.log('Accounts changed:', accounts);
+        console.log('Accounts changed:', accounts, 'manualDisconnect:', manualDisconnect);
+        
+        // If we manually disconnected, don't auto-reconnect
+        if (manualDisconnect) {
+          console.log('Ignoring accountsChanged due to manual disconnect');
+          return;
+        }
+        
         setAvailableAccounts(accounts);
         if (accounts.length === 0) {
           // User disconnected wallet
@@ -87,6 +102,7 @@ export function useWalletAuth() {
         setHasAccount(null);
         setAuthError(null);
         setAvailableAccounts([]);
+        setManualDisconnect(true); // Set flag when MetaMask disconnects
       };
 
       window.ethereum.on('accountsChanged', handleAccountsChanged);
@@ -97,7 +113,7 @@ export function useWalletAuth() {
         window.ethereum.removeListener('disconnect', handleDisconnect);
       };
     }
-  }, []);
+  }, [manualDisconnect]); // Add manualDisconnect to dependency array
 
   const connectWallet = async () => {
     if (typeof window === 'undefined' || !window.ethereum) {
@@ -107,6 +123,7 @@ export function useWalletAuth() {
 
     setIsConnecting(true);
     setAuthError(null);
+    setManualDisconnect(false); // Reset flag when user explicitly connects
 
     try {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -141,6 +158,7 @@ export function useWalletAuth() {
       setIsConnecting(false);
       setIsSwitchingWallet(false);
       setIsCheckingAccount(false);
+      setManualDisconnect(true); // Set flag to prevent auto-reconnection
       
       console.log('Wallet disconnected - all state cleared');
       
@@ -155,6 +173,7 @@ export function useWalletAuth() {
   const switchWallet = async () => {
     setIsSwitchingWallet(true);
     setAuthError(null);
+    setManualDisconnect(false); // Reset flag when switching wallets
     
     try {
       // First disconnect current wallet
@@ -181,6 +200,7 @@ export function useWalletAuth() {
   const switchToSpecificAccount = async (targetAddress: string) => {
     setIsSwitchingWallet(true);
     setAuthError(null);
+    setManualDisconnect(false); // Reset flag when switching accounts
     
     try {
       // Check if the target address is in available accounts
@@ -258,8 +278,12 @@ export function useWalletAuth() {
         // Set a cookie for server-side access
         document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
         
-        // The session cookies are set by the server, so we can redirect to the app
-        window.location.href = '/';
+        console.log('Wallet sign-in successful, reloading page in 100ms...');
+        
+        // Add a small delay to ensure localStorage is set before reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       }
 
     } catch (error) {
@@ -319,8 +343,13 @@ export function useWalletAuth() {
         
         // Update account status
         setHasAccount(true);
-        // The session cookies are set by the server, so we can redirect to the app
-        window.location.href = '/';
+        
+        console.log('Wallet sign-up successful, reloading page in 100ms...');
+        
+        // Add a small delay to ensure localStorage is set before reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       }
 
     } catch (error) {

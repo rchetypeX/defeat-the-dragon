@@ -77,6 +77,19 @@ export default function HomePage() {
     }
   }, [isBaseApp, isBaseAppAuthenticated, contextFid, verifiedUser, entryType, isViralEntry, isReturningUser, platformType]);
 
+  // Debug user authentication state
+  useEffect(() => {
+    console.log('🔐 User Auth State:', {
+      user: !!user,
+      loading,
+      userDetails: user ? {
+        id: user.id,
+        email: user.email,
+        wallet_address: (user as any).wallet_address,
+      } : null,
+    });
+  }, [user, loading]);
+
   const onboardingSteps = [
     {
       title: "Welcome to Defeat the Dragon!",
@@ -234,22 +247,22 @@ export default function HomePage() {
             <AudioInfo />
             
             {/* Onboarding Content */}
-            <div className="relative z-20 min-h-screen flex items-center justify-center p-4">
-              <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-6 max-w-sm w-full text-center">
-                {/* Large Logo */}
-                <div className="text-center mb-6">
-                  <div className="w-48 h-48 mx-auto mb-4">
-                    <img 
-                      src="/logo.svg"
-                      alt="Defeat the Dragon Logo" 
-                      className="w-full h-full object-contain"
-                      onLoad={() => {
-                        console.log('Logo.svg loaded successfully on onboarding');
-                      }}
-                    />
-                  </div>
+            <div className="relative z-20 min-h-screen flex flex-col items-center justify-center p-4">
+              {/* Large Logo - Outside the card */}
+              <div className="text-center mb-8">
+                <div className="w-64 h-64 mx-auto mb-4">
+                  <img 
+                    src="/logo.svg"
+                    alt="Defeat the Dragon Logo" 
+                    className="w-full h-full object-contain"
+                    onLoad={() => {
+                      console.log('Logo.svg loaded successfully on onboarding');
+                    }}
+                  />
                 </div>
+              </div>
 
+              <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-6 max-w-sm w-full text-center">
                 {/* Progress Indicator */}
                 <div className="flex justify-center mb-6">
                   {onboardingSteps.map((_, index) => (
@@ -338,7 +351,7 @@ export default function HomePage() {
           <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-4 pt-16">
             {/* App Logo */}
             <div className="text-center mb-8">
-              <div className="w-48 h-48 mx-auto mb-4">
+              <div className="w-64 h-64 mx-auto mb-4">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
