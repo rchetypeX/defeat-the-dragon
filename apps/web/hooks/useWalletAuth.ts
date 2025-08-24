@@ -172,8 +172,28 @@ export function useWalletAuth() {
     setShowProviderSelection(false);
     setAuthError(null);
     
-    // Try to connect with the selected provider
-    await connectWallet();
+    // Immediately start the connection process with the selected provider
+    setIsConnecting(true);
+    
+    try {
+      const provider = getProvider();
+      if (!provider) {
+        throw new Error('No wallet provider available');
+      }
+
+      const accounts = await provider.request({ method: 'eth_requestAccounts' });
+      setAvailableAccounts(accounts);
+      if (accounts.length > 0) {
+        setAddress(accounts[0]);
+        setIsConnected(true);
+        await checkAccountExists(accounts[0]);
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+      setAuthError('Failed to connect wallet. Please try again.');
+    } finally {
+      setIsConnecting(false);
+    }
   };
 
   const cancelProviderSelection = () => {
@@ -207,40 +227,67 @@ export function useWalletAuth() {
       return;
     }
 
+    // If a provider is already selected, connect immediately
+    if (selectedProvider) {
+      setIsConnecting(true);
+      setAuthError(null);
+      setManualDisconnect(false); // Reset flag when user explicitly connects
+
+      try {
+        const provider = getProvider();
+        if (!provider) {
+          throw new Error('No wallet provider available');
+        }
+
+        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+        setAvailableAccounts(accounts);
+        if (accounts.length > 0) {
+          setAddress(accounts[0]);
+          setIsConnected(true);
+          await checkAccountExists(accounts[0]);
+        }
+      } catch (error) {
+        console.error('Wallet connection error:', error);
+        setAuthError('Failed to connect wallet. Please try again.');
+      } finally {
+        setIsConnecting(false);
+      }
+      return;
+    }
+
     // If multiple providers and none selected, show selection
-    if (providers.length > 1 && !selectedProvider) {
+    if (providers.length > 1) {
       setAvailableProviders(providers);
       setShowProviderSelection(true);
       return;
     }
 
-    // If only one provider, auto-select it
-    if (providers.length === 1 && !selectedProvider) {
+    // If only one provider, auto-select it and connect
+    if (providers.length === 1) {
       setSelectedProvider(providers[0]);
-    }
+      setIsConnecting(true);
+      setAuthError(null);
+      setManualDisconnect(false); // Reset flag when user explicitly connects
 
-    setIsConnecting(true);
-    setAuthError(null);
-    setManualDisconnect(false); // Reset flag when user explicitly connects
+      try {
+        const provider = getProvider();
+        if (!provider) {
+          throw new Error('No wallet provider available');
+        }
 
-    try {
-      const provider = getProvider();
-      if (!provider) {
-        throw new Error('No wallet provider available');
+        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+        setAvailableAccounts(accounts);
+        if (accounts.length > 0) {
+          setAddress(accounts[0]);
+          setIsConnected(true);
+          await checkAccountExists(accounts[0]);
+        }
+      } catch (error) {
+        console.error('Wallet connection error:', error);
+        setAuthError('Failed to connect wallet. Please try again.');
+      } finally {
+        setIsConnecting(false);
       }
-
-      const accounts = await provider.request({ method: 'eth_requestAccounts' });
-      setAvailableAccounts(accounts);
-      if (accounts.length > 0) {
-        setAddress(accounts[0]);
-        setIsConnected(true);
-        await checkAccountExists(accounts[0]);
-      }
-    } catch (error) {
-      console.error('Wallet connection error:', error);
-      setAuthError('Failed to connect wallet. Please try again.');
-    } finally {
-      setIsConnecting(false);
     }
   };
 

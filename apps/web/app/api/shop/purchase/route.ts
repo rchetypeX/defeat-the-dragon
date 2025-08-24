@@ -72,7 +72,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { itemId, itemType, price, currency } = body;
 
-    if (!itemId || !itemType || !price || !currency) {
+    // Debug logging
+    console.log('Purchase request body:', { itemId, itemType, price, currency });
+
+    if (!itemId || !itemType || price === undefined || price === null || !currency) {
+      console.log('Validation failed:', { 
+        hasItemId: !!itemId, 
+        hasItemType: !!itemType, 
+        price, 
+        hasCurrency: !!currency 
+      });
       return NextResponse.json(
         { error: 'Missing required fields: itemId, itemType, price, currency' },
         { status: 400 }

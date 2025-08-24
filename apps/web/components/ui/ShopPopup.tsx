@@ -269,16 +269,20 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
+      const purchaseData = {
+        itemId: item.id,
+        itemType: activeTab === 'character' ? 'character' : 'background',
+        price: item.price,
+        currency: item.currency
+      };
+      
+      console.log('Sending purchase request:', purchaseData);
+      
       const response = await fetch('/api/shop/purchase', {
         method: 'POST',
         headers,
         credentials: 'include',
-        body: JSON.stringify({
-          itemId: item.id,
-          itemType: activeTab === 'character' ? 'character' : 'background',
-          price: item.price,
-          currency: item.currency
-        }),
+        body: JSON.stringify(purchaseData),
       });
 
       const result = await response.json();

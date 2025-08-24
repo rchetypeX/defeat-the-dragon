@@ -430,8 +430,6 @@ export default function HomePage() {
       <SocialAcknowledgment />
       <EntryPointExperience>
         <AudioProvider>
-          <SoundToggle />
-          <AudioInfo />
           <BackgroundMusic 
             src="/assets/audio/background-music.mp3"
             volume={0.3}
