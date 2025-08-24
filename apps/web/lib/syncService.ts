@@ -79,6 +79,7 @@ class SyncService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -138,6 +139,7 @@ class SyncService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(syncData),
       });
 
@@ -352,6 +354,7 @@ class SyncService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(syncData),
       });
 

@@ -227,7 +227,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Clear all local storage
+      localStorage.removeItem('defeat-the-dragon-storage');
+      localStorage.removeItem('defeat-the-dragon-store');
+      localStorage.removeItem('walletUser');
+      
+      // Clear all session storage
+      sessionStorage.clear();
+      
+      // Reset game state
+      resetGame();
+      
+      // Redirect to login page
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error during sign out:', error);
+      // Even if there's an error, try to redirect
+      window.location.href = '/';
+    }
   };
 
   const value = {

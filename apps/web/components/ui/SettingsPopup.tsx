@@ -76,17 +76,30 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
 
   const handleSignOut = async () => {
     try {
-      // Clear all game data
+      console.log('Starting sign out process...');
+      
+      // Clear all game data from localStorage
       localStorage.removeItem('defeat-the-dragon-storage');
       localStorage.removeItem('defeat-the-dragon-store');
+      localStorage.removeItem('walletUser');
+      
+      // Clear session storage
+      sessionStorage.clear();
+      
+      // Reset game state
+      useGameStore.getState().resetGame();
       
       // Sign out from Supabase
       await signOut();
       
       // Close the settings popup
       onClose();
+      
+      console.log('Sign out completed successfully');
     } catch (error) {
       console.error('Error signing out:', error);
+      // Even if there's an error, try to redirect to login
+      window.location.href = '/';
     }
   };
 

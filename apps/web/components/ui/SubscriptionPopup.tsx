@@ -48,9 +48,100 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
     }
   };
 
+  // Connect wallet function
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      setError('MetaMask or another Web3 wallet is required. Please install MetaMask.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Request account access
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      if (accounts.length > 0) {
+        setIsWalletConnected(true);
+        setWalletAddress(accounts[0]);
+        
+        // Try to switch to Base Network after connecting
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x2105' }], // Base Mainnet
+          });
+        } catch (switchError: any) {
+          // If Base Network is not added, add it
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x2105',
+                  chainName: 'Base',
+                  nativeCurrency: {
+                    name: 'Ether',
+                    symbol: 'ETH',
+                    decimals: 18,
+                  },
+                  rpcUrls: ['https://mainnet.base.org'],
+                  blockExplorerUrls: ['https://basescan.org'],
+                }],
+              });
+            } catch (addError) {
+              console.error('Failed to add Base network:', addError);
+              setError('Failed to add Base network. Please add it manually.');
+            }
+          } else {
+            console.error('Failed to switch to Base network:', switchError);
+            setError('Please switch to Base network manually.');
+          }
+        }
+      } else {
+        setError('No wallet account found. Please make sure your wallet is unlocked.');
+      }
+    } catch (error: any) {
+      console.error('Wallet connection error:', error);
+      if (error.code === 4001) {
+        setError('Wallet connection was rejected. Please try again.');
+      } else if (error.code === -32002) {
+        setError('Wallet connection request is already pending. Please check your wallet.');
+      } else {
+        setError('Failed to connect wallet. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       checkWalletConnection();
+    }
+    
+    // Listen for account changes
+    if (typeof window !== 'undefined' && window.ethereum) {
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (accounts.length > 0) {
+          setIsWalletConnected(true);
+          setWalletAddress(accounts[0]);
+        } else {
+          setIsWalletConnected(false);
+          setWalletAddress(null);
+        }
+      };
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      
+      return () => {
+        if (window.ethereum && window.ethereum.removeListener) {
+          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        }
+      };
     }
   }, [isOpen]);
 
@@ -273,14 +364,11 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
                 To subscribe to the Inspiration Boon, you need to connect your Web3 wallet.
               </p>
               <button
-                onClick={() => {
-                  // Close this popup and redirect to wallet connection
-                  onClose();
-                  // You might want to add a callback to open wallet connection
-                }}
-                className="w-full pixel-button bg-[#f2751a] hover:bg-[#e65a0a] text-white px-4 py-2 font-bold"
+                onClick={connectWallet}
+                disabled={isLoading}
+                className="w-full pixel-button bg-[#f2751a] hover:bg-[#e65a0a] text-white px-4 py-2 font-bold disabled:opacity-50"
               >
-                Connect Wallet
+                {isLoading ? 'Connecting...' : 'Connect Wallet'}
               </button>
             </div>
           </div>
