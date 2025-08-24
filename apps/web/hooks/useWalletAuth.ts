@@ -123,6 +123,9 @@ export function useWalletAuth() {
       // Clear local storage
       localStorage.removeItem('walletUser');
       
+      // Clear the cookie
+      document.cookie = 'wallet-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      
       // Reset state
       setAddress(null);
       setIsConnected(false);
@@ -232,6 +235,10 @@ export function useWalletAuth() {
       if (result.walletAuth) {
         // Store wallet user data in localStorage for client-side access
         localStorage.setItem('walletUser', JSON.stringify(result.user));
+        
+        // Set a cookie for server-side access
+        document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
+        
         // The session cookies are set by the server, so we can redirect to the app
         window.location.href = '/';
       }
@@ -287,6 +294,10 @@ export function useWalletAuth() {
       if (result.walletAuth) {
         // Store wallet user data in localStorage for client-side access
         localStorage.setItem('walletUser', JSON.stringify(result.user));
+        
+        // Set a cookie for server-side access
+        document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
+        
         // Update account status
         setHasAccount(true);
         // The session cookies are set by the server, so we can redirect to the app

@@ -47,6 +47,19 @@ export async function POST(request: NextRequest) {
           console.error('Error parsing wallet user data:', e);
         }
       }
+      
+      // Also check for wallet user in request headers (for API calls)
+      if (!userId) {
+        const authHeader = request.headers.get('authorization');
+        if (authHeader && authHeader.startsWith('Bearer wallet:')) {
+          try {
+            const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
+            userId = walletData.id;
+          } catch (e) {
+            console.error('Error parsing wallet user from header:', e);
+          }
+        }
+      }
     }
     
     if (!userId) {

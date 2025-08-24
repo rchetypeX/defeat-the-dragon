@@ -89,10 +89,41 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     try {
       setIsLoading(true);
       
+      // Get auth token for the request
+      let token: string | null = null;
+      
+      // Check if we have a wallet user in localStorage
+      const walletUserStr = localStorage.getItem('walletUser');
+      if (walletUserStr) {
+        try {
+          const walletUser = JSON.parse(walletUserStr);
+          token = `wallet:${JSON.stringify(walletUser)}`;
+        } catch (e) {
+          console.error('Error parsing wallet user:', e);
+        }
+      }
+      
+      // If no wallet token, try to get Supabase session
+      if (!token) {
+        const { supabase } = await import('../../lib/supabase');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          token = session.access_token;
+        }
+      }
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       // Load both character and background items
       const [characterResponse, backgroundResponse] = await Promise.all([
-        fetch('/api/master/shop-items?category=character'),
-        fetch('/api/master/shop-items?category=background')
+        fetch('/api/master/shop-items?category=character', { headers, credentials: 'include' }),
+        fetch('/api/master/shop-items?category=background', { headers, credentials: 'include' })
       ]);
 
       if (characterResponse.ok && backgroundResponse.ok) {
@@ -132,7 +163,39 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   const loadUserInventory = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/inventory');
+      
+      // Get auth token for the request
+      let token: string | null = null;
+      
+      // Check if we have a wallet user in localStorage
+      const walletUserStr = localStorage.getItem('walletUser');
+      if (walletUserStr) {
+        try {
+          const walletUser = JSON.parse(walletUserStr);
+          token = `wallet:${JSON.stringify(walletUser)}`;
+        } catch (e) {
+          console.error('Error parsing wallet user:', e);
+        }
+      }
+      
+      // If no wallet token, try to get Supabase session
+      if (!token) {
+        const { supabase } = await import('../../lib/supabase');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          token = session.access_token;
+        }
+      }
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch('/api/inventory', { headers, credentials: 'include' });
       
       if (response.ok) {
         const result = await response.json();
@@ -175,11 +238,41 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     setErrorMessage(null);
 
     try {
+      // Get auth token for the request
+      let token: string | null = null;
+      
+      // Check if we have a wallet user in localStorage
+      const walletUserStr = localStorage.getItem('walletUser');
+      if (walletUserStr) {
+        try {
+          const walletUser = JSON.parse(walletUserStr);
+          token = `wallet:${JSON.stringify(walletUser)}`;
+        } catch (e) {
+          console.error('Error parsing wallet user:', e);
+        }
+      }
+      
+      // If no wallet token, try to get Supabase session
+      if (!token) {
+        const { supabase } = await import('../../lib/supabase');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          token = session.access_token;
+        }
+      }
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch('/api/shop/purchase', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
+        credentials: 'include',
         body: JSON.stringify({
           itemId: item.id,
           itemType: activeTab === 'character' ? 'character' : 'background',

@@ -4,6 +4,8 @@ import { useBackgroundStore } from './backgroundStore';
 
 // Import the apiRequest function for proper authentication
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  console.log('SyncService: Making API request to:', endpoint);
+  
   // Get auth token
   let token: string | null = null;
   
@@ -14,8 +16,9 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
       try {
         const walletUser = JSON.parse(walletUserStr);
         token = `wallet:${JSON.stringify(walletUser)}`;
+        console.log('SyncService: Found wallet user token');
       } catch (e) {
-        console.error('Error parsing wallet user:', e);
+        console.error('SyncService: Error parsing wallet user:', e);
       }
     }
   }
@@ -26,8 +29,11 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) {
       token = session.access_token;
+      console.log('SyncService: Found Supabase session token');
     }
   }
+
+  console.log('SyncService: Token available:', !!token);
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -38,18 +44,25 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  console.log('SyncService: Making fetch request with headers:', Object.keys(headers));
+
   const response = await fetch(`/api${endpoint}`, {
     ...options,
     headers,
     credentials: 'include',
   });
 
+  console.log('SyncService: Response status:', response.status);
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    console.error('SyncService: Request failed:', errorData);
     throw new Error(errorData.error || `API request failed: ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log('SyncService: Request successful');
+  return data;
 }
 
 export interface SyncData {
