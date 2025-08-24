@@ -18,6 +18,7 @@ interface AudioContextType extends AudioState {
   setSessionActive: (active: boolean) => void;
   toggleBackgroundPlayPause: () => void;
   toggleFocusSessionPlayPause: () => void;
+  hasUserInteracted: boolean;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -43,25 +44,55 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
     isSessionActive: false,
   });
   const [isMounted, setIsMounted] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
-  // Handle client-side mounting
+  // Handle client-side mounting and user interaction detection
   useEffect(() => {
     setIsMounted(true);
     
-          // Load audio settings from localStorage on mount
-      if (typeof window !== 'undefined') {
-        const savedBackgroundVolume = localStorage.getItem('backgroundVolume');
-        const savedFocusSessionVolume = localStorage.getItem('focusSessionVolume');
-        
-        if (savedBackgroundVolume || savedFocusSessionVolume) {
-          setAudioState(prev => ({
-            ...prev,
-            backgroundVolume: savedBackgroundVolume ? parseFloat(savedBackgroundVolume) : prev.backgroundVolume,
-            focusSessionVolume: savedFocusSessionVolume ? parseFloat(savedFocusSessionVolume) : prev.focusSessionVolume,
-          }));
-        }
+    // Load audio settings from localStorage on mount
+    if (typeof window !== 'undefined') {
+      const savedBackgroundVolume = localStorage.getItem('backgroundVolume');
+      const savedFocusSessionVolume = localStorage.getItem('focusSessionVolume');
+      
+      if (savedBackgroundVolume || savedFocusSessionVolume) {
+        setAudioState(prev => ({
+          ...prev,
+          backgroundVolume: savedBackgroundVolume ? parseFloat(savedBackgroundVolume) : prev.backgroundVolume,
+          focusSessionVolume: savedFocusSessionVolume ? parseFloat(savedFocusSessionVolume) : prev.focusSessionVolume,
+        }));
       }
-  }, []);
+    }
+
+    // Listen for user interaction to enable audio
+    const handleUserInteraction = () => {
+      if (!hasUserInteracted) {
+        console.log('AudioContext: User interaction detected - enabling audio');
+        setHasUserInteracted(true);
+        
+        // Enable background music by default after user interaction
+        setAudioState(prev => ({
+          ...prev,
+          isBackgroundPlaying: true,
+        }));
+        
+        // Remove listeners after first interaction
+        document.removeEventListener('click', handleUserInteraction);
+        document.removeEventListener('touchstart', handleUserInteraction);
+        document.removeEventListener('keydown', handleUserInteraction);
+      }
+    };
+    
+    document.addEventListener('click', handleUserInteraction);
+    document.addEventListener('touchstart', handleUserInteraction);
+    document.addEventListener('keydown', handleUserInteraction);
+    
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
+    };
+  }, [hasUserInteracted]);
 
   // Save volume settings to localStorage when they change
   useEffect(() => {
@@ -124,7 +155,8 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
     setSessionActive,
     toggleBackgroundPlayPause,
     toggleFocusSessionPlayPause,
-  }), [audioState, setBackgroundVolume, setFocusSessionVolume, setBackgroundPlaying, setFocusSessionPlaying, setSessionActive, toggleBackgroundPlayPause, toggleFocusSessionPlayPause]);
+    hasUserInteracted,
+  }), [audioState, setBackgroundVolume, setFocusSessionVolume, setBackgroundPlaying, setFocusSessionPlaying, setSessionActive, toggleBackgroundPlayPause, toggleFocusSessionPlayPause, hasUserInteracted]);
 
   return (
     <AudioContext.Provider value={value}>

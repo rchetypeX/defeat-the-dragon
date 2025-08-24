@@ -33,6 +33,7 @@ export const FocusSessionMusic: React.FC<FocusSessionMusicProps> = ({
     setIsMounted(true);
   }, []);
 
+  // Initialize audio element
   useEffect(() => {
     if (!isMounted) return;
     
@@ -54,10 +55,12 @@ export const FocusSessionMusic: React.FC<FocusSessionMusicProps> = ({
       console.log('FocusSessionMusic: Audio started playing');
       setIsPlaying(true);
     };
+    
     const handlePause = () => {
       console.log('FocusSessionMusic: Audio paused');
       setIsPlaying(false);
     };
+    
     const handleError = () => {
       onError?.('Failed to load focus session audio file');
     };
@@ -73,77 +76,42 @@ export const FocusSessionMusic: React.FC<FocusSessionMusicProps> = ({
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('error', handleError);
     };
-  }, [src, loop, onLoad, onError, isMounted]);
+  }, [src, loop, onLoad, onError, isMounted, focusSessionVolume]);
 
-  // Handle session state changes and focus session music state
-  useEffect(() => {
-    if (!isMounted) return;
-    
-    const audio = audioRef.current;
-    if (!audio || !isLoaded) return;
-
-    // Focus session music should only play when session is active AND focus session music is enabled
-    const shouldPlay = isSessionActive && isFocusSessionPlaying;
-
-    if (shouldPlay && !isPlaying) {
-      // Start playing when session becomes active and focus session music is enabled
-      audio.play().catch(() => {
-        console.log('Focus session music auto-play was blocked by browser');
-      });
-    } else if (!shouldPlay && isPlaying) {
-      // Stop playing when session ends or focus session music is disabled
-      audio.pause();
-      // Don't reset currentTime to allow resuming from where it left off
-    }
-  }, [isSessionActive, isFocusSessionPlaying, isLoaded, isMounted]);
-
-  // Handle manual play/pause controls for focus session music
-  useEffect(() => {
-    if (!isMounted) return;
-    
-    const audio = audioRef.current;
-    if (!audio || !isLoaded) return;
-
-    console.log('FocusSessionMusic: State changed - isFocusSessionPlaying:', isFocusSessionPlaying, 'isSessionActive:', isSessionActive);
-
-    // If focus session music is disabled, pause the audio
-    if (!isFocusSessionPlaying) {
-      console.log('FocusSessionMusic: Pausing audio (focus session music disabled)');
-      audio.pause();
-    } else if (isSessionActive) {
-      // If focus session music is enabled and session is active, play the audio
-      console.log('FocusSessionMusic: Playing audio (focus session music enabled, session active)');
-      audio.play().catch(() => {
-        console.log('Focus session music play was blocked by browser');
-      });
-    }
-  }, [isFocusSessionPlaying, isSessionActive, isLoaded, isMounted]);
-
+  // Update volume when it changes
   useEffect(() => {
     if (audioRef.current && isMounted) {
       audioRef.current.volume = focusSessionVolume;
     }
   }, [focusSessionVolume, isMounted]);
 
-  const play = () => {
-    audioRef.current?.play();
-  };
+  // Single consolidated effect for play/pause control
+  useEffect(() => {
+    if (!isMounted || !isLoaded) return;
+    
+    const audio = audioRef.current;
+    if (!audio) return;
 
-  const pause = () => {
-    audioRef.current?.pause();
-  };
+    // Focus session music should only play when session is active AND focus session music is enabled
+    const shouldPlay = isSessionActive && isFocusSessionPlaying;
 
-  const stop = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+    console.log('FocusSessionMusic: State changed - isFocusSessionPlaying:', isFocusSessionPlaying, 'isSessionActive:', isSessionActive, 'shouldPlay:', shouldPlay);
+
+    if (shouldPlay && !isPlaying) {
+      console.log('FocusSessionMusic: Attempting to play audio');
+      audio.play().catch((error) => {
+        console.log('Focus session music play was blocked:', error.message);
+        // Don't retry if autoplay is blocked
+        if (error.name === 'NotAllowedError') {
+          console.log('Focus session autoplay blocked - waiting for user interaction');
+        }
+      });
+    } else if (!shouldPlay && isPlaying) {
+      console.log('FocusSessionMusic: Pausing audio');
+      audio.pause();
+      // Don't reset currentTime to allow resuming from where it left off
     }
-  };
-
-  const setVolume = (newVolume: number) => {
-    // This function is kept for compatibility but volume is now managed by context
-    console.log('Focus session volume change requested:', newVolume);
-  };
+  }, [isSessionActive, isFocusSessionPlaying, isLoaded, isMounted, isPlaying]);
 
   return (
     <div className="focus-session-audio-controls">

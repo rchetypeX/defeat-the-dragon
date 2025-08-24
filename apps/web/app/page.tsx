@@ -192,7 +192,7 @@ export default function HomePage() {
               src="/assets/audio/background-music.mp3"
               volume={0.2}
               loop={true}
-              autoPlay={true}
+              autoPlay={false}
               onLoad={() => console.log('Background music loaded')}
               onError={(error) => console.error('Background music error:', error)}
             />
@@ -399,7 +399,7 @@ export default function HomePage() {
             src="/assets/audio/background-music.mp3"
             volume={0.3}
             loop={true}
-            autoPlay={true}
+            autoPlay={false}
             onLoad={() => console.log('Background music loaded')}
             onError={(error) => console.error('Background music error:', error)}
           />
