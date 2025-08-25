@@ -164,8 +164,8 @@ export async function POST(request: NextRequest) {
       console.log('Skipping currency update for free item (price = 0)');
     }
 
-    // Check if user already owns this item
-    const { data: existingItem, error: checkError } = await supabase
+    // Check if user already owns this item (second check after currency update)
+    const { data: existingInventoryItem, error: checkError } = await supabase
       .from('user_inventory')
       .select('id, quantity')
       .eq('user_id', userId)
@@ -180,13 +180,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (existingItem) {
+    if (existingInventoryItem) {
       console.log('User already owns this item, updating quantity');
       // Update quantity if user already owns the item
       const { error: updateError } = await supabase
         .from('user_inventory')
-        .update({ quantity: existingItem.quantity + 1 })
-        .eq('id', existingItem.id);
+        .update({ quantity: existingInventoryItem.quantity + 1 })
+        .eq('id', existingInventoryItem.id);
 
       if (updateError) {
         console.error('Error updating item quantity:', updateError);
