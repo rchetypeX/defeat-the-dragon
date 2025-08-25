@@ -341,10 +341,10 @@ export default function HomePage() {
           <SoundToggle />
           
           {/* Content */}
-          <div className={`relative z-10 min-h-screen flex flex-col items-center justify-center px-2 sm:px-4 ${isBaseApp ? 'base-app-compact' : 'mobile-compact'}`}>
+          <div className={`relative z-10 flex flex-col items-center justify-center px-2 sm:px-4 ${isBaseApp ? 'base-app-compact' : 'mobile-compact'}`} style={{ height: '100vh', maxHeight: '100vh', overflow: 'hidden' }}>
             {/* App Logo */}
-            <div className="text-center mb-0.5 sm:mb-1 logo-container">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-0">
+            <div className="text-center mb-1 logo-container">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 mx-auto">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
@@ -357,11 +357,11 @@ export default function HomePage() {
             </div>
 
             {/* Authentication Tabs */}
-            <div className="w-full max-w-sm mb-0.5 auth-container">
+            <div className="w-full max-w-sm mb-1 auth-container">
               <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
                 <button
                   onClick={() => setAuthMode('wallet')}
-                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
+                  className={`flex-1 py-1 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
                     authMode === 'wallet'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
@@ -374,7 +374,7 @@ export default function HomePage() {
                 </button>
                 <button
                   onClick={() => setAuthMode('login')}
-                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
+                  className={`flex-1 py-1 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
                     authMode === 'login'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
@@ -390,7 +390,7 @@ export default function HomePage() {
             </div>
             
             {/* Authentication Form */}
-            <div className="w-full max-w-sm mb-0">
+            <div className="w-full max-w-sm" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
               {authMode === 'wallet' && <WalletLoginForm key={walletKey} />}
               {authMode === 'login' && <LoginForm />}
               {authMode === 'signup' && <SignUpForm />}

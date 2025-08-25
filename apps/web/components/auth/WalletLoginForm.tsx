@@ -93,8 +93,8 @@ export function WalletLoginForm() {
     true;
 
   return (
-    <div className="max-w-md mx-auto pixel-card p-3 sm:p-4 wallet-login-form">
-      <h2 className="text-lg sm:text-xl font-bold text-center mb-3 sm:mb-4 text-[#f2751a]">
+    <div className="max-w-md mx-auto pixel-card p-2 sm:p-3 wallet-login-form">
+      <h2 className="text-base sm:text-lg font-bold text-center mb-2 sm:mb-3 text-[#f2751a]">
         {shouldShowSignUp ? 'Create Account' : 'Sign In'}
       </h2>
       
@@ -135,7 +135,7 @@ export function WalletLoginForm() {
         </div>
       )}
       
-      <div className="space-y-3">
+      <div className="space-y-2">
         {!isConnected ? (
           <div>
             <button
@@ -169,10 +169,10 @@ export function WalletLoginForm() {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {/* Compact wallet display for mobile */}
-            <div className="bg-[#1a1a2e] p-3 border border-[#654321] rounded">
-              <div className="flex items-center justify-between mb-2">
+            <div className="bg-[#1a1a2e] p-2 border border-[#654321] rounded">
+              <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-[#fbbf24] font-medium">Connected Wallet</p>
                 <button
                   onClick={handleDisconnect}
@@ -184,7 +184,7 @@ export function WalletLoginForm() {
               </div>
               
               {/* Current wallet address - more compact */}
-              <div className="mb-3">
+              <div className="mb-2">
                 <p className="text-xs text-white font-mono break-all wallet-address">
                   {address}
                 </p>
@@ -192,7 +192,7 @@ export function WalletLoginForm() {
 
               {/* Available accounts dropdown - only show if multiple accounts */}
               {availableAccounts.length > 1 && (
-                <div className="mb-3">
+                <div className="mb-2">
                   <label className="block text-xs text-[#fbbf24] mb-1">
                     Switch to different wallet:
                   </label>

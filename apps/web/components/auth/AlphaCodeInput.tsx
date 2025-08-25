@@ -104,8 +104,8 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
   }, [verifyCode]);
 
   return (
-    <div className="space-y-3">
-      <label htmlFor="alpha-code" className="block text-sm font-medium mb-2 text-[#fbbf24]">
+    <div className="space-y-2">
+      <label htmlFor="alpha-code" className="block text-sm font-medium mb-1 text-[#fbbf24]">
         Alpha access code
       </label>
       <form onSubmit={handleSubmit} className="flex space-x-2">

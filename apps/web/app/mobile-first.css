@@ -452,35 +452,59 @@ input:focus, textarea:focus, select:focus {
 
 /* Make authentication form more compact for mobile */
 .mobile-compact .pixel-card {
-  padding: 0.5rem !important;
-  max-height: 75vh !important;
+  padding: 0.25rem !important;
+  max-height: 50vh !important;
+  overflow-y: auto !important;
 }
 
 .mobile-compact .wallet-login-form {
-  max-height: 65vh !important;
-  padding: 0.25rem !important;
+  max-height: 40vh !important;
+  padding: 0.125rem !important;
+  overflow-y: auto !important;
 }
 
 /* Ensure wallet login form fits in mobile viewport */
 @media (max-height: 700px) {
   .mobile-compact .wallet-login-form {
-    max-height: 70vh !important;
-    padding: 0.5rem !important;
+    max-height: 45vh !important;
+    padding: 0.25rem !important;
   }
   
   .mobile-compact .pixel-card {
-    padding: 0.5rem !important;
+    padding: 0.25rem !important;
   }
 }
 
 @media (max-height: 600px) {
   .mobile-compact .wallet-login-form {
-    max-height: 80vh !important;
-    padding: 0.25rem !important;
+    max-height: 50vh !important;
+    padding: 0.125rem !important;
   }
   
   .mobile-compact .pixel-card {
-    padding: 0.25rem !important;
+    padding: 0.125rem !important;
+  }
+}
+
+/* Ultra-compact for Farcaster frames */
+@media (max-height: 500px) {
+  .mobile-compact .wallet-login-form {
+    max-height: 60vh !important;
+    padding: 0.125rem !important;
+  }
+  
+  .mobile-compact .pixel-card {
+    padding: 0.125rem !important;
+    max-height: 60vh !important;
+  }
+  
+  .mobile-compact .logo-container {
+    margin-bottom: 0.0625rem !important;
+  }
+  
+  .mobile-compact .auth-container {
+    margin-top: 0.0625rem !important;
+    margin-bottom: 0.0625rem !important;
   }
 }
 
