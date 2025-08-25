@@ -9,6 +9,70 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      alpha_codes: {
+        Row: {
+          id: string
+          code_hash: string
+          used: boolean
+          reserved_token: string | null
+          reserved_until: string | null
+          used_by: string | null
+          used_at: string | null
+          expires_at: string | null
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code_hash: string
+          used?: boolean
+          reserved_token?: string | null
+          reserved_until?: string | null
+          used_by?: string | null
+          used_at?: string | null
+          expires_at?: string | null
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          code_hash?: string
+          used?: boolean
+          reserved_token?: string | null
+          reserved_until?: string | null
+          used_by?: string | null
+          used_at?: string | null
+          expires_at?: string | null
+          notes?: string | null
+          created_at?: string
+        }
+      }
+      alpha_code_attempts: {
+        Row: {
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          code_hash: string | null
+          success: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          code_hash?: string | null
+          success?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          code_hash?: string | null
+          success?: boolean | null
+          created_at?: string
+        }
+      }
       players: {
         Row: {
           id: string
@@ -486,10 +550,39 @@ export interface Database {
       }
     }
     Views: {
-      [_ in never]: never
+      alpha_codes_summary: {
+        Row: {
+          used: boolean | null
+          count: number
+        }
+      }
     }
     Functions: {
-      [_ in never]: never
+      alpha_verify_and_reserve: {
+        Args: {
+          p_code: string
+        }
+        Returns: {
+          reserved_token: string
+          reserved_until: string
+        }[]
+      }
+      alpha_finalize_with_token: {
+        Args: {
+          p_token: string
+        }
+        Returns: boolean
+      }
+      alpha_add_codes: {
+        Args: {
+          p_codes: string[]
+        }
+        Returns: number
+      }
+      cleanup_old_alpha_attempts: {
+        Args: Record<string, never>
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { AlphaCodeInput } from './AlphaCodeInput';
 
 export function SignUpForm() {
   const [email, setEmail] = useState('');
@@ -13,6 +14,9 @@ export function SignUpForm() {
   const [emailChecking, setEmailChecking] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [alphaCodeVerified, setAlphaCodeVerified] = useState(false);
+  const [reservedToken, setReservedToken] = useState<string | null>(null);
+  const [reservedUntil, setReservedUntil] = useState<string | null>(null);
   
   const { signUp } = useAuth();
 
@@ -22,6 +26,21 @@ export function SignUpForm() {
     // Don't submit if email already exists
     if (emailExists) {
       setError('An account with this email already exists. Please sign in instead.');
+      return;
+    }
+
+    // Require alpha code verification
+    if (!alphaCodeVerified || !reservedToken) {
+      setError('Please verify your alpha access code first.');
+      return;
+    }
+
+    // Check if reservation is still valid
+    if (reservedUntil && new Date(reservedUntil) < new Date()) {
+      setError('Alpha code reservation expired. Please verify your code again.');
+      setAlphaCodeVerified(false);
+      setReservedToken(null);
+      setReservedUntil(null);
       return;
     }
     
@@ -35,6 +54,24 @@ export function SignUpForm() {
       setError(error.message);
       setSuccess(false);
     } else {
+      // Finalize the alpha code
+      try {
+        const response = await fetch('/api/alpha/finalize', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ reserved_token: reservedToken }),
+        });
+
+        if (!response.ok) {
+          console.error('Failed to finalize alpha code');
+          // Don't block the user if finalization fails, but log it
+        }
+      } catch (finalizeError) {
+        console.error('Error finalizing alpha code:', finalizeError);
+      }
+
       setSuccess(true);
       setError(null);
     }
@@ -95,6 +132,20 @@ export function SignUpForm() {
     return () => clearTimeout(timeoutId);
   };
 
+  const handleAlphaCodeVerified = (token: string, until: string) => {
+    setReservedToken(token);
+    setReservedUntil(until);
+    setAlphaCodeVerified(true);
+    setError(null);
+  };
+
+  const handleAlphaCodeError = (message: string) => {
+    setError(message);
+    setAlphaCodeVerified(false);
+    setReservedToken(null);
+    setReservedUntil(null);
+  };
+
   if (success) {
     return (
       <div className="max-w-md mx-auto pixel-card p-6">
@@ -122,6 +173,13 @@ export function SignUpForm() {
       )}
       
              <form onSubmit={handleSubmit} className="space-y-4">
+         {/* Alpha Code Input */}
+         <AlphaCodeInput
+           onCodeVerified={handleAlphaCodeVerified}
+           onError={handleAlphaCodeError}
+           disabled={loading}
+         />
+         
          <div>
            <label htmlFor="displayName" className="block text-sm font-medium mb-2 text-[#fbbf24]">
              Adventurer Name
@@ -204,10 +262,13 @@ export function SignUpForm() {
         
         <button
           type="submit"
-          disabled={loading || emailExists || emailChecking}
+          disabled={loading || emailExists || emailChecking || !alphaCodeVerified}
           className="w-full pixel-button disabled:opacity-50"
         >
-          {loading ? 'Creating Account...' : emailExists ? 'Email Already Exists' : 'Start Adventure'}
+          {loading ? 'Creating Account...' : 
+           emailExists ? 'Email Already Exists' : 
+           !alphaCodeVerified ? 'Verify Alpha Code First' : 
+           'Start Adventure'}
         </button>
       </form>
     </div>
