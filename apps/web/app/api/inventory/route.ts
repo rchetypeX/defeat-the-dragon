@@ -91,11 +91,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // If no inventory found, return default inventory for new users
+    // If no inventory found, create default inventory for new users
     if (!inventory || inventory.length === 0) {
       const defaultInventory = [
         {
-          id: 'default-fighter',
           user_id: userId,
           item_id: 'fighter',
           item_type: 'character',
@@ -104,7 +103,6 @@ export async function GET(request: NextRequest) {
           acquired_at: new Date().toISOString()
         },
         {
-          id: 'default-forest',
           user_id: userId,
           item_id: 'forest',
           item_type: 'background',
@@ -114,9 +112,23 @@ export async function GET(request: NextRequest) {
         }
       ];
 
+      // Insert default inventory into database
+      const { data: createdInventory, error: createError } = await supabase
+        .from('user_inventory')
+        .insert(defaultInventory)
+        .select();
+
+      if (createError) {
+        console.error('Error creating default inventory:', createError);
+        return NextResponse.json({
+          success: true,
+          data: defaultInventory, // Return default data even if DB insert fails
+        });
+      }
+
       return NextResponse.json({
         success: true,
-        data: defaultInventory,
+        data: createdInventory,
       });
     }
 

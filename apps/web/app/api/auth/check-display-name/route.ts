@@ -43,22 +43,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if display name is already taken
-    const { data: existingUser, error: userError } = await supabase
-      .from('players')
-      .select('id')
-      .eq('display_name', trimmedName)
-      .single();
-
-    if (userError && userError.code !== 'PGRST116') {
-      console.error('Database error checking display name:', userError);
-      return NextResponse.json(
-        { error: 'Database error' },
-        { status: 500 }
-      );
-    }
-
-    const isAvailable = !existingUser;
+    // Display names no longer need to be unique - always available
+    const isAvailable = true;
 
     return NextResponse.json({
       isAvailable,

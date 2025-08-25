@@ -87,12 +87,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`Equipping item: ${itemId} of type: ${itemType} for user: ${userId}`);
+    
     // First, unequip all items of the same type
-    const { error: unequipError } = await supabase
+    const { data: unequippedItems, error: unequipError } = await supabase
       .from('user_inventory')
       .update({ equipped: false })
       .eq('user_id', userId)
-      .eq('item_type', itemType);
+      .eq('item_type', itemType)
+      .select();
 
     if (unequipError) {
       console.error('Error unequipping items:', unequipError);
@@ -101,6 +104,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+    
+    console.log(`Unequipped ${unequippedItems?.length || 0} items of type ${itemType}`);
 
     // Then, equip the selected item
     const { data: equippedItem, error: equipError } = await supabase
@@ -121,11 +126,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!equippedItem) {
+      console.error('Item not found in inventory:', { userId, itemId, itemType });
       return NextResponse.json(
         { error: 'Item not found in inventory' },
         { status: 404 }
       );
     }
+    
+    console.log(`Successfully equipped item:`, equippedItem);
 
     // Also update user_settings table for equipped character/background
     if (itemType === 'character' || itemType === 'background') {

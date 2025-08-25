@@ -246,8 +246,39 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
   };
 
   const getEquippedItem = (category: 'character' | 'background') => {
+    // First check the database inventory for equipped items
+    const equippedFromDB = userInventory.find(item => 
+      item.item_type === category && item.equipped
+    );
+    
+    if (equippedFromDB) {
+      return defaultInventoryItems[category].find(item => item.id === equippedFromDB.item_id);
+    }
+    
+    // Fallback to local state
     const equippedId = equippedItems[category];
     return defaultInventoryItems[category].find(item => item.id === equippedId);
+  };
+
+  const isItemEquipped = (item: InventoryItem) => {
+    // Check if this item is equipped in the database
+    const equippedFromDB = userInventory.find(invItem => 
+      invItem.item_id === item.id && invItem.equipped
+    );
+    
+    if (equippedFromDB) {
+      return true;
+    }
+    
+    // Fallback to local state for items not in database yet
+    if (item.category === 'character' && item.id === equippedCharacter) {
+      return true;
+    }
+    if (item.category === 'background' && item.id === equippedBackground) {
+      return true;
+    }
+    
+    return false;
   };
 
   if (!isOpen) return null;
@@ -317,9 +348,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
                   <div
                     key={item.id}
                     className={`min-h-[120px] border-2 rounded p-2 transition-colors flex flex-col justify-between ${
-                      (item.category === 'character' && item.id === equippedCharacter) || 
-                      (item.category === 'background' && item.id === equippedBackground) || 
-                      item.isEquipped
+                      isItemEquipped(item)
                         ? 'bg-[#8B4513] border-[#8B4513] shadow-lg' // Highlight equipped items
                         : 'bg-[#e8e8d0] border-[#8B4513] hover:bg-[#d8d8c0]'
                     }`}
@@ -344,18 +373,14 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
                         </div>
                       )}
                       <h3 className={`font-bold text-xs ${
-                        (item.category === 'character' && item.id === equippedCharacter) || 
-                        (item.category === 'background' && item.id === equippedBackground) || 
-                        item.isEquipped ? 'text-[#f5f5dc]' : 'text-[#8B4513]'
+                        isItemEquipped(item) ? 'text-[#f5f5dc]' : 'text-[#8B4513]'
                       }`}>
                         {item.name}
                       </h3>
                     </div>
                     
                     <div className="text-center">
-                      {!((item.category === 'character' && item.id === equippedCharacter) || 
-                         (item.category === 'background' && item.id === equippedBackground) || 
-                         item.isEquipped) && (
+                      {!isItemEquipped(item) && (
                         <button
                           onClick={() => handleEquip(item)}
                           className="w-full bg-[#8B4513] text-[#f5f5dc] px-1 py-1 rounded font-bold hover:bg-[#654321] transition-colors text-xs"
@@ -363,9 +388,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
                           Equip
                         </button>
                       )}
-                      {((item.category === 'character' && item.id === equippedCharacter) || 
-                        (item.category === 'background' && item.id === equippedBackground) || 
-                        item.isEquipped) && (
+                      {isItemEquipped(item) && (
                         <span className="text-[#f5f5dc] text-xs font-bold">
                           ✓ Equipped
                         </span>

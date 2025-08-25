@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useWalletAuth } from '../../hooks/useWalletAuth';
-import { useDisplayNameCheck } from '../../hooks/useDisplayNameCheck';
 
 export function WalletLoginForm() {
   const [displayName, setDisplayName] = useState('');
@@ -28,8 +27,6 @@ export function WalletLoginForm() {
     selectProvider,
     cancelProviderSelection,
   } = useWalletAuth();
-
-  const { isAvailable, isChecking: isCheckingName, error: nameError } = useDisplayNameCheck(displayName);
 
   const handleConnect = async () => {
     await connectWallet();
@@ -60,46 +57,46 @@ export function WalletLoginForm() {
   const shouldShowSignUp = hasAccount === false;
   const shouldShowSignIn = hasAccount === true;
   
-  // Check if the form is valid for submission
+  // Check if the form is valid for submission - no uniqueness requirement
   const isFormValid = shouldShowSignUp ? 
-    (displayName.trim().length >= 2 && isAvailable === true) : 
+    (displayName.trim().length >= 2 && displayName.trim().length <= 20) : 
     true;
 
   return (
-    <div className="max-w-md mx-auto pixel-card p-2 sm:p-4">
+    <div className="max-w-md mx-auto pixel-card p-3 sm:p-4 wallet-login-form">
       <h2 className="text-lg sm:text-xl font-bold text-center mb-3 sm:mb-4 text-[#f2751a]">
         {shouldShowSignUp ? 'Create Account' : 'Sign In'}
       </h2>
       
       {authError && (
-        <div className="bg-[#ef4444] text-white p-2 mb-2 sm:mb-3 border-2 border-[#654321] text-xs sm:text-sm">
+        <div className="bg-[#ef4444] text-white p-2 mb-3 border-2 border-[#654321] text-xs sm:text-sm">
           {authError}
         </div>
       )}
 
       {/* Wallet Provider Selection Modal */}
       {showProviderSelection && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-4 sm:p-6 max-w-sm w-full">
-            <h3 className="text-base sm:text-lg font-bold text-center mb-3 sm:mb-4 text-[#f2751a]">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-4 sm:p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-base sm:text-lg font-bold text-center mb-4 text-[#f2751a]">
               Select Wallet Provider
             </h3>
-            <p className="text-[#fbbf24] text-xs sm:text-sm mb-3 sm:mb-4 text-center">
+            <p className="text-[#fbbf24] text-xs sm:text-sm mb-4 text-center">
               Multiple wallet extensions detected. Please choose which one to use:
             </p>
-            <div className="space-y-2 sm:space-y-3">
+            <div className="space-y-3">
               {availableProviders.map((provider) => (
                 <button
                   key={provider}
                   onClick={() => selectProvider(provider)}
-                  className="w-full py-2 sm:py-3 px-3 sm:px-4 bg-[#2d1b0e] border border-[#654321] rounded hover:bg-[#3d2b1e] transition-colors text-[#fbbf24] text-xs sm:text-sm"
+                  className="w-full py-3 px-4 bg-[#2d1b0e] border border-[#654321] rounded hover:bg-[#3d2b1e] transition-colors text-[#fbbf24] text-sm"
                 >
                   {provider}
                 </button>
               ))}
               <button
                 onClick={cancelProviderSelection}
-                className="w-full py-2 px-3 sm:px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-xs sm:text-sm"
+                className="w-full py-3 px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-sm"
               >
                 Cancel
               </button>
@@ -108,7 +105,7 @@ export function WalletLoginForm() {
         </div>
       )}
       
-      <div className="space-y-2 sm:space-y-3">
+      <div className="space-y-3">
         {!isConnected ? (
           <div>
             <button
@@ -142,9 +139,9 @@ export function WalletLoginForm() {
             )}
           </div>
         ) : (
-          <div className="space-y-2 sm:space-y-3">
-            {/* Enhanced wallet display with switching options */}
-            <div className="bg-[#1a1a2e] p-2 sm:p-3 border border-[#654321] rounded">
+          <div className="space-y-3">
+            {/* Compact wallet display for mobile */}
+            <div className="bg-[#1a1a2e] p-3 border border-[#654321] rounded">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-[#fbbf24] font-medium">Connected Wallet</p>
                 <button
@@ -156,16 +153,16 @@ export function WalletLoginForm() {
                 </button>
               </div>
               
-              {/* Current wallet address */}
-              <div className="mb-2 sm:mb-3">
+              {/* Current wallet address - more compact */}
+              <div className="mb-3">
                 <p className="text-xs text-white font-mono break-all">
                   {address}
                 </p>
               </div>
 
-              {/* Available accounts dropdown */}
+              {/* Available accounts dropdown - only show if multiple accounts */}
               {availableAccounts.length > 1 && (
-                <div className="mb-2 sm:mb-3">
+                <div className="mb-3">
                   <label className="block text-xs text-[#fbbf24] mb-1">
                     Switch to different wallet:
                   </label>
@@ -192,7 +189,7 @@ export function WalletLoginForm() {
               <button
                 onClick={handleSwitchWallet}
                 disabled={isSwitchingWallet || isConnecting}
-                className="w-full px-2 sm:px-3 py-1 bg-[#f2751a] text-white text-xs rounded hover:bg-[#e65a0a] disabled:opacity-50 flex items-center justify-center"
+                className="w-full px-3 py-2 bg-[#f2751a] text-white text-xs rounded hover:bg-[#e65a0a] disabled:opacity-50 flex items-center justify-center"
               >
                 {isSwitchingWallet ? (
                   <>
@@ -210,7 +207,7 @@ export function WalletLoginForm() {
               <>
                 {shouldShowSignUp && (
                   <div>
-                    <label htmlFor="displayName" className="block text-sm font-medium mb-1 text-[#fbbf24]">
+                    <label htmlFor="displayName" className="block text-sm font-medium mb-2 text-[#fbbf24]">
                       Adventurer Name
                     </label>
                     <input
@@ -219,39 +216,20 @@ export function WalletLoginForm() {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       required
-                      className={`w-full pixel-input text-sm ${
-                        displayName.trim().length >= 2 && isAvailable === false ? 'border-[#ef4444]' : 
-                        displayName.trim().length >= 2 && isAvailable === true ? 'border-[#10b981]' : ''
-                      }`}
-                      placeholder="Enter your adventure"
+                      className="w-full pixel-input text-sm"
+                      placeholder="Enter your adventurer name"
                       maxLength={20}
                     />
                     
-                    {/* Name availability indicator */}
-                    {displayName.trim().length >= 2 && (
-                      <div className="mt-1">
-                        {isCheckingName ? (
-                          <div className="flex items-center">
-                            <div className="w-3 h-3 border border-[#fbbf24] border-t-transparent rounded-full animate-spin mr-2"></div>
-                            <span className="text-xs text-[#fbbf24]">Checking...</span>
-                          </div>
-                        ) : isAvailable === true ? (
-                          <div className="flex items-center">
-                            <div className="w-2 h-2 bg-[#10b981] rounded-full mr-2"></div>
-                            <span className="text-xs text-[#10b981]">Available!</span>
-                          </div>
-                        ) : isAvailable === false ? (
-                          <div className="flex items-center">
-                            <div className="w-2 h-2 bg-[#ef4444] rounded-full mr-2"></div>
-                            <span className="text-xs text-[#ef4444]">Taken</span>
-                          </div>
-                        ) : null}
-                      </div>
-                    )}
-                    
-                    <p className="text-xs text-white mt-1">
-                      Choose a unique name for your character (2-20 characters)
-                    </p>
+                    {/* Character count indicator */}
+                    <div className="mt-1 flex justify-between items-center">
+                      <p className="text-xs text-[#fbbf24]">
+                        Choose a name for your character (2-20 characters)
+                      </p>
+                      <span className="text-xs text-[#fbbf24]">
+                        {displayName.length}/20
+                      </span>
+                    </div>
                   </div>
                 )}
                 
