@@ -66,7 +66,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'Defeat the Dragon',
       images: [
         {
-          url: '/opengraph-image',
+          url: dynamicMetadata?.og_image_url || '/og-image.png',
           width: 1200,
           height: 630,
           alt: 'Defeat the Dragon - Focus RPG',
@@ -79,7 +79,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: twitterTitle,
       description: twitterDescription,
-      images: ['/twitter-image'],
+      images: [dynamicMetadata?.twitter_image_url || '/og-image.png'],
       creator: '@defeatdragon',
     },
   appleWebApp: {
