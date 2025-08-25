@@ -155,20 +155,12 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
     );
   };
 
-  // Check if item is equipped based on database inventory
-  const isItemEquipped = (itemId: string, itemType: string) => {
-    const inventoryItem = userInventory.find(item => 
-      item.item_id === itemId && item.item_type === itemType
-    );
-    return inventoryItem?.equipped || false;
-  };
-
   // Get all available items for the current tab
   const getAvailableItems = (category: 'character' | 'background') => {
     return defaultInventoryItems[category].map(item => ({
       ...item,
       isOwned: isItemOwned(item.id, category),
-      isEquipped: isItemEquipped(item.id, category)
+      isEquipped: false // Will be determined by the isItemEquipped function below
     }));
   };
 
@@ -260,7 +252,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
     return defaultInventoryItems[category].find(item => item.id === equippedId);
   };
 
-  const isItemEquipped = (item: InventoryItem) => {
+  const isItemEquipped = (item: InventoryItem | { id: string; category: string }) => {
     // Check if this item is equipped in the database
     const equippedFromDB = userInventory.find(invItem => 
       invItem.item_id === item.id && invItem.equipped
