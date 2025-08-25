@@ -155,7 +155,7 @@ export function WalletLoginForm() {
               
               {/* Current wallet address - more compact */}
               <div className="mb-3">
-                <p className="text-xs text-white font-mono break-all">
+                <p className="text-xs text-white font-mono break-all wallet-address">
                   {address}
                 </p>
               </div>
@@ -174,7 +174,7 @@ export function WalletLoginForm() {
                       }
                     }}
                     disabled={isSwitchingWallet}
-                    className="w-full bg-[#2d1b0e] border border-[#8b4513] rounded px-2 py-1 text-white text-xs"
+                    className="w-full bg-[#2d1b0e] border border-[#8b4513] rounded px-2 py-1 text-white text-xs wallet-address"
                   >
                     {availableAccounts.map((acc) => (
                       <option key={acc} value={acc}>
@@ -217,16 +217,16 @@ export function WalletLoginForm() {
                       onChange={(e) => setDisplayName(e.target.value)}
                       required
                       className="w-full pixel-input text-sm"
-                      placeholder="Enter your adventurer name"
+                      placeholder="Enter your name"
                       maxLength={20}
                     />
                     
                     {/* Character count indicator */}
                     <div className="mt-1 flex justify-between items-center">
-                      <p className="text-xs text-[#fbbf24]">
+                      <p className="text-xs text-[#8B4513] font-medium">
                         Choose a name for your character (2-20 characters)
                       </p>
-                      <span className="text-xs text-[#fbbf24]">
+                      <span className="text-xs text-[#8B4513] font-medium">
                         {displayName.length}/20
                       </span>
                     </div>

@@ -15,10 +15,31 @@ const inter = Inter({ subsets: ['latin'] });
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz';
   
+  // Try to fetch dynamic metadata from database
+  let dynamicMetadata = null;
+  try {
+    const response = await fetch(`${baseUrl}/api/og-metadata?path=/`, {
+      cache: 'no-store' // Don't cache this to get fresh data
+    });
+    if (response.ok) {
+      dynamicMetadata = await response.json();
+    }
+  } catch (error) {
+    console.error('Failed to fetch dynamic metadata:', error);
+  }
+  
+  // Use dynamic metadata if available, otherwise fall back to defaults
+  const title = dynamicMetadata?.title || process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon';
+  const description = dynamicMetadata?.description || process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions';
+  const ogTitle = dynamicMetadata?.og_title || title;
+  const ogDescription = dynamicMetadata?.og_description || description;
+  const twitterTitle = dynamicMetadata?.twitter_title || title;
+  const twitterDescription = dynamicMetadata?.twitter_description || description;
+  
   return {
     metadataBase: new URL(baseUrl),
-    title: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
-    description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions',
+    title,
+    description,
     keywords: ['focus', 'productivity', 'pomodoro', 'rpg', 'game', 'pixel art', 'dragon', 'base app'],
     authors: [{ name: 'Defeat the Dragon Team' }],
     creator: 'Defeat the Dragon',
@@ -39,13 +60,13 @@ export async function generateMetadata(): Promise<Metadata> {
     shortcut: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>",
   },
       openGraph: {
-      title: 'Defeat the Dragon',
-      description: 'A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions',
-      url: process.env.NEXT_PUBLIC_URL || 'https://your-app.vercel.app',
+      title: ogTitle,
+      description: ogDescription,
+      url: process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz',
       siteName: 'Defeat the Dragon',
       images: [
         {
-          url: '/og-image.png',
+          url: '/opengraph-image',
           width: 1200,
           height: 630,
           alt: 'Defeat the Dragon - Focus RPG',
@@ -56,9 +77,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
       twitter: {
       card: 'summary_large_image',
-      title: 'Defeat the Dragon',
-      description: 'A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions',
-      images: ['/og-image.png'],
+      title: twitterTitle,
+      description: twitterDescription,
+      images: ['/twitter-image'],
       creator: '@defeatdragon',
     },
   appleWebApp: {
