@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
     // Create a new Supabase user with a unique email
     const uniqueEmail = `${address.toLowerCase()}@wallet.local`;
     
+    console.log('Creating auth user with email:', uniqueEmail);
+    
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: uniqueEmail,
       email_confirm: true,
@@ -59,16 +61,55 @@ export async function POST(request: NextRequest) {
     });
 
     if (authError) {
+      console.error('Auth user creation error:', authError);
       return NextResponse.json(
         { error: 'Failed to create user account' },
         { status: 500 }
       );
     }
 
-    // Create player record in our database (profiles table was removed)
-    const playerResult = await supabase
+    console.log('Auth user created successfully:', authUser.user.id);
+
+    // Check if player record was already created by the trigger
+    const { data: existingPlayer, error: checkError } = await supabase
       .from('players')
-      .insert({
+      .select('*')
+      .eq('user_id', authUser.user.id)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Error checking existing player:', checkError);
+    }
+
+    if (existingPlayer) {
+      console.log('Player record already exists (created by trigger):', existingPlayer);
+      // Update the existing player record with our data
+      const updateResult = await supabase
+        .from('players')
+        .update({
+          wallet_address: address.toLowerCase(),
+          display_name: displayName,
+          level: 1,
+          xp: 0,
+          coins: 100,
+          sparks: 50,
+        })
+        .eq('user_id', authUser.user.id)
+        .select()
+        .single();
+
+      if (updateResult.error) {
+        console.error('Player update error:', updateResult.error);
+        return NextResponse.json(
+          { error: 'Failed to update player profile' },
+          { status: 500 }
+        );
+      }
+
+      console.log('Player record updated successfully');
+    } else {
+      // Create player record in our database (profiles table was removed)
+      console.log('Creating player record with data:', {
         user_id: authUser.user.id,
         wallet_address: address.toLowerCase(),
         display_name: displayName,
@@ -76,18 +117,39 @@ export async function POST(request: NextRequest) {
         xp: 0,
         coins: 100,
         sparks: 50,
-      })
-      .select()
-      .single();
+      });
 
-    if (playerResult.error) {
-      // Clean up the auth user if player creation fails
-      await supabase.auth.admin.deleteUser(authUser.user.id);
-      console.error('Player creation error:', playerResult.error);
-      return NextResponse.json(
-        { error: 'Failed to create player profile' },
-        { status: 500 }
-      );
+      const playerResult = await supabase
+        .from('players')
+        .insert({
+          user_id: authUser.user.id,
+          wallet_address: address.toLowerCase(),
+          display_name: displayName,
+          level: 1,
+          xp: 0,
+          coins: 100,
+          sparks: 50,
+        })
+        .select()
+        .single();
+
+      if (playerResult.error) {
+        // Clean up the auth user if player creation fails
+        await supabase.auth.admin.deleteUser(authUser.user.id);
+        console.error('Player creation error:', playerResult.error);
+        console.error('Error details:', {
+          code: playerResult.error.code,
+          message: playerResult.error.message,
+          details: playerResult.error.details,
+          hint: playerResult.error.hint
+        });
+        return NextResponse.json(
+          { error: 'Failed to create player profile' },
+          { status: 500 }
+        );
+      }
+
+      console.log('Player record created successfully');
     }
 
     // For wallet authentication, return the user data for localStorage approach
