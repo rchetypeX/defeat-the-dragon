@@ -82,12 +82,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch user data from players table only
+    // Fetch user data from players table
     const { data: player, error: playerError } = await supabase
       .from('players')
       .select('*')
       .eq('user_id', userId)
       .single();
+
+    // Also get auth user data to check for display_name in metadata
+    let authUser = null;
+    try {
+      const { data: { user } } = await supabase.auth.admin.getUserById(userId);
+      authUser = user;
+    } catch (e) {
+      console.log('Could not fetch auth user data:', e);
+    }
 
     // Check for critical errors
     if (playerError && playerError.code !== 'PGRST116') {
@@ -144,11 +153,21 @@ export async function GET(request: NextRequest) {
              playerData = newPlayer;
     }
 
+         // Ensure display_name is up to date by checking both sources
+         let finalPlayerData = playerData;
+         if (playerData && authUser) {
+           // Prioritize players table display_name, but fall back to auth metadata if needed
+           const authDisplayName = authUser.user_metadata?.display_name;
+           if (!playerData.display_name && authDisplayName) {
+             finalPlayerData = { ...playerData, display_name: authDisplayName };
+           }
+         }
+
          // Return user data with available information
      return NextResponse.json({
        success: true,
        data: {
-         player: playerData || null,
+         player: finalPlayerData || null,
         // Return default inventory for new users
         settings: null,
         inventory: [
@@ -308,6 +327,7 @@ export async function POST(request: NextRequest) {
       console.log('POST /user/sync - Filtered player update data:', playerUpdateData);
       
       // Update players table with only valid fields
+      console.log('POST /user/sync - Updating players table with:', playerUpdateData);
       updatePromises.push(
         supabase
           .from('players')
@@ -327,13 +347,21 @@ export async function POST(request: NextRequest) {
       }
       
       // Wait for all updates to complete
-      const [playerResult, authResult] = await Promise.all(updatePromises);
+      console.log('POST /user/sync - Executing updates...');
+      let playerResult, authResult;
+      try {
+        [playerResult, authResult] = await Promise.all(updatePromises);
+      } catch (error) {
+        console.error('POST /user/sync - Error during updates:', error);
+        throw error;
+      }
       
       if (playerResult.error) {
         console.error('Error updating player:', playerResult.error);
         results.player = { error: playerResult.error.message };
       } else {
         console.log('POST /user/sync - Player update successful:', playerResult.data);
+        console.log('POST /user/sync - Updated display_name:', playerResult.data?.display_name);
         results.player = { success: true, data: playerResult.data };
       }
       
