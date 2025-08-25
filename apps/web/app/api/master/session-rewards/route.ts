@@ -37,10 +37,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: rewards,
     });
+
+    // Add caching headers to reduce Edge Requests
+    response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600'); // 1 hour
+    response.headers.set('ETag', `"session-rewards-${Date.now()}"`);
+
+    return response;
 
   } catch (error) {
     console.error('Session rewards API error:', error);

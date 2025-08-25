@@ -5,6 +5,8 @@ import './mobile-first.css';
 import { AuthProvider } from '../contexts/AuthContext';
 import { AudioProvider } from '../contexts/AudioContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 // Import cleanup utility to clear old cached data
 import '../lib/cleanupOldData';
@@ -173,6 +175,8 @@ export default function RootLayout({
             {children}
           </AuthProvider>
         </MiniKitContextProvider>
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

@@ -71,13 +71,13 @@ export function CharacterDialogue({ isVisible, triggerQuoteChangeCount }: Charac
     }
   }, [isVisible, isDialogueVisible]);
 
-  // Change quote every minute when visible
+  // Change quote every 5 minutes when visible (reduced frequency)
   useEffect(() => {
     if (!isDialogueVisible) return;
 
     const interval = setInterval(() => {
       setCurrentQuote(getRandomQuote());
-    }, 60000); // 60 seconds
+    }, 300000); // 5 minutes (increased from 60 seconds)
 
     return () => clearInterval(interval);
   }, [isDialogueVisible]);

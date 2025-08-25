@@ -18,7 +18,6 @@ import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
 import { SocialAcknowledgment } from '../components/social/SocialAcknowledgment';
 import { EntryPointExperience } from '../components/context/EntryPointExperience';
 import { SoundToggle } from '../components/ui/SoundToggle';
-import { AudioInfo } from '../components/ui/AudioInfo';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -243,9 +242,6 @@ export default function HomePage() {
             {/* Sound Toggle */}
             <SoundToggle />
             
-            {/* Audio Info */}
-            <AudioInfo />
-            
             {/* Onboarding Content */}
             <div className="relative z-20 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
               {/* Large Logo - Outside the card */}
@@ -344,14 +340,11 @@ export default function HomePage() {
           {/* Sound Toggle */}
           <SoundToggle />
           
-          {/* Audio Info */}
-          <AudioInfo />
-          
           {/* Content */}
-          <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-2 sm:px-4 pt-4 sm:pt-8">
+          <div className={`relative z-10 min-h-screen flex flex-col items-center justify-start px-2 sm:px-4 pt-2 sm:pt-4 ${isBaseApp ? 'base-app-compact' : ''}`}>
             {/* App Logo */}
-            <div className="text-center mb-2 sm:mb-4">
-              <div className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 lg:w-80 lg:h-80 mx-auto mb-2 sm:mb-4">
+            <div className="text-center mb-2 sm:mb-4 logo-container">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 mx-auto mb-2 sm:mb-4">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
@@ -364,7 +357,7 @@ export default function HomePage() {
             </div>
 
             {/* Authentication Tabs */}
-            <div className="w-full max-w-sm mb-2">
+            <div className="w-full max-w-sm mb-2 auth-container">
               <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
                 <button
                   onClick={() => setAuthMode('wallet')}

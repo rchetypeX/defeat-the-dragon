@@ -132,10 +132,16 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: inventory,
     });
+
+    // Add caching headers to reduce Edge Requests
+    response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=300'); // 5 minutes
+    response.headers.set('ETag', `"inventory-${userId}-${Date.now()}"`);
+
+    return response;
 
   } catch (error) {
     console.error('Inventory API error:', error);

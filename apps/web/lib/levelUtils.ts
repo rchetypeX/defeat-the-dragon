@@ -21,7 +21,7 @@ interface LevelCalculation {
 
 let cachedProgression: Record<number, LevelProgression> | null = null;
 let lastFetchTime = 0;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (increased from 5 minutes)
 
 /**
  * Fetch level progression data from API

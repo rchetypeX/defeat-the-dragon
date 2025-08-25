@@ -409,6 +409,19 @@ input:focus, textarea:focus, select:focus {
   margin-bottom: var(--spacing-4);
 }
 
+/* Base App Compact Layout */
+.base-app-compact {
+  padding-top: 0.5rem !important;
+}
+
+.base-app-compact .logo-container {
+  margin-bottom: 0.5rem !important;
+}
+
+.base-app-compact .auth-container {
+  margin-top: 0.5rem !important;
+}
+
 /* Mobile-First Modal Styles */
 .modal {
   position: fixed;

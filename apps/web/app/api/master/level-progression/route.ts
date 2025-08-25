@@ -8,12 +8,25 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
-    // Get level progression from master table
-    const { data: progression, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const sessionType = searchParams.get('session_type');
+    const durationMinutes = searchParams.get('duration_minutes');
+
+    let query = supabase
       .from('level_progression_master')
       .select('*')
       .eq('is_active', true)
-      .order('level');
+      .order('level', { ascending: true });
+
+    if (sessionType) {
+      query = query.eq('session_type', sessionType);
+    }
+
+    if (durationMinutes) {
+      query = query.eq('duration_minutes', parseInt(durationMinutes));
+    }
+
+    const { data: progression, error } = await query;
 
     if (error) {
       console.error('Error fetching level progression:', error);
@@ -23,26 +36,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Transform data for easier consumption
-    const progressionMap = progression.reduce((acc, item) => {
-      acc[item.level] = {
-        id: item.id,
-        level: item.level,
-        xp_to_next: item.xp_to_next,
-        cumulative_xp: item.cumulative_xp,
-        description: item.description,
-        rewards: item.rewards || [],
-        is_active: item.is_active,
-        created_at: item.created_at,
-        updated_at: item.updated_at
-      };
-      return acc;
-    }, {} as Record<number, any>);
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
-      data: progressionMap
+      data: progression,
     });
+
+    // Add caching headers to reduce Edge Requests
+    response.headers.set('Cache-Control', 'public, max-age=1800, s-maxage=1800'); // 30 minutes
+    response.headers.set('ETag', `"level-progression-${Date.now()}"`);
+
+    return response;
 
   } catch (error) {
     console.error('Level progression API error:', error);

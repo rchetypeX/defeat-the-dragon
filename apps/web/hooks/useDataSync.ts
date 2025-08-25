@@ -98,7 +98,7 @@ export function useDataSync() {
     debouncedSync(async () => {
       console.log('Syncing non-critical data (debounced):', data);
       return await syncService.saveUserData(data);
-    }, 2000); // 2 second delay
+    }, 5000); // 5 second delay (increased from 2 seconds)
   }, [debouncedSync]);
 
   // Sync focus session completion (successful sessions only)

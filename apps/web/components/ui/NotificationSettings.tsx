@@ -77,10 +77,10 @@ export function NotificationSettings({ isOpen, onClose }: NotificationSettingsPr
   }, []);
 
   useEffect(() => {
-    // Update stats periodically
+    // Update stats less frequently to reduce API calls
     const interval = setInterval(() => {
       setStats(getStats());
-    }, 5000);
+    }, 30000); // Changed from 5 seconds to 30 seconds
 
     return () => clearInterval(interval);
   }, [getStats]);
