@@ -68,7 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'Defeat the Dragon',
       images: [
         {
-          url: dynamicMetadata?.og_image_url || '/og-image.png',
+          url: dynamicMetadata?.og_image_url || '/og-image.webp',
           width: 1200,
           height: 630,
           alt: 'Defeat the Dragon - Focus RPG',
@@ -81,7 +81,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: twitterTitle,
       description: twitterDescription,
-      images: [dynamicMetadata?.twitter_image_url || '/og-image.png'],
+      images: [dynamicMetadata?.twitter_image_url || '/og-image.webp'],
       creator: '@defeatdragon',
     },
   appleWebApp: {
@@ -95,14 +95,14 @@ export async function generateMetadata(): Promise<Metadata> {
       other: {
       'fc:frame': JSON.stringify({
         version: 'next',
-        imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${baseUrl}/og-image.png`,
+        imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${baseUrl}/og-image.webp`,
         button: {
           title: `Launch ${process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon'}`,
           action: {
             type: 'launch_frame',
             name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
             url: baseUrl,
-            splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${baseUrl}/og-image.png`,
+            splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${baseUrl}/og-image.webp`,
             splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#1a1a2e',
           },
         },
