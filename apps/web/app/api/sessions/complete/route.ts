@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
       // Get the session from the database using service role client
       const { data: dbSession, error: sessionError } = await supabase
         .from('sessions')
-        .select('*')
+        .select('id, user_id, action, started_at, ended_at, outcome, disturbed_seconds, dungeon_floor, boss_tier')
         .eq('id', session_id)
         .eq('user_id', userId)
         .single();
@@ -192,20 +192,22 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Get current player data
+      // Get current player data - explicitly select columns to avoid schema issues
       const { data: dbPlayer, error: playerError } = await supabase
         .from('players')
-        .select('*')
+        .select('id, user_id, level, xp, coins, sparks, created_at, display_name, wallet_address')
         .eq('user_id', userId)
         .single();
 
       if (playerError || !dbPlayer) {
+        console.error('Error fetching player data:', playerError);
         return NextResponse.json(
           { error: 'Player data not found' },
           { status: 404 }
         );
       }
       player = dbPlayer;
+      console.log('Retrieved player data:', player);
     }
 
     // Calculate rewards based on outcome
@@ -228,7 +230,9 @@ export async function POST(request: NextRequest) {
       coinsGained = dynamicRewards.coins;
       
       // Calculate Sparks for inspired users (subscription required)
-      if (player.is_inspired) {
+      // Handle case where is_inspired column might not exist
+      const isInspired = 'is_inspired' in player ? player.is_inspired : false;
+      if (isInspired) {
         sparksGained = dynamicRewards.sparks;
       } else {
         sparksGained = 0;
@@ -293,8 +297,14 @@ export async function POST(request: NextRequest) {
 
       if (updatePlayerError) {
         console.error('Error updating player:', updatePlayerError);
+        console.error('Player data being updated:', {
+          xp: player.xp + xpGained,
+          coins: player.coins + coinsGained,
+          sparks: player.sparks + sparksGained,
+          level: newLevel
+        });
         return NextResponse.json(
-          { error: 'Failed to update player data' },
+          { error: 'Failed to update player data', details: updatePlayerError.message },
           { status: 500 }
         );
       }

@@ -19,6 +19,7 @@ export interface Database {
           xp: number
           coins: number
           sparks: number
+          is_inspired: boolean
           created_at: string
         }
         Insert: {
@@ -30,6 +31,7 @@ export interface Database {
           xp?: number
           coins?: number
           sparks?: number
+          is_inspired?: boolean
           created_at?: string
         }
         Update: {
@@ -41,6 +43,7 @@ export interface Database {
           xp?: number
           coins?: number
           sparks?: number
+          is_inspired?: boolean
           created_at?: string
         }
       }

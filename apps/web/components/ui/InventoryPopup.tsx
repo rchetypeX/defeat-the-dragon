@@ -14,6 +14,16 @@ interface InventoryItem {
   image?: string;
 }
 
+interface DatabaseInventoryItem {
+  id: string;
+  user_id: string;
+  item_id: string;
+  item_type: string;
+  quantity: number;
+  equipped: boolean;
+  acquired_at: string;
+}
+
 interface InventoryPopupProps {
   isOpen: boolean;
   onClose: () => void;
@@ -39,11 +49,80 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
   const [activeTab, setActiveTab] = useState<'character' | 'background'>('character');
   const [equippedItems, setEquippedItems] = useState({
     character: 'fighter',
-    background: 'bg_default'
+    background: 'forest'
   });
+  const [userInventory, setUserInventory] = useState<DatabaseInventoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const { equippedCharacter, setEquippedCharacter } = useCharacterStore();
   const { equippedBackground, setEquippedBackground } = useBackgroundStore();
+
+  // Load user inventory from API
+  const loadUserInventory = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Get auth token for the request
+      let token: string | null = null;
+      
+      // Check if we have a wallet user in localStorage
+      const walletUserStr = localStorage.getItem('walletUser');
+      if (walletUserStr) {
+        try {
+          const walletUser = JSON.parse(walletUserStr);
+          token = `wallet:${JSON.stringify(walletUser)}`;
+        } catch (e) {
+          console.error('Error parsing wallet user:', e);
+        }
+      }
+      
+      // If no wallet token, try to get Supabase session
+      if (!token) {
+        const { supabase } = await import('../../lib/supabase');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          token = session.access_token;
+        }
+      }
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
+      const response = await fetch('/api/inventory', { headers, credentials: 'include' });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Inventory loaded:', result.data);
+        if (result.data) {
+          setUserInventory(result.data);
+        } else {
+          setUserInventory([]);
+        }
+      } else {
+        console.error('Failed to load inventory');
+        setError('Failed to load inventory');
+      }
+    } catch (error) {
+      console.error('Error loading inventory:', error);
+      setError('Error loading inventory');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load inventory when popup opens
+  useEffect(() => {
+    if (isOpen) {
+      loadUserInventory();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,21 +148,101 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
     };
   }, [isOpen, onClose]);
 
-  const handleEquip = (item: InventoryItem) => {
+  // Check if user owns an item based on database inventory
+  const isItemOwned = (itemId: string, itemType: string) => {
+    return userInventory.some(item => 
+      item.item_id === itemId && item.item_type === itemType
+    );
+  };
+
+  // Check if item is equipped based on database inventory
+  const isItemEquipped = (itemId: string, itemType: string) => {
+    const inventoryItem = userInventory.find(item => 
+      item.item_id === itemId && item.item_type === itemType
+    );
+    return inventoryItem?.equipped || false;
+  };
+
+  // Get all available items for the current tab
+  const getAvailableItems = (category: 'character' | 'background') => {
+    return defaultInventoryItems[category].map(item => ({
+      ...item,
+      isOwned: isItemOwned(item.id, category),
+      isEquipped: isItemEquipped(item.id, category)
+    }));
+  };
+
+  const handleEquip = async (item: InventoryItem) => {
     if (!item.isOwned) return;
     
-    if (item.category === 'character') {
-      setEquippedCharacter(item.id);
-    } else if (item.category === 'background') {
-      setEquippedBackground(item.id);
+    try {
+      // Get auth token for the request
+      let token: string | null = null;
+      
+      // Check if we have a wallet user in localStorage
+      const walletUserStr = localStorage.getItem('walletUser');
+      if (walletUserStr) {
+        try {
+          const walletUser = JSON.parse(walletUserStr);
+          token = `wallet:${JSON.stringify(walletUser)}`;
+        } catch (e) {
+          console.error('Error parsing wallet user:', e);
+        }
+      }
+      
+      // If no wallet token, try to get Supabase session
+      if (!token) {
+        const { supabase } = await import('../../lib/supabase');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          token = session.access_token;
+        }
+      }
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch('/api/inventory/equip', {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({
+          itemId: item.id,
+          itemType: item.category
+        })
+      });
+
+      if (response.ok) {
+        // Update local state
+        if (item.category === 'character') {
+          setEquippedCharacter(item.id);
+        } else if (item.category === 'background') {
+          setEquippedBackground(item.id);
+        }
+        
+        setEquippedItems(prev => ({
+          ...prev,
+          [item.category]: item.id
+        }));
+        
+        // Reload inventory to reflect changes
+        await loadUserInventory();
+        
+        console.log(`Equipped ${item.name} for ${item.category}`);
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to equip item:', errorData);
+        setError('Failed to equip item');
+      }
+    } catch (error) {
+      console.error('Error equipping item:', error);
+      setError('Error equipping item');
     }
-    
-    setEquippedItems(prev => ({
-      ...prev,
-      [item.category]: item.id
-    }));
-    
-    console.log(`Equipped ${item.name} for ${item.category}`);
   };
 
   const getEquippedItem = (category: 'character' | 'background') => {
@@ -110,9 +269,14 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
           </button>
         </div>
 
-        
+        {/* Error Message */}
+        {error && (
+          <div className="mb-3 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-xs">
+            {error}
+          </div>
+        )}
 
-                         {/* Tabs */}
+        {/* Tabs */}
         <div className="flex justify-center space-x-1 mb-3 flex-shrink-0">
           <button
             onClick={() => setActiveTab('character')}
@@ -136,73 +300,82 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
           </button>
         </div>
 
-                         {/* Items Grid - Mobile Optimized */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-2 pb-2">
-            {defaultInventoryItems[activeTab]
-              .filter(item => item.isOwned) // Only show owned items
-              .map((item) => (
-                <div
-                  key={item.id}
-                  className={`min-h-[120px] border-2 rounded p-2 transition-colors flex flex-col justify-between ${
-                    (item.category === 'character' && item.id === equippedCharacter) || 
-                    (item.category === 'background' && item.id === equippedBackground) || 
-                    item.isEquipped
-                      ? 'bg-[#8B4513] border-[#8B4513] shadow-lg' // Highlight equipped items
-                      : 'bg-[#e8e8d0] border-[#8B4513] hover:bg-[#d8d8c0]'
-                  }`}
-                >
-                  <div className="text-center flex-1 flex flex-col justify-center">
-                    {(activeTab === 'character' || activeTab === 'background') && item.image ? (
-                      <div className="mb-1">
-                        <img 
-                          src={item.image} 
-                          alt={item.name}
-                          className={`mx-auto object-contain ${
-                            activeTab === 'character' 
-                              ? 'w-10 h-10' 
-                              : 'w-12 h-8 rounded'
-                          }`}
-                        />
-                      </div>
-                    ) : (
-                      <div className="text-lg mb-1">
-                        {activeTab === 'character' && '🧙‍♂️'}
-                        {activeTab === 'background' && '🖼️'}
-                      </div>
-                    )}
-                    <h3 className={`font-bold text-xs ${
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-[#8B4513] text-sm">Loading inventory...</div>
+          </div>
+        )}
+
+        {/* Items Grid - Mobile Optimized */}
+        {!isLoading && (
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-2 gap-2 pb-2">
+              {getAvailableItems(activeTab)
+                .filter(item => item.isOwned) // Only show owned items
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    className={`min-h-[120px] border-2 rounded p-2 transition-colors flex flex-col justify-between ${
                       (item.category === 'character' && item.id === equippedCharacter) || 
                       (item.category === 'background' && item.id === equippedBackground) || 
-                      item.isEquipped ? 'text-[#f5f5dc]' : 'text-[#8B4513]'
-                    }`}>
-                      {item.name}
-                    </h3>
+                      item.isEquipped
+                        ? 'bg-[#8B4513] border-[#8B4513] shadow-lg' // Highlight equipped items
+                        : 'bg-[#e8e8d0] border-[#8B4513] hover:bg-[#d8d8c0]'
+                    }`}
+                  >
+                    <div className="text-center flex-1 flex flex-col justify-center">
+                      {(activeTab === 'character' || activeTab === 'background') && item.image ? (
+                        <div className="mb-1">
+                          <img 
+                            src={item.image} 
+                            alt={item.name}
+                            className={`mx-auto object-contain ${
+                              activeTab === 'character' 
+                                ? 'w-10 h-10' 
+                                : 'w-12 h-8 rounded'
+                            }`}
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-lg mb-1">
+                          {activeTab === 'character' && '🧙‍♂️'}
+                          {activeTab === 'background' && '🖼️'}
+                        </div>
+                      )}
+                      <h3 className={`font-bold text-xs ${
+                        (item.category === 'character' && item.id === equippedCharacter) || 
+                        (item.category === 'background' && item.id === equippedBackground) || 
+                        item.isEquipped ? 'text-[#f5f5dc]' : 'text-[#8B4513]'
+                      }`}>
+                        {item.name}
+                      </h3>
+                    </div>
+                    
+                    <div className="text-center">
+                      {!((item.category === 'character' && item.id === equippedCharacter) || 
+                         (item.category === 'background' && item.id === equippedBackground) || 
+                         item.isEquipped) && (
+                        <button
+                          onClick={() => handleEquip(item)}
+                          className="w-full bg-[#8B4513] text-[#f5f5dc] px-1 py-1 rounded font-bold hover:bg-[#654321] transition-colors text-xs"
+                        >
+                          Equip
+                        </button>
+                      )}
+                      {((item.category === 'character' && item.id === equippedCharacter) || 
+                        (item.category === 'background' && item.id === equippedBackground) || 
+                        item.isEquipped) && (
+                        <span className="text-[#f5f5dc] text-xs font-bold">
+                          ✓ Equipped
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  
-                  <div className="text-center">
-                    {!((item.category === 'character' && item.id === equippedCharacter) || 
-                       (item.category === 'background' && item.id === equippedBackground) || 
-                       item.isEquipped) && (
-                      <button
-                        onClick={() => handleEquip(item)}
-                        className="w-full bg-[#8B4513] text-[#f5f5dc] px-1 py-1 rounded font-bold hover:bg-[#654321] transition-colors text-xs"
-                      >
-                        Equip
-                      </button>
-                    )}
-                    {((item.category === 'character' && item.id === equippedCharacter) || 
-                      (item.category === 'background' && item.id === equippedBackground) || 
-                      item.isEquipped) && (
-                      <span className="text-[#f5f5dc] text-xs font-bold">
-                        ✓ Equipped
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
+                ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Footer */}
         <div className="mt-3 text-center flex-shrink-0">
