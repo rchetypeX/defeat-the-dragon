@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 import { generateAlphaCodes } from '../../../lib/alphaCodeGenerator';
 
 interface AlphaCode {
@@ -31,7 +31,10 @@ export default function AlphaCodesAdmin() {
   const [newCodes, setNewCodes] = useState<string[]>([]);
   const [showGenerated, setShowGenerated] = useState(false);
   
-  const supabase = createClientComponentClient();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   useEffect(() => {
     fetchCodes();

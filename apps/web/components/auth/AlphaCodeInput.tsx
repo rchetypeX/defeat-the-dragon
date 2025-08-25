@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 
 interface AlphaCodeInputProps {
   onCodeVerified: (reservedToken: string, reservedUntil: string) => void;
@@ -14,7 +14,10 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
   const [isVerifying, setIsVerifying] = useState(false);
   const [lastAttempt, setLastAttempt] = useState(0);
   
-  const supabase = createClientComponentClient();
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const normalizeCode = useCallback((input: string): string => {
     // Remove spaces, dashes, and convert to uppercase
