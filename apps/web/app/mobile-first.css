@@ -1268,7 +1268,7 @@ html, body {
   position: fixed;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%) translateY(-8rem);
+  transform: translate(-50%, -50%) translateY(-6rem);
   z-index: 30;
   max-width: 90vw;
   padding: 0 1rem;
@@ -1279,11 +1279,11 @@ html, body {
 @keyframes dialogueFadeIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) translateY(-8rem) scale(0.9);
+    transform: translate(-50%, -50%) translateY(-6rem) scale(0.9);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) translateY(-8rem) scale(1);
+    transform: translate(-50%, -50%) translateY(-6rem) scale(1);
   }
 }
 
@@ -1291,8 +1291,8 @@ html, body {
   background: white;
   border: 2px solid #374151;
   border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  max-width: 20rem;
+  padding: 1rem 1.25rem;
+  max-width: 24rem;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -1342,7 +1342,7 @@ html, body {
 
 @media (min-width: 640px) {
   .focus-session-dialogue {
-    transform: translate(-50%, -50%) translateY(-9rem);
+    transform: translate(-50%, -50%) translateY(-7rem);
   }
   
   .focus-session-dialogue {
@@ -1352,20 +1352,20 @@ html, body {
   @keyframes dialogueFadeInDesktop {
     from {
       opacity: 0;
-      transform: translate(-50%, -50%) translateY(-9rem) scale(0.9);
+      transform: translate(-50%, -50%) translateY(-7rem) scale(0.9);
     }
     to {
       opacity: 1;
-      transform: translate(-50%, -50%) translateY(-9rem) scale(1);
+      transform: translate(-50%, -50%) translateY(-7rem) scale(1);
     }
   }
   
   .focus-session-dialogue .pixel-card {
-    max-width: 24rem;
-    padding: 1rem 1.5rem;
+    max-width: 28rem;
+    padding: 1.25rem 1.75rem;
   }
   
   .focus-session-dialogue .text-content {
-    font-size: 1rem;
+    font-size: 1.125rem;
   }
 }
