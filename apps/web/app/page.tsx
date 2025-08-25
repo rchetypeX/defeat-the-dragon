@@ -343,8 +343,8 @@ export default function HomePage() {
           {/* Content */}
           <div className={`relative z-10 min-h-screen flex flex-col items-center justify-center px-2 sm:px-4 ${isBaseApp ? 'base-app-compact' : 'mobile-compact'}`}>
             {/* App Logo */}
-            <div className="text-center mb-1 sm:mb-2 logo-container">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 mx-auto mb-1">
+            <div className="text-center mb-0.5 sm:mb-1 logo-container">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 mx-auto mb-0">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
@@ -357,11 +357,11 @@ export default function HomePage() {
             </div>
 
             {/* Authentication Tabs */}
-            <div className="w-full max-w-sm mb-1 auth-container">
+            <div className="w-full max-w-sm mb-0.5 auth-container">
               <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
                 <button
                   onClick={() => setAuthMode('wallet')}
-                  className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
+                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
                     authMode === 'wallet'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
@@ -374,7 +374,7 @@ export default function HomePage() {
                 </button>
                 <button
                   onClick={() => setAuthMode('login')}
-                  className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
+                  className={`flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
                     authMode === 'login'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
@@ -390,7 +390,7 @@ export default function HomePage() {
             </div>
             
             {/* Authentication Form */}
-            <div className="w-full max-w-sm mb-1">
+            <div className="w-full max-w-sm mb-0">
               {authMode === 'wallet' && <WalletLoginForm key={walletKey} />}
               {authMode === 'login' && <LoginForm />}
               {authMode === 'signup' && <SignUpForm />}
@@ -398,7 +398,7 @@ export default function HomePage() {
             
             {/* Email Auth Toggle (only show when not in wallet mode) */}
             {authMode !== 'wallet' && (
-              <div className="mt-1 text-center">
+              <div className="mt-0.5 text-center">
                 <button
                   onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
                   className="text-[#fbbf24] hover:text-white transition-colors text-xs underline"
