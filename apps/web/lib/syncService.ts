@@ -90,26 +90,16 @@ export interface SyncData {
     quantity: number;
     equipped: boolean;
   }>;
-  subscriptions?: Array<{
-    subscription_type: string;
-    status: string;
-    provider?: string;
-    external_id?: string;
-    started_at?: string;
-    expires_at?: string;
-  }>;
-  purchases?: Array<{
-    item_id: string;
-    item_type: string;
-    price_coins: number;
-    price_sparks: number;
-  }>;
-  achievements?: Array<{
-    achievement_id: string;
-    progress: number;
-    completed: boolean;
-    completed_at?: string;
-  }>;
+}
+
+export interface FocusSessionData {
+  duration: number; // in seconds
+  completed: boolean;
+  xp_earned: number;
+  coins_earned: number;
+  sparks_earned: number;
+  session_type: 'focus' | 'break';
+  completed_at: string;
 }
 
 export interface SyncResult {
@@ -118,29 +108,22 @@ export interface SyncResult {
     player: any;
     settings: any;
     inventory: any[];
-    subscriptions: any[];
-    purchases: any[];
-    achievements: any[];
   };
   results?: any;
   error?: string;
 }
 
 class SyncService {
-  private syncInProgress = false;
-  private syncQueue: (() => Promise<void>)[] = [];
-  private lastSyncTime = 0;
-  private readonly SYNC_COOLDOWN = 5000; // 5 seconds between syncs
-
   /**
-   * Load all user data from Supabase
+   * Load all user data from database
    */
   async loadUserData(): Promise<SyncResult> {
     try {
+      console.log('SyncService: Loading user data from database...');
       const response = await apiRequest<SyncResult>('/user/sync');
       
       if (response.success && response.data) {
-        // Update local stores with data from Supabase
+        console.log('SyncService: Received data from database:', response.data);
         this.updateLocalStores(response.data);
       }
 
@@ -155,63 +138,83 @@ class SyncService {
   }
 
   /**
-   * Save all user data to Supabase
+   * Save user data to database (online-first)
    */
-  async saveUserData(): Promise<SyncResult> {
-    // Prevent multiple simultaneous syncs
-    if (this.syncInProgress) {
-      return new Promise((resolve) => {
-        this.syncQueue.push(async () => {
-          const result = await this.performSave();
-          resolve(result);
-        });
-      });
-    }
-
-    // Check cooldown
-    const now = Date.now();
-    if (now - this.lastSyncTime < this.SYNC_COOLDOWN) {
-      console.log('Sync cooldown active, skipping sync');
-      return { success: true };
-    }
-
-    return this.performSave();
-  }
-
-  private async performSave(): Promise<SyncResult> {
-    this.syncInProgress = true;
-    this.lastSyncTime = Date.now();
-
+  async saveUserData(syncData?: SyncData): Promise<SyncResult> {
     try {
-      const syncData = this.collectLocalData();
+      const dataToSync = syncData || this.collectLocalData();
+      console.log('SyncService: Saving user data to database:', dataToSync);
+      
+      // Filter out any fields that might not exist in the database
+      // This prevents errors with removed fields like current_streak, bond_score, etc.
+      if (dataToSync.player) {
+        const filteredPlayer: any = {};
+        const validFields = ['display_name', 'level', 'xp', 'coins', 'sparks'];
+        
+        validFields.forEach(field => {
+          if (dataToSync.player![field as keyof typeof dataToSync.player] !== undefined) {
+            filteredPlayer[field] = dataToSync.player![field as keyof typeof dataToSync.player];
+          }
+        });
+        
+        dataToSync.player = filteredPlayer;
+        console.log('SyncService: Filtered player data for sync:', filteredPlayer);
+      }
       
       const response = await apiRequest<SyncResult>('/user/sync', {
         method: 'POST',
-        body: JSON.stringify(syncData),
+        body: JSON.stringify(dataToSync),
       });
-
-      // Process any sync results
-      if (response.success && response.results) {
-        this.handleSyncResults(response.results);
-      }
 
       return response;
     } catch (error) {
       console.error('Failed to save user data:', error);
+      
+      // Provide more specific error messages for common issues
+      if (error instanceof Error) {
+        if (error.message.includes('current_streak') || 
+            error.message.includes('bond_score') || 
+            error.message.includes('mood_state') || 
+            error.message.includes('day_streak')) {
+          console.warn('SyncService: Attempted to sync removed fields, filtering them out');
+          // Try again with filtered data
+          return this.saveUserData(syncData);
+        }
+      }
+      
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
       };
-    } finally {
-      this.syncInProgress = false;
+    }
+  }
+
+  /**
+   * Save focus session completion (successful sessions only)
+   * Note: This is a simplified sync for successful sessions only
+   * The actual session completion is handled by the existing session system
+   */
+  async saveFocusSession(sessionData: FocusSessionData): Promise<SyncResult> {
+    try {
+      console.log('SyncService: Syncing successful focus session data:', sessionData);
       
-      // Process queued syncs
-      if (this.syncQueue.length > 0) {
-        const nextSync = this.syncQueue.shift();
-        if (nextSync) {
-          nextSync();
-        }
+      // For successful sessions, we just need to sync the updated player data
+      // The session completion itself is already handled by the existing session system
+      const gameStore = useGameStore.getState();
+      if (gameStore.player) {
+        // Sync the updated player data to database
+        const result = await this.saveUserData();
+        console.log('SyncService: Player data synced after successful session');
+        return result;
       }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to sync focus session data:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   }
 
@@ -225,7 +228,7 @@ class SyncService {
 
     const syncData: SyncData = {};
 
-    // Player data
+    // Player data - only include fields that exist in the current database schema
     if (gameStore.player) {
       syncData.player = {
         display_name: gameStore.player.display_name,
@@ -233,6 +236,8 @@ class SyncService {
         xp: gameStore.player.xp,
         coins: gameStore.player.coins,
         sparks: gameStore.player.sparks,
+        // Explicitly exclude removed fields to prevent sync errors
+        // bond_score, mood_state, day_streak, current_streak are removed
       };
     }
 
@@ -255,25 +260,36 @@ class SyncService {
       }));
     }
 
-    // Note: Subscriptions, purchases, and achievements would be collected
-    // from their respective stores when implemented
-
     return syncData;
   }
 
   /**
-   * Update local stores with data from Supabase
+   * Update local stores with data from database
    */
   private updateLocalStores(data: any) {
     const gameStore = useGameStore.getState();
     const characterStore = useCharacterStore.getState();
     const backgroundStore = useBackgroundStore.getState();
 
-    // Update player data
+    // Update player data - only include fields that exist in the current schema
     if (data.player) {
+      console.log('SyncService: Updating local stores with data:', data.player);
+      
+      // Filter out any removed fields to prevent sync errors
+      const filteredPlayerData: any = {};
+      const validFields = ['display_name', 'level', 'xp', 'coins', 'sparks', 'wallet_address'];
+      
+      validFields.forEach(field => {
+        if (data.player[field] !== undefined) {
+          filteredPlayerData[field] = data.player[field];
+        }
+      });
+      
+      console.log('SyncService: Filtered player data for local update:', filteredPlayerData);
+      
       gameStore.setPlayer({
         ...gameStore.player,
-        ...data.player,
+        ...filteredPlayerData,
       });
     }
 
@@ -304,108 +320,46 @@ class SyncService {
       }));
       gameStore.setInventory(inventoryItems);
     }
-
-    // Note: Subscriptions, purchases, and achievements would be updated
-    // in their respective stores when implemented
   }
 
   /**
-   * Handle sync results and resolve any conflicts
+   * Clean up any old cached sync data that might contain removed fields
    */
-  private handleSyncResults(results: any) {
-    // Handle any conflicts or errors from the sync
-    if (results.player?.error) {
-      console.error('Player sync error:', results.player.error);
-    }
-    if (results.settings?.error) {
-      console.error('Settings sync error:', results.settings.error);
-    }
-    if (results.inventory?.error) {
-      console.error('Inventory sync error:', results.inventory.error);
-    }
-    // Add more error handling as needed
-  }
-
-  /**
-   * Force a sync regardless of cooldown
-   */
-  async forceSync(): Promise<SyncResult> {
-    this.lastSyncTime = 0; // Reset cooldown
-    return this.saveUserData();
-  }
-
-  /**
-   * Sync specific data types
-   */
-  async syncPlayerData(): Promise<SyncResult> {
-    const gameStore = useGameStore.getState();
-    if (!gameStore.player) return { success: true };
-
-    console.log('SyncService: syncPlayerData called with player:', gameStore.player);
-
-    const syncData: SyncData = {
-      player: {
-        display_name: gameStore.player.display_name,
-        level: gameStore.player.level,
-        xp: gameStore.player.xp,
-        coins: gameStore.player.coins,
-        sparks: gameStore.player.sparks,
-      }
-    };
-
-    console.log('SyncService: Sending sync data:', syncData);
-
-    return this.performPartialSync(syncData);
-  }
-
-  async syncSettings(): Promise<SyncResult> {
-    const gameStore = useGameStore.getState();
-    const characterStore = useCharacterStore.getState();
-    const backgroundStore = useBackgroundStore.getState();
-
-    const syncData: SyncData = {
-      settings: {
-        sound_enabled: gameStore.settings.soundEnabled,
-        notifications_enabled: gameStore.settings.notificationsEnabled,
-        accessibility: gameStore.settings.accessibility,
-        equipped_character: characterStore.equippedCharacter,
-        equipped_background: backgroundStore.equippedBackground,
-      }
-    };
-
-    return this.performPartialSync(syncData);
-  }
-
-  async syncInventory(): Promise<SyncResult> {
-    const gameStore = useGameStore.getState();
-    if (gameStore.inventory.length === 0) return { success: true };
-
-    const syncData: SyncData = {
-      inventory: gameStore.inventory.map(item => ({
-        item_id: item.sku,
-        item_type: item.type as any,
-        quantity: item.qty,
-        equipped: item.equipped,
-      }))
-    };
-
-    return this.performPartialSync(syncData);
-  }
-
-  private async performPartialSync(syncData: SyncData): Promise<SyncResult> {
+  cleanupOldSyncData() {
     try {
-      const response = await apiRequest<SyncResult>('/user/sync', {
-        method: 'POST',
-        body: JSON.stringify(syncData),
-      });
-
-      return response;
+      // Clear any old localStorage data that might contain removed fields
+      if (typeof window !== 'undefined') {
+        const keysToCheck = [
+          'defeat-the-dragon-storage',
+          'defeat-the-dragon-store',
+          'defeat-the-dragon-character-storage',
+          'background-store'
+        ];
+        
+        keysToCheck.forEach(key => {
+          const data = localStorage.getItem(key);
+          if (data) {
+            try {
+              const parsed = JSON.parse(data);
+              // If the data contains removed fields, clear it
+              if (parsed.state && parsed.state.player) {
+                const player = parsed.state.player;
+                if (player.bond_score !== undefined || 
+                    player.mood_state !== undefined || 
+                    player.day_streak !== undefined ||
+                    player.current_streak !== undefined) {
+                  console.log('SyncService: Clearing old sync data with removed fields:', key);
+                  localStorage.removeItem(key);
+                }
+              }
+            } catch (e) {
+              console.warn('SyncService: Error parsing cached data:', e);
+            }
+          }
+        });
+      }
     } catch (error) {
-      console.error('Partial sync failed:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
+      console.warn('SyncService: Error during cleanup:', error);
     }
   }
 }
@@ -413,27 +367,7 @@ class SyncService {
 // Export singleton instance
 export const syncService = new SyncService();
 
-// Auto-sync on store changes
-export function setupAutoSync() {
-  const gameStore = useGameStore.getState();
-  const characterStore = useCharacterStore.getState();
-  const backgroundStore = useBackgroundStore.getState();
-
-  // Subscribe to store changes and auto-sync
-  useGameStore.subscribe((state) => {
-    // Sync when player data changes
-    if (state.player) {
-      syncService.syncPlayerData();
-    }
-  });
-
-  useCharacterStore.subscribe((state) => {
-    // Sync when character changes
-    syncService.syncSettings();
-  });
-
-  useBackgroundStore.subscribe((state) => {
-    // Sync when background changes
-    syncService.syncSettings();
-  });
+// Clean up any old cached sync data on initialization
+if (typeof window !== 'undefined') {
+  syncService.cleanupOldSyncData();
 }

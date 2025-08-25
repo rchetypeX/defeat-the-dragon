@@ -35,7 +35,7 @@ export function GameDashboard() {
     completeSession
   } = useGameStore();
   
-  const { isLoading, error, lastSyncTime, forceSync, refreshData } = useDataSync();
+  const { isLoading, error, lastSyncTime, syncFocusSession, refreshData } = useDataSync();
   
   // Enhanced notification system
   const {
@@ -152,6 +152,10 @@ export function GameDashboard() {
       setSessionResult(result);
       setShowSessionTimer(false);
       
+      // Note: Session completion already syncs data via the existing session system
+      // No additional sync needed to prevent redundant API calls
+      console.log('GameDashboard: Session completed - data already synced via session system');
+      
       // Show enhanced notification
       await showSessionComplete(
         result.xp_gained, 
@@ -179,7 +183,8 @@ export function GameDashboard() {
       await completeSession('fail');
       console.log('GameDashboard: Session failed');
       setShowSessionTimer(false);
-      // Don't set sessionResult for failed sessions
+      // Don't sync failed sessions to database (online-first approach)
+      // Failed sessions are not saved, only successful ones are
     } catch (error) {
       console.error('GameDashboard: Failed to fail session:', error);
     }

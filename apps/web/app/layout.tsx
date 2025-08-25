@@ -3,8 +3,11 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import './mobile-first.css';
 import { AuthProvider } from '../contexts/AuthContext';
-import { MiniKitContextProvider } from '../providers/MiniKitProvider';
+import { AudioProvider } from '../contexts/AudioContext';
+import { MiniKitProvider } from '../providers/MiniKitProvider';
 
+// Import cleanup utility to clear old cached data
+import '../lib/cleanupOldData';
 
 
 const inter = Inter({ subsets: ['latin'] });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { syncService } from '../lib/syncService';
 import { useGameStore } from '../lib/store';
@@ -11,6 +11,10 @@ export function useDataSync() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  
+  // Debounce sync calls to prevent excessive API usage
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingSyncRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (!user) {
@@ -23,16 +27,19 @@ export function useDataSync() {
         setIsLoading(true);
         setError(null);
 
-        console.log('Initializing data sync for user:', user.id);
+        console.log('Initializing data for user:', user.id);
 
-        // Load data from Supabase first
+        // Clean up any old cached sync data that might contain removed fields
+        syncService.cleanupOldSyncData();
+
+        // Load data from database
         const syncResult = await syncService.loadUserData();
         
         if (syncResult.success && syncResult.data) {
-          console.log('Data loaded from Supabase:', syncResult.data);
+          console.log('Data loaded from database:', syncResult.data);
         } else {
-          console.log('No data in Supabase, loading from API');
-          // Fallback to API if no Supabase data
+          console.log('No data in database, loading from API');
+          // Fallback to API if no database data
           await loadPlayerData();
         }
 
@@ -49,107 +56,67 @@ export function useDataSync() {
     initializeData();
   }, [user, loadPlayerData]);
 
-  // Auto-sync on page visibility change (user returns to tab)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && user) {
-        console.log('Page became visible, syncing data...');
-        syncService.loadUserData().then((result) => {
-          if (result.success) {
-            setLastSyncTime(new Date());
-          }
-        });
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [user]);
-
-  // Auto-sync on window focus (user switches back to window)
-  useEffect(() => {
-    const handleFocus = () => {
-      if (user) {
-        console.log('Window focused, syncing data...');
-        syncService.loadUserData().then((result) => {
-          if (result.success) {
-            setLastSyncTime(new Date());
-          }
-        });
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [user]);
-
-  // Periodic sync every 5 minutes
-  useEffect(() => {
-    if (!user) return;
-
-    const interval = setInterval(() => {
-      console.log('Periodic sync...');
-      syncService.saveUserData().then((result) => {
-        if (result.success) {
+  // Debounced sync function to prevent excessive API calls
+  const debouncedSync = useCallback((syncFunction: () => Promise<any>, delay: number = 2000) => {
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+    
+    pendingSyncRef.current = true;
+    
+    syncTimeoutRef.current = setTimeout(async () => {
+      if (pendingSyncRef.current) {
+        try {
+          await syncFunction();
           setLastSyncTime(new Date());
-        }
-      });
-    }, 5 * 60 * 1000); // 5 minutes
-
-    return () => clearInterval(interval);
-  }, [user]);
-
-  // Sync before page unload
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (user) {
-        console.log('Page unloading, syncing data...');
-        
-        // Check if this is a wallet user
-        const walletUserStr = localStorage.getItem('walletUser');
-        if (walletUserStr) {
-          // For wallet users, use syncService instead of sendBeacon
-          // since sendBeacon doesn't support custom headers
-          try {
-            syncService.saveUserData();
-          } catch (error) {
-            console.error('Failed to sync wallet user data on unload:', error);
-          }
-        } else {
-          // For regular Supabase users, use sendBeacon for reliable sync
-          const syncData = syncService.collectLocalData();
-          navigator.sendBeacon('/api/user/sync', JSON.stringify(syncData));
+        } catch (error) {
+          console.error('Debounced sync failed:', error);
+        } finally {
+          pendingSyncRef.current = false;
         }
       }
-    };
+    }, delay);
+  }, []);
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [user]);
-
-  const forceSync = async () => {
+  // Sync critical data changes immediately (online-first)
+  const syncCriticalData = async (data: any) => {
     try {
-      setError(null);
-      const result = await syncService.forceSync();
+      console.log('Syncing critical data:', data);
+      const result = await syncService.saveUserData(data);
       if (result.success) {
         setLastSyncTime(new Date());
-      } else {
-        setError(result.error || 'Sync failed');
       }
       return result;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Sync failed';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
+      console.error('Critical data sync failed:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Sync failed' };
     }
   };
 
+  // Debounced sync for non-critical changes (cost-effective)
+  const syncNonCriticalData = useCallback((data: any) => {
+    debouncedSync(async () => {
+      console.log('Syncing non-critical data (debounced):', data);
+      return await syncService.saveUserData(data);
+    }, 2000); // 2 second delay
+  }, [debouncedSync]);
+
+  // Sync focus session completion (successful sessions only)
+  const syncFocusSession = async (sessionData: any) => {
+    try {
+      console.log('Syncing successful focus session:', sessionData);
+      const result = await syncService.saveFocusSession(sessionData);
+      if (result.success) {
+        setLastSyncTime(new Date());
+      }
+      return result;
+    } catch (err) {
+      console.error('Focus session sync failed:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Session sync failed' };
+    }
+  };
+
+  // Force refresh data from database
   const refreshData = async () => {
     try {
       setIsLoading(true);
@@ -172,11 +139,22 @@ export function useDataSync() {
     }
   };
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return {
     isLoading,
     error,
     lastSyncTime,
-    forceSync,
+    syncCriticalData,
+    syncNonCriticalData,
+    syncFocusSession,
     refreshData,
     isSyncing: isLoading
   };

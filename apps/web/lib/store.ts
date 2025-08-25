@@ -133,10 +133,11 @@ export const useGameStore = create<GameState & GameActions>()(
           
           console.log('Store: Updated player data:', updatedPlayer);
           
-          // Auto-sync player data changes
+          // Online-first: Sync critical player data changes immediately
           if (updatedPlayer) {
-            console.log('Store: Calling syncPlayerData...');
-            syncService.syncPlayerData();
+            console.log('Store: Player data updated locally - sync will be handled explicitly');
+            // Removed auto-sync to prevent excessive API calls
+            // Sync will be handled by components when explicitly needed
           }
           
           return { player: updatedPlayer };
@@ -341,8 +342,8 @@ export const useGameStore = create<GameState & GameActions>()(
         addToInventory: (item) => set((state) => {
           const updatedInventory = [...state.inventory, item];
           
-          // Auto-sync inventory changes
-          syncService.syncInventory();
+          // Removed auto-sync to prevent excessive API calls
+          // Sync will be handled explicitly when needed
           
           return { inventory: updatedInventory };
         }),
@@ -352,8 +353,8 @@ export const useGameStore = create<GameState & GameActions>()(
             item.id === id ? { ...item, ...updates } : item
           );
           
-          // Auto-sync inventory changes
-          syncService.syncInventory();
+          // Removed auto-sync to prevent excessive API calls
+          // Sync will be handled explicitly when needed
           
           return { inventory: updatedInventory };
         }),
@@ -369,8 +370,8 @@ export const useGameStore = create<GameState & GameActions>()(
         updateSettings: (updates) => set((state) => {
           const updatedSettings = { ...state.settings, ...updates };
           
-          // Auto-sync settings changes
-          syncService.syncSettings();
+          // Removed auto-sync to prevent excessive API calls
+          // Sync will be handled explicitly when needed
           
           return { settings: updatedSettings };
         }),

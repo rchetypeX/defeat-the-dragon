@@ -5,8 +5,6 @@ import { User, Session as SupabaseSession } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { useGameStore } from '../lib/store';
 import { getPlayerData } from '../lib/api';
-import { setupAutoSync } from '../lib/syncService';
-
 interface AuthContextType {
   user: User | null;
   session: SupabaseSession | null;
@@ -24,12 +22,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   
   const { setUser: setGameUser, resetGame } = useGameStore();
-
-  // Setup auto-sync when component mounts
-  useEffect(() => {
-    setupAutoSync();
-    console.log('AuthContext: Auto-sync setup completed');
-  }, []);
 
   // Check for wallet user in localStorage
   const checkWalletUser = () => {

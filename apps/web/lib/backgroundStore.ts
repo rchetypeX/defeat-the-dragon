@@ -15,8 +15,8 @@ export const useBackgroundStore = create<BackgroundState>()(
       
       setEquippedBackground: (backgroundId: string) => {
         set({ equippedBackground: backgroundId });
-        // Auto-sync background changes
-        syncService.syncSettings();
+        // Removed auto-sync to prevent excessive API calls
+        // Sync will be handled explicitly when needed
       },
       
       getBackgroundImage: (backgroundId: string) => {

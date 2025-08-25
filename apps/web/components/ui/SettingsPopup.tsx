@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useGameStore } from '../../lib/store';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDataSync } from '../../hooks/useDataSync';
 import { CloseButton } from './CloseButton';
 import { WalletLinkForm } from '../auth/WalletLinkForm';
 import { EmailLinkForm } from '../auth/EmailLinkForm';
@@ -15,6 +16,7 @@ interface SettingsPopupProps {
 export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose }) => {
   const { player, updatePlayer } = useGameStore();
   const { signOut, user } = useAuth();
+  const { syncCriticalData, syncNonCriticalData } = useDataSync();
   const [displayName, setDisplayName] = useState(player?.display_name || '');
   const [isEditing, setIsEditing] = useState(false);
   const [showWalletLink, setShowWalletLink] = useState(false);
@@ -62,10 +64,29 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
     };
   }, [isOpen, onClose, showWalletLink, showEmailLink]);
 
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
     if (displayName.trim() && player) {
+      // Update local state first
       updatePlayer({ display_name: displayName.trim() });
       setIsEditing(false);
+      
+      // Use debounced sync for display name changes (cost-effective)
+      try {
+        console.log('SettingsPopup: Syncing display name change (debounced)');
+        syncNonCriticalData({
+          player: {
+            display_name: displayName.trim(),
+            level: player.level,
+            xp: player.xp,
+            coins: player.coins,
+            sparks: player.sparks,
+          }
+        });
+        console.log('SettingsPopup: Display name sync queued');
+      } catch (error) {
+        console.error('SettingsPopup: Failed to queue display name sync:', error);
+        // Don't revert the local change - let user retry if needed
+      }
     }
   };
 

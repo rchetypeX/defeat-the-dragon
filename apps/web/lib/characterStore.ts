@@ -15,8 +15,8 @@ export const useCharacterStore = create<CharacterState>()(
       
       setEquippedCharacter: (characterId: string) => {
         set({ equippedCharacter: characterId });
-        // Auto-sync character changes
-        syncService.syncSettings();
+        // Removed auto-sync to prevent excessive API calls
+        // Sync will be handled explicitly when needed
       },
       
       getCharacterImage: (characterId: string) => {

@@ -293,17 +293,24 @@ export async function POST(request: NextRequest) {
       
       console.log('POST /user/sync - Updating player with display_name:', player.display_name);
       
-      // Update players table
+      // Only include fields that actually exist in the database schema
+      // This prevents errors with removed fields like current_streak, bond_score, etc.
+      const playerUpdateData: any = {};
+      
+      // Only include fields that exist in the current schema
+      if (player.display_name !== undefined) playerUpdateData.display_name = player.display_name;
+      if (player.level !== undefined) playerUpdateData.level = player.level;
+      if (player.xp !== undefined) playerUpdateData.xp = player.xp;
+      if (player.coins !== undefined) playerUpdateData.coins = player.coins;
+      if (player.sparks !== undefined) playerUpdateData.sparks = player.sparks;
+      
+      console.log('POST /user/sync - Filtered player update data:', playerUpdateData);
+      
+      // Update players table with only valid fields
       updatePromises.push(
         supabase
           .from('players')
-          .update({
-            display_name: player.display_name,
-            level: player.level,
-            xp: player.xp,
-            coins: player.coins,
-            sparks: player.sparks
-          })
+          .update(playerUpdateData)
           .eq('user_id', userId)
           .select()
           .single()
