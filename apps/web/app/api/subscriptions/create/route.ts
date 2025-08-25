@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update user's "Inspired" status in players table
+    // Update user's "Inspired" status in players table to unlock Sparks rewards
     const { error: playerError } = await supabase
       .from('players')
       .update({

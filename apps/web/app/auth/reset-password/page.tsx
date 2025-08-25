@@ -164,7 +164,7 @@ function ResetPasswordContent() {
         <div className="w-full max-w-sm">
           {/* App Logo */}
           <div className="text-center mb-8">
-            <div className="w-32 h-32 mx-auto mb-4">
+            <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 mx-auto mb-4">
               <img 
                 src="/logo.svg"
                 alt="Defeat the Dragon Logo" 

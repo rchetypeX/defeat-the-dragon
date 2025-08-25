@@ -155,10 +155,7 @@ export async function POST(request: NextRequest) {
         user_id: 'mock-user-id',
         action: 'Train',
         started_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
-        ended_at: null,
-        disturbed_seconds: disturbed_seconds,
-        dungeon_floor: 0,
-        boss_tier: 'none'
+        ended_at: null
       };
       player = {
         id: 'mock-player-id',
@@ -230,7 +227,7 @@ export async function POST(request: NextRequest) {
       xpGained = dynamicRewards.xp;
       coinsGained = dynamicRewards.coins;
       
-      // Calculate Sparks for inspired users
+      // Calculate Sparks for inspired users (subscription required)
       if (player.is_inspired) {
         sparksGained = dynamicRewards.sparks;
       } else {
@@ -271,8 +268,7 @@ export async function POST(request: NextRequest) {
         .from('sessions')
         .update({
           ended_at: new Date().toISOString(),
-          outcome,
-          disturbed_seconds
+          outcome
         })
         .eq('id', session_id);
 

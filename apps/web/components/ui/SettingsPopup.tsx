@@ -70,10 +70,10 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
       updatePlayer({ display_name: displayName.trim() });
       setIsEditing(false);
       
-      // Use debounced sync for display name changes (cost-effective)
+      // Use critical sync for display name changes (important user data)
       try {
-        console.log('SettingsPopup: Syncing display name change (debounced)');
-        syncNonCriticalData({
+        console.log('SettingsPopup: Syncing display name change (critical)');
+        await syncCriticalData({
           player: {
             display_name: displayName.trim(),
             level: player.level,
@@ -82,9 +82,9 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
             sparks: player.sparks,
           }
         });
-        console.log('SettingsPopup: Display name sync queued');
+        console.log('SettingsPopup: Display name sync completed');
       } catch (error) {
-        console.error('SettingsPopup: Failed to queue display name sync:', error);
+        console.error('SettingsPopup: Failed to sync display name:', error);
         // Don't revert the local change - let user retry if needed
       }
     }

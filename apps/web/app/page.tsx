@@ -250,7 +250,7 @@ export default function HomePage() {
             <div className="relative z-20 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
               {/* Large Logo - Outside the card */}
               <div className="text-center mb-4 sm:mb-8">
-                <div className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 mx-auto mb-2 sm:mb-4">
+                <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 mx-auto mb-2 sm:mb-4">
                   <img 
                     src="/logo.svg"
                     alt="Defeat the Dragon Logo" 
@@ -351,7 +351,7 @@ export default function HomePage() {
           <div className="relative z-10 min-h-screen flex flex-col items-center justify-start px-2 sm:px-4 pt-8 sm:pt-16">
             {/* App Logo */}
             <div className="text-center mb-4 sm:mb-8">
-              <div className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 mx-auto mb-2 sm:mb-4">
+              <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 mx-auto mb-2 sm:mb-4">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 

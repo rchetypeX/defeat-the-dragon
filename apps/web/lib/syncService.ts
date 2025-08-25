@@ -277,7 +277,7 @@ class SyncService {
       
       // Filter out any removed fields to prevent sync errors
       const filteredPlayerData: any = {};
-      const validFields = ['display_name', 'level', 'xp', 'coins', 'sparks', 'wallet_address'];
+      const validFields = ['display_name', 'level', 'xp', 'coins', 'sparks', 'wallet_address', 'is_inspired'];
       
       validFields.forEach(field => {
         if (data.player[field] !== undefined) {

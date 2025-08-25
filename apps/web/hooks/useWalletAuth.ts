@@ -348,8 +348,9 @@ export function useWalletAuth() {
       setIsSwitchingWallet(false);
       setIsCheckingAccount(false);
       setManualDisconnect(true); // Set flag to prevent auto-reconnection
+      setSelectedProvider(null); // Clear selected provider so wallet selection shows again
       
-      console.log('Wallet disconnected - all state cleared');
+      console.log('Wallet disconnected - all state cleared, selectedProvider reset');
       
       // Note: We can't programmatically disconnect MetaMask
       // The user needs to disconnect manually from their wallet
@@ -368,20 +369,31 @@ export function useWalletAuth() {
       // First disconnect current wallet
       await disconnectWallet();
       
-      // Then request new accounts using the selected provider
-      const provider = getProvider();
-      if (!provider) {
-        throw new Error('No wallet provider available');
-      }
+      // Show wallet selection instead of auto-connecting
+      // This allows user to choose a different provider
+      const providers = [];
+      if (window.ethereum) providers.push('MetaMask');
+      if (window.coinbaseWalletExtension) providers.push('Coinbase Wallet');
+      if (window.phantom?.ethereum) providers.push('Phantom');
+      if (window.trustwallet) providers.push('Trust Wallet');
       
-      const accounts = await provider.request({ method: 'eth_requestAccounts' });
-      setAvailableAccounts(accounts);
-      
-      if (accounts.length > 0) {
-        setAddress(accounts[0]);
-        setIsConnected(true);
-        await checkAccountExists(accounts[0]);
-        console.log('Switched to new wallet:', accounts[0]);
+      if (providers.length > 1) {
+        setAvailableProviders(providers);
+        setShowProviderSelection(true);
+      } else if (providers.length === 1) {
+        // Auto-select the only available provider
+        setSelectedProvider(providers[0]);
+        const provider = getProvider();
+        if (provider) {
+          const accounts = await provider.request({ method: 'eth_requestAccounts' });
+          setAvailableAccounts(accounts);
+          if (accounts.length > 0) {
+            setAddress(accounts[0]);
+            setIsConnected(true);
+            await checkAccountExists(accounts[0]);
+            console.log('Switched to new wallet:', accounts[0]);
+          }
+        }
       }
     } catch (error) {
       console.error('Wallet switching error:', error);

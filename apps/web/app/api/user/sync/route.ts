@@ -303,6 +303,7 @@ export async function POST(request: NextRequest) {
       if (player.xp !== undefined) playerUpdateData.xp = player.xp;
       if (player.coins !== undefined) playerUpdateData.coins = player.coins;
       if (player.sparks !== undefined) playerUpdateData.sparks = player.sparks;
+      if (player.is_inspired !== undefined) playerUpdateData.is_inspired = player.is_inspired;
       
       console.log('POST /user/sync - Filtered player update data:', playerUpdateData);
       
