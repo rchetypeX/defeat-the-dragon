@@ -505,7 +505,7 @@ export function useWalletAuth() {
     }
   };
 
-  const signUpWithWallet = async (displayName: string) => {
+  const signUpWithWallet = async (displayName: string, reservedToken?: string) => {
     if (!address) {
       setAuthError('Please connect your wallet first.');
       return;
@@ -540,6 +540,7 @@ export function useWalletAuth() {
           displayName,
           message,
           signature,
+          reservedToken, // Include alpha code reservation token
         }),
       });
 

@@ -105,7 +105,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
 
   return (
     <div className="space-y-3">
-      <label htmlFor="alpha-code" className="block text-sm font-medium text-gray-700">
+      <label htmlFor="alpha-code" className="block text-sm font-medium mb-2 text-[#fbbf24]">
         Alpha access code
       </label>
       <form onSubmit={handleSubmit} className="flex space-x-2">
@@ -117,19 +117,19 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           onKeyPress={handleKeyPress}
           placeholder="DTD-XXXX-XXXX"
           maxLength={12} // DTD-XXXX-XXXX
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="flex-1 pixel-input text-xs placeholder:text-xs"
           disabled={disabled || isVerifying}
         />
         <button
           type="submit"
           disabled={!code || isVerifying || disabled}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] focus:outline-none focus:ring-2 focus:ring-[#f2751a] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
         >
           {isVerifying ? 'Verifying...' : 'Verify'}
         </button>
       </form>
-      <p className="text-xs text-gray-500">
-        Enter your alpha access code to join the beta
+      <p className="text-xs text-[#8B4513]">
+        Enter your alpha access code to join the alpha test
       </p>
     </div>
   );

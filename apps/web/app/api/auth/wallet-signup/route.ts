@@ -9,13 +9,38 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { address, displayName, message, signature } = await request.json();
+    const { address, displayName, message, signature, reservedToken } = await request.json();
 
     if (!address || !displayName || !message || !signature) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
+    }
+
+    // If reservedToken is provided, finalize the alpha code
+    if (reservedToken) {
+      try {
+        const { data: finalizeResult, error: finalizeError } = await supabase.rpc('alpha_finalize_with_token', {
+          p_reserved_token: reservedToken
+        });
+
+        if (finalizeError) {
+          console.error('Alpha code finalization error:', finalizeError);
+          return NextResponse.json(
+            { error: 'Invalid or expired alpha code' },
+            { status: 400 }
+          );
+        }
+
+        console.log('Alpha code finalized successfully');
+      } catch (finalizeError) {
+        console.error('Alpha code finalization error:', finalizeError);
+        return NextResponse.json(
+          { error: 'Invalid or expired alpha code' },
+          { status: 400 }
+        );
+      }
     }
 
     // For now, we'll skip signature verification to avoid viem dependency issues

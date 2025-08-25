@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 import { useWalletAuth } from '../../hooks/useWalletAuth';
+import { AlphaCodeInput } from './AlphaCodeInput';
 
 export function WalletLoginForm() {
   const [displayName, setDisplayName] = useState('');
+  const [alphaCodeVerified, setAlphaCodeVerified] = useState(false);
+  const [reservedToken, setReservedToken] = useState<string | null>(null);
+  const [reservedUntil, setReservedUntil] = useState<string | null>(null);
   
   const {
     address,
@@ -50,7 +54,33 @@ export function WalletLoginForm() {
     if (!displayName.trim()) {
       return;
     }
-    await signUpWithWallet(displayName.trim());
+    
+    // Require alpha code verification for new users
+    if (!alphaCodeVerified || !reservedToken) {
+      return;
+    }
+
+    // Check if reservation is still valid
+    if (reservedUntil && new Date(reservedUntil) < new Date()) {
+      setAlphaCodeVerified(false);
+      setReservedToken(null);
+      setReservedUntil(null);
+      return;
+    }
+    
+    await signUpWithWallet(displayName.trim(), reservedToken);
+  };
+
+  const handleAlphaCodeVerified = (token: string, until: string) => {
+    setReservedToken(token);
+    setReservedUntil(until);
+    setAlphaCodeVerified(true);
+  };
+
+  const handleAlphaCodeError = (message: string) => {
+    setAlphaCodeVerified(false);
+    setReservedToken(null);
+    setReservedUntil(null);
   };
 
   // Auto-detect if user should sign up or sign in based on account existence
@@ -59,7 +89,7 @@ export function WalletLoginForm() {
   
   // Check if the form is valid for submission - no uniqueness requirement
   const isFormValid = shouldShowSignUp ? 
-    (displayName.trim().length >= 2 && displayName.trim().length <= 20) : 
+    (displayName.trim().length >= 2 && displayName.trim().length <= 20 && alphaCodeVerified) : 
     true;
 
   return (
@@ -206,31 +236,40 @@ export function WalletLoginForm() {
             {!isCheckingAccount && hasAccount !== null && (
               <>
                 {shouldShowSignUp && (
-                  <div>
-                    <label htmlFor="displayName" className="block text-sm font-medium mb-2 text-[#fbbf24]">
-                      Adventurer Name
-                    </label>
-                    <input
-                      id="displayName"
-                      type="text"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      required
-                      className="w-full pixel-input text-sm"
-                      placeholder="Enter your name"
-                      maxLength={20}
+                  <>
+                    {/* Alpha Code Input - Required for new users */}
+                    <AlphaCodeInput
+                      onCodeVerified={handleAlphaCodeVerified}
+                      onError={handleAlphaCodeError}
+                      disabled={isConnecting}
                     />
                     
-                    {/* Character count indicator */}
-                    <div className="mt-1 flex justify-between items-center">
-                      <p className="text-xs text-[#8B4513] font-medium">
-                        Choose a name for your character (2-20 characters)
-                      </p>
-                      <span className="text-xs text-[#8B4513] font-medium">
-                        {displayName.length}/20
-                      </span>
+                    <div>
+                      <label htmlFor="displayName" className="block text-sm font-medium mb-2 text-[#fbbf24]">
+                        Adventurer Name
+                      </label>
+                      <input
+                        id="displayName"
+                        type="text"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        required
+                        className="w-full pixel-input text-sm"
+                        placeholder="Enter your name"
+                        maxLength={20}
+                      />
+                      
+                      {/* Character count indicator */}
+                      <div className="mt-1 flex justify-between items-center">
+                        <p className="text-xs text-[#8B4513] font-medium">
+                          Choose a name for your character (2-20 characters)
+                        </p>
+                        <span className="text-xs text-[#8B4513] font-medium">
+                          {displayName.length}/20
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
                 
                 <button
@@ -238,7 +277,10 @@ export function WalletLoginForm() {
                   disabled={isConnecting || !isFormValid}
                   className="w-full pixel-button disabled:opacity-50"
                 >
-                  {isConnecting ? 'Processing...' : (shouldShowSignUp ? 'START ADVENTURE' : 'Sign In')}
+                  {isConnecting ? 'Processing...' : 
+                   (shouldShowSignUp ? 
+                     (!alphaCodeVerified ? 'Verify Alpha Code First' : 'START ADVENTURE') : 
+                     'Sign In')}
                 </button>
               </>
             )}
