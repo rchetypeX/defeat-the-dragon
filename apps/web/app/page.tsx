@@ -341,10 +341,10 @@ export default function HomePage() {
           <SoundToggle />
           
           {/* Content */}
-          <div className={`relative z-10 min-h-screen flex flex-col items-center justify-start px-2 sm:px-4 pt-2 sm:pt-4 ${isBaseApp ? 'base-app-compact' : ''}`}>
+          <div className={`relative z-10 min-h-screen flex flex-col items-center justify-center px-2 sm:px-4 ${isBaseApp ? 'base-app-compact' : ''}`}>
             {/* App Logo */}
             <div className="text-center mb-2 sm:mb-4 logo-container">
-              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 lg:w-64 lg:h-64 mx-auto mb-2 sm:mb-4">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 mx-auto mb-1 sm:mb-2">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
@@ -357,7 +357,7 @@ export default function HomePage() {
             </div>
 
             {/* Authentication Tabs */}
-            <div className="w-full max-w-sm mb-2 auth-container">
+            <div className="w-full max-w-sm mb-1 auth-container">
               <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
                 <button
                   onClick={() => setAuthMode('wallet')}
@@ -390,7 +390,7 @@ export default function HomePage() {
             </div>
             
             {/* Authentication Form */}
-            <div className="w-full max-w-sm mb-2">
+            <div className="w-full max-w-sm mb-1">
               {authMode === 'wallet' && <WalletLoginForm key={walletKey} />}
               {authMode === 'login' && <LoginForm />}
               {authMode === 'signup' && <SignUpForm />}
@@ -398,7 +398,7 @@ export default function HomePage() {
             
             {/* Email Auth Toggle (only show when not in wallet mode) */}
             {authMode !== 'wallet' && (
-              <div className="mt-2 sm:mt-3 text-center">
+              <div className="mt-1 sm:mt-2 text-center">
                 <button
                   onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
                   className="text-[#fbbf24] hover:text-white transition-colors text-xs underline"

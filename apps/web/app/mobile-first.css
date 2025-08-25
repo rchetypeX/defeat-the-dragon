@@ -411,15 +411,28 @@ input:focus, textarea:focus, select:focus {
 
 /* Base App Compact Layout */
 .base-app-compact {
-  padding-top: 0.5rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .base-app-compact .logo-container {
-  margin-bottom: 0.5rem !important;
+  margin-bottom: 0.25rem !important;
 }
 
 .base-app-compact .auth-container {
-  margin-top: 0.5rem !important;
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+/* Make authentication form more compact for Base App */
+.base-app-compact .pixel-card {
+  padding: 0.75rem !important;
+  max-height: 70vh !important;
+}
+
+.base-app-compact .wallet-login-form {
+  max-height: 60vh !important;
+  padding: 0.5rem !important;
 }
 
 /* Mobile-First Modal Styles */
