@@ -20,8 +20,8 @@ export async function GET(request: Request) {
       frame: withValidProperties({
         version: '1',
         name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
-        subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE || 'Focus RPG with Pomodoro',
-        description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A pixel-art, ad-free, Pomodoro-style Focus RPG PWA that gamifies productivity',
+        subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE || 'Pomodoro-style Focus RPG',
+description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pomodoro-style Focus RPG that gamifies productivity',
         screenshotUrls: [
           `${URL.replace(/\/$/, '')}/screenshots/gameplay-1.png`,
           `${URL.replace(/\/$/, '')}/screenshots/focus-session.png`,
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
         ],
         iconUrl: process.env.NEXT_PUBLIC_APP_ICON || `${URL}/icon.png`,
         splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${URL}/og-image.webp`,
-        splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#1a1a2e',
+        splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#221afe',
         homeUrl: URL,
         webhookUrl: `${URL}/api/webhook`,
         primaryCategory: process.env.NEXT_PUBLIC_APP_PRIMARY_CATEGORY || 'gaming',

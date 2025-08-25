@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
   
   // Use dynamic metadata if available, otherwise fall back to defaults
   const title = dynamicMetadata?.title || process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon';
-  const description = dynamicMetadata?.description || process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions';
+  const description = dynamicMetadata?.description || process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pomodoro-style Focus RPG that gamifies productivity';
   const ogTitle = dynamicMetadata?.og_title || title;
   const ogDescription = dynamicMetadata?.og_description || description;
   const twitterTitle = dynamicMetadata?.twitter_title || title;
@@ -103,7 +103,7 @@ export async function generateMetadata(): Promise<Metadata> {
             name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
             url: baseUrl,
             splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${baseUrl}/og-image.webp`,
-            splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#1a1a2e',
+            splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#221afe',
           },
         },
       }),
