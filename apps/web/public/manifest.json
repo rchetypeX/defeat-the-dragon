@@ -1,6 +1,6 @@
 {
   "name": "Defeat the Dragon",
-  "short_name": "Dragon RPG",
+  "short_name": "DTD:FocusRPG",
   "description": "A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions",
   "start_url": "/",
   "display": "standalone",
