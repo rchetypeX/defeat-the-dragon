@@ -4,7 +4,7 @@ import './globals.css';
 import './mobile-first.css';
 import { AuthProvider } from '../contexts/AuthContext';
 import { AudioProvider } from '../contexts/AudioContext';
-import { MiniKitProvider } from '../providers/MiniKitProvider';
+import { MiniKitContextProvider } from '../providers/MiniKitProvider';
 
 // Import cleanup utility to clear old cached data
 import '../lib/cleanupOldData';
