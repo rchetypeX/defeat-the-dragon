@@ -101,16 +101,17 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
       console.log('BackgroundMusic: Attempting to play audio (user enabled via toggle)');
       audio.play().catch((error) => {
         console.log('Background music play was blocked:', error.message);
-        // Don't retry if autoplay is blocked - user will need to click toggle again
+        // If autoplay is blocked, update the state to reflect that it's not playing
         if (error.name === 'NotAllowedError') {
           console.log('Autoplay blocked - user needs to click sound toggle');
+          setBackgroundPlaying(false);
         }
       });
     } else if (!shouldPlay && isPlaying) {
       console.log('BackgroundMusic: Pausing audio');
       audio.pause();
     }
-  }, [isBackgroundPlaying, isSessionActive, isPlaying, isMounted]);
+  }, [isBackgroundPlaying, isSessionActive, isPlaying, isMounted, setBackgroundPlaying]);
 
   return (
     <div className="audio-controls">

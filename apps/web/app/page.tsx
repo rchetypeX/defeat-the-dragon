@@ -312,7 +312,7 @@ export default function HomePage() {
             src="/assets/audio/background-music.mp3"
             volume={0.2}
             loop={true}
-            autoPlay={true}
+            autoPlay={false}
             onLoad={() => console.log('Background music loaded')}
             onError={(error) => console.error('Background music error:', error)}
           />
@@ -341,10 +341,10 @@ export default function HomePage() {
           <SoundToggle />
           
           {/* Content */}
-          <div className={`relative z-10 min-h-screen flex flex-col items-center justify-center px-2 sm:px-4 ${isBaseApp ? 'base-app-compact' : ''}`}>
+          <div className={`relative z-10 min-h-screen flex flex-col items-center justify-center px-2 sm:px-4 ${isBaseApp ? 'base-app-compact' : 'mobile-compact'}`}>
             {/* App Logo */}
-            <div className="text-center mb-2 sm:mb-4 logo-container">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 mx-auto mb-1 sm:mb-2">
+            <div className="text-center mb-1 sm:mb-2 logo-container">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 mx-auto mb-1">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
@@ -398,7 +398,7 @@ export default function HomePage() {
             
             {/* Email Auth Toggle (only show when not in wallet mode) */}
             {authMode !== 'wallet' && (
-              <div className="mt-1 sm:mt-2 text-center">
+              <div className="mt-1 text-center">
                 <button
                   onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
                   className="text-[#fbbf24] hover:text-white transition-colors text-xs underline"

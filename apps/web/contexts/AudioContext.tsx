@@ -54,12 +54,14 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
     if (typeof window !== 'undefined') {
       const savedBackgroundVolume = localStorage.getItem('backgroundVolume');
       const savedFocusSessionVolume = localStorage.getItem('focusSessionVolume');
+      const savedBackgroundPlaying = localStorage.getItem('backgroundPlaying');
       
-      if (savedBackgroundVolume || savedFocusSessionVolume) {
+      if (savedBackgroundVolume || savedFocusSessionVolume || savedBackgroundPlaying) {
         setAudioState(prev => ({
           ...prev,
           backgroundVolume: savedBackgroundVolume ? parseFloat(savedBackgroundVolume) : prev.backgroundVolume,
           focusSessionVolume: savedFocusSessionVolume ? parseFloat(savedFocusSessionVolume) : prev.focusSessionVolume,
+          isBackgroundPlaying: savedBackgroundPlaying ? JSON.parse(savedBackgroundPlaying) : prev.isBackgroundPlaying,
         }));
       }
     }
@@ -91,13 +93,14 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
     };
   }, [hasUserInteracted]);
 
-  // Save volume settings to localStorage when they change
+  // Save audio settings to localStorage when they change
   useEffect(() => {
     if (typeof window !== 'undefined' && isMounted) {
       localStorage.setItem('backgroundVolume', audioState.backgroundVolume.toString());
       localStorage.setItem('focusSessionVolume', audioState.focusSessionVolume.toString());
+      localStorage.setItem('backgroundPlaying', JSON.stringify(audioState.isBackgroundPlaying));
     }
-  }, [audioState.backgroundVolume, audioState.focusSessionVolume, isMounted]);
+  }, [audioState.backgroundVolume, audioState.focusSessionVolume, audioState.isBackgroundPlaying, isMounted]);
 
 
 

@@ -435,6 +435,55 @@ input:focus, textarea:focus, select:focus {
   padding: 0.5rem !important;
 }
 
+/* Mobile Compact Layout */
+.mobile-compact {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.mobile-compact .logo-container {
+  margin-bottom: 0.25rem !important;
+}
+
+.mobile-compact .auth-container {
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+}
+
+/* Make authentication form more compact for mobile */
+.mobile-compact .pixel-card {
+  padding: 0.75rem !important;
+  max-height: 75vh !important;
+}
+
+.mobile-compact .wallet-login-form {
+  max-height: 65vh !important;
+  padding: 0.5rem !important;
+}
+
+/* Ensure wallet login form fits in mobile viewport */
+@media (max-height: 700px) {
+  .mobile-compact .wallet-login-form {
+    max-height: 70vh !important;
+    padding: 0.5rem !important;
+  }
+  
+  .mobile-compact .pixel-card {
+    padding: 0.5rem !important;
+  }
+}
+
+@media (max-height: 600px) {
+  .mobile-compact .wallet-login-form {
+    max-height: 80vh !important;
+    padding: 0.25rem !important;
+  }
+  
+  .mobile-compact .pixel-card {
+    padding: 0.25rem !important;
+  }
+}
+
 /* Mobile-First Modal Styles */
 .modal {
   position: fixed;
