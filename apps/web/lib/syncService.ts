@@ -1,6 +1,7 @@
 import { useGameStore } from './store';
 import { useCharacterStore } from './characterStore';
 import { useBackgroundStore } from './backgroundStore';
+import { supabase } from './supabase';
 
 // Import the apiRequest function for proper authentication
 async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -25,7 +26,6 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   
   // If no wallet token, try to get Supabase session
   if (!token && typeof window !== 'undefined') {
-    const { supabase } = await import('./supabase');
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) {
       token = session.access_token;
