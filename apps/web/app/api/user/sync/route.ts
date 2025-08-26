@@ -35,11 +35,8 @@ export async function GET(request: NextRequest) {
       }
     );
     
-    // Use service role client for database operations
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    // Use the existing service role client for database operations
+    // (supabase is already defined at the top of the file)
     
     let userId: string | null = null;
     
@@ -266,11 +263,8 @@ export async function POST(request: NextRequest) {
       }
     );
     
-    // Use service role client for database operations
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    // Use the existing service role client for database operations
+    // (supabase is already defined at the top of the file)
     
     let userId: string | null = null;
     

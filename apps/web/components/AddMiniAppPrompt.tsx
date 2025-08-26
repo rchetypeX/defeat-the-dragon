@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { sdk } from '@farcaster/miniapp-sdk';
+import { useAddFrame, useMiniKit } from '@coinbase/onchainkit/minikit';
 
 interface AddMiniAppPromptProps {
   onSuccess?: () => void;
@@ -19,6 +19,9 @@ export function AddMiniAppPrompt({
   const [isVisible, setIsVisible] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [hasAdded, setHasAdded] = useState(false);
+  
+  const addFrame = useAddFrame();
+  const { context } = useMiniKit();
 
   useEffect(() => {
     // Show prompt after delay
@@ -29,18 +32,30 @@ export function AddMiniAppPrompt({
     return () => clearTimeout(timer);
   }, [showAfterDelay]);
 
+  // Don't show if already added
+  useEffect(() => {
+    if (context?.client?.added) {
+      setHasAdded(true);
+      setIsVisible(false);
+    }
+  }, [context?.client?.added]);
+
   const handleAddMiniApp = async () => {
     try {
       setIsAdding(true);
       
-      // Call the addMiniApp action
-      await sdk.actions.addMiniApp();
+      // Call the Base App addFrame action
+      const result = await addFrame();
       
-      setHasAdded(true);
-      setIsVisible(false);
-      onSuccess?.();
-      
-      console.log('✅ Mini App added successfully');
+      if (result) {
+        setHasAdded(true);
+        setIsVisible(false);
+        onSuccess?.();
+        
+        console.log('✅ Mini App added successfully:', result);
+      } else {
+        console.log('User cancelled or app already added');
+      }
       
     } catch (error) {
       console.error('❌ Failed to add Mini App:', error);

@@ -6,6 +6,12 @@ import { cookies } from 'next/headers';
 // Force dynamic rendering since this route uses cookies
 export const dynamic = 'force-dynamic';
 
+// Create a single service role client for database operations
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
 export async function GET(request: NextRequest) {
   try {
     // Get user session from Supabase
@@ -33,38 +39,61 @@ export async function GET(request: NextRequest) {
       }
     );
     
-    // Use service role client for database operations
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-    
-    // Try to get user from session first
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
-    
     let userId: string | null = null;
     
-    if (user) {
-      // Standard Supabase auth user
-      userId = user.id;
-      console.log('Inventory: Found Supabase user:', userId);
-    } else {
-      // Check if this is a wallet user by looking for wallet address in headers or cookies
-      const walletUser = cookieStore.get('wallet-user');
-      if (walletUser) {
+    // First, check for Bearer token in Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7); // Remove 'Bearer '
+      
+      // Check if it's a wallet token
+      if (token.startsWith('wallet:')) {
         try {
-          const walletData = JSON.parse(walletUser.value);
+          const walletData = JSON.parse(token.substring(7)); // Remove 'wallet:'
           userId = walletData.id;
-          console.log('Inventory: Found wallet user from cookie:', userId);
+          console.log('Inventory: Found wallet user from Bearer token:', userId);
         } catch (e) {
-          console.error('Error parsing wallet user data:', e);
+          console.error('Error parsing wallet user from Bearer token:', e);
+        }
+      } else {
+        // It's a Supabase token, verify it
+        try {
+          const { data: { user }, error } = await supabase.auth.getUser(token);
+          if (user && !error) {
+            userId = user.id;
+            console.log('Inventory: Found Supabase user from Bearer token:', userId);
+          } else {
+            console.error('Invalid Supabase token:', error);
+          }
+        } catch (e) {
+          console.error('Error verifying Supabase token:', e);
         }
       }
+    }
+    
+    // If no user found from Bearer token, try session
+    if (!userId) {
+      const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
       
-      // Also check for wallet user in request headers (for API calls)
-      if (!userId) {
-        const authHeader = request.headers.get('authorization');
-        if (authHeader && authHeader.startsWith('wallet:')) {
+      if (user) {
+        // Standard Supabase auth user
+        userId = user.id;
+        console.log('Inventory: Found Supabase user from session:', userId);
+      } else {
+        // Check if this is a wallet user by looking for wallet address in headers or cookies
+        const walletUser = cookieStore.get('wallet-user');
+        if (walletUser) {
+          try {
+            const walletData = JSON.parse(walletUser.value);
+            userId = walletData.id;
+            console.log('Inventory: Found wallet user from cookie:', userId);
+          } catch (e) {
+            console.error('Error parsing wallet user data:', e);
+          }
+        }
+        
+        // Also check for wallet user in request headers (for API calls)
+        if (!userId && authHeader && authHeader.startsWith('wallet:')) {
           try {
             const walletData = JSON.parse(authHeader.substring(7)); // Remove 'wallet:'
             userId = walletData.id;
