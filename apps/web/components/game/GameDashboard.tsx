@@ -37,6 +37,16 @@ export function GameDashboard() {
   
   const { isLoading, error, lastSyncTime, syncFocusSession, refreshData } = useDataSync();
   
+  // Debug logging for player loading state
+  useEffect(() => {
+    console.log('GameDashboard: Player loading state:', {
+      player: !!player,
+      isLoading,
+      error,
+      lastSyncTime
+    });
+  }, [player, isLoading, error, lastSyncTime]);
+  
   // Enhanced notification system
   const {
     showSessionComplete,
@@ -127,10 +137,10 @@ export function GameDashboard() {
 
   const primaryButtonConfig = getPrimaryButtonConfig();
 
-  // Configure primary button based on game state
+  // Configure primary button based on game state - show nothing when player is not loaded
   usePrimaryButton(
-    { text: primaryButtonConfig.text },
-    primaryButtonConfig.action
+    { text: player ? primaryButtonConfig.text : '' },
+    player ? primaryButtonConfig.action : () => {}
   );
 
   useEffect(() => {
@@ -225,7 +235,7 @@ export function GameDashboard() {
     setQuoteTriggerCount(prev => prev + 1);
   };
 
-  if (!player) {
+  if (!player || isLoading) {
     return (
       <div className="min-h-screen relative overflow-hidden">
         {/* Background Scene */}
@@ -245,6 +255,9 @@ export function GameDashboard() {
             <div className="text-2xl mb-4">⚔️</div>
             <h2 className="text-xl font-bold text-[#f2751a] mb-2">Loading Character...</h2>
             <p className="text-[#fbbf24]">Preparing your adventure...</p>
+            {error && (
+              <p className="text-red-500 text-sm mt-2">Error: {error}</p>
+            )}
           </div>
         </div>
       </div>

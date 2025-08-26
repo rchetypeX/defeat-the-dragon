@@ -43,6 +43,13 @@ export function useDataSync() {
           await loadPlayerData();
         }
 
+        // Double-check that player data is loaded
+        const currentPlayer = useGameStore.getState().player;
+        if (!currentPlayer) {
+          console.log('Player data still not loaded, trying direct API call...');
+          await loadPlayerData();
+        }
+
         setLastSyncTime(new Date());
         console.log('Data initialization complete');
       } catch (err) {

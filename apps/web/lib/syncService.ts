@@ -296,10 +296,11 @@ class SyncService {
       
       console.log('SyncService: Filtered player data for local update:', filteredPlayerData);
       
-      gameStore.setPlayer({
-        ...gameStore.player,
-        ...filteredPlayerData,
-      });
+      gameStore.setPlayer(filteredPlayerData);
+      
+      // Verify the player data was set correctly
+      const updatedPlayer = useGameStore.getState().player;
+      console.log('SyncService: Player data after setPlayer:', updatedPlayer);
     }
 
     // Update settings
