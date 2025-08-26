@@ -5,7 +5,6 @@ import { useWalletAuth } from '../../hooks/useWalletAuth';
 import { AlphaCodeInput } from './AlphaCodeInput';
 
 export function WalletLoginForm() {
-  const [displayName, setDisplayName] = useState('');
   const [alphaCodeVerified, setAlphaCodeVerified] = useState(false);
   const [reservedToken, setReservedToken] = useState<string | null>(null);
   const [reservedUntil, setReservedUntil] = useState<string | null>(null);
@@ -51,10 +50,6 @@ export function WalletLoginForm() {
   };
 
   const handleSignUp = async () => {
-    if (!displayName.trim()) {
-      return;
-    }
-    
     // Require alpha code verification for new users
     if (!alphaCodeVerified || !reservedToken) {
       return;
@@ -68,7 +63,7 @@ export function WalletLoginForm() {
       return;
     }
     
-    await signUpWithWallet(displayName.trim(), reservedToken);
+    await signUpWithWallet(reservedToken);
   };
 
   const handleAlphaCodeVerified = (token: string, until: string) => {
@@ -89,7 +84,7 @@ export function WalletLoginForm() {
   
   // Check if the form is valid for submission - no uniqueness requirement
   const isFormValid = shouldShowSignUp ? 
-    (displayName.trim().length >= 2 && displayName.trim().length <= 20 && alphaCodeVerified) : 
+    (alphaCodeVerified) : 
     true;
 
   return (
@@ -243,32 +238,6 @@ export function WalletLoginForm() {
                       onError={handleAlphaCodeError}
                       disabled={isConnecting}
                     />
-                    
-                    <div>
-                      <label htmlFor="displayName" className="block text-xs font-medium mb-1 text-[#fbbf24]">
-                        Adventurer Name
-                      </label>
-                      <input
-                        id="displayName"
-                        type="text"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        required
-                        className="w-full pixel-input text-xs"
-                        placeholder="Enter your name"
-                        maxLength={20}
-                      />
-                      
-                      {/* Character count indicator */}
-                      <div className="mt-0.5 flex justify-between items-center">
-                        <p className="text-xs text-[#8B4513] font-medium">
-                          Choose a name for your character (2-20 characters)
-                        </p>
-                        <span className="text-xs text-[#8B4513] font-medium">
-                          {displayName.length}/20
-                        </span>
-                      </div>
-                    </div>
                   </>
                 )}
                 

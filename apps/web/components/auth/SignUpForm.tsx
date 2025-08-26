@@ -7,7 +7,6 @@ import { AlphaCodeInput } from './AlphaCodeInput';
 export function SignUpForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -48,7 +47,7 @@ export function SignUpForm() {
     setError(null);
     setSuccess(false);
 
-    const { error } = await signUp(email, password, displayName);
+    const { error } = await signUp(email, password, '');
     
     if (error) {
       setError(error.message);
@@ -181,22 +180,6 @@ export function SignUpForm() {
          />
          
          <div>
-           <label htmlFor="displayName" className="block text-sm font-medium mb-2 text-[#fbbf24]">
-             Adventurer Name
-           </label>
-                       <input
-              id="displayName"
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              required
-              maxLength={20}
-              className="w-full pixel-input text-xs placeholder:text-xs"
-              placeholder="Enter adventurer name"
-            />
-         </div>
-        
-                 <div>
            <label htmlFor="email" className="block text-sm font-medium mb-2 text-[#fbbf24]">
              Email
            </label>

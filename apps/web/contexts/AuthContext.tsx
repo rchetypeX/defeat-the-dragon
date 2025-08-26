@@ -10,7 +10,7 @@ interface AuthContextType {
   session: SupabaseSession | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, displayName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -184,7 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, displayName: string) => {
+  const signUp = async (email: string, password: string, displayName?: string) => {
     try {
       // First, check if the email already exists using our API
       const checkResponse = await fetch('/api/auth/check-email', {

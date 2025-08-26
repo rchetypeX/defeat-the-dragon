@@ -18,6 +18,7 @@ import { useBackgroundStore } from '../../lib/backgroundStore';
 import { CharacterDialogue } from './CharacterDialogue';
 import { useDataSync } from '../../hooks/useDataSync';
 import { usePrimaryButton } from '@coinbase/onchainkit/minikit';
+import { AdventurerNamePrompt } from '../auth/AdventurerNamePrompt';
 
 interface SessionResult {
   xp_gained: number;
@@ -46,6 +47,19 @@ export function GameDashboard() {
       lastSyncTime
     });
   }, [player, isLoading, error, lastSyncTime]);
+
+  // Check if new user needs to set adventurer name
+  useEffect(() => {
+    if (player && !player.display_name) {
+      console.log('GameDashboard: New user detected, showing adventurer name prompt');
+      setShowAdventurerNamePrompt(true);
+    }
+  }, [player]);
+
+  const handleAdventurerNameComplete = (displayName: string) => {
+    console.log('GameDashboard: Adventurer name set:', displayName);
+    setShowAdventurerNamePrompt(false);
+  };
   
   // Enhanced notification system
   const {
@@ -79,6 +93,7 @@ export function GameDashboard() {
   const [showSessionTimer, setShowSessionTimer] = useState(false);
   const [sessionResult, setSessionResult] = useState<SessionResult | null>(null);
   const [quoteTriggerCount, setQuoteTriggerCount] = useState(0);
+  const [showAdventurerNamePrompt, setShowAdventurerNamePrompt] = useState(false);
   
   const { equippedCharacter, getCharacterImage } = useCharacterStore();
   const { equippedBackground, getBackgroundImage } = useBackgroundStore();
@@ -513,15 +528,16 @@ export function GameDashboard() {
       </div>
       
              {/* Session Timer Modal */}
-       {showSessionTimer && (
-         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6 sm:p-8">
-           <div className="w-full max-w-md">
-             <SessionTimer
-               onSessionStart={handleSessionStart}
-               onSessionCancel={handleSessionCancel}
-             />
-           </div>
-         </div>
+      {showSessionTimer && (
+        <SessionTimer
+          onSessionStart={handleSessionStart}
+          onSessionCancel={handleSessionCancel}
+        />
+      )}
+
+       {/* Adventurer Name Prompt for New Users */}
+       {showAdventurerNamePrompt && (
+         <AdventurerNamePrompt onComplete={handleAdventurerNameComplete} />
        )}
       
       {/* Audio Controls Popup */}

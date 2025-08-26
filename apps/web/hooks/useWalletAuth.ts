@@ -505,7 +505,7 @@ export function useWalletAuth() {
     }
   };
 
-  const signUpWithWallet = async (displayName: string, reservedToken?: string) => {
+  const signUpWithWallet = async (reservedToken?: string) => {
     if (!address) {
       setAuthError('Please connect your wallet first.');
       return;
@@ -516,7 +516,7 @@ export function useWalletAuth() {
 
     try {
       // Create a message to sign
-      const message = `Sign up for Defeat the Dragon\n\nWallet: ${address}\nDisplay Name: ${displayName}\nTimestamp: ${Date.now()}`;
+      const message = `Sign up for Defeat the Dragon\n\nWallet: ${address}\nTimestamp: ${Date.now()}`;
       
       // Sign the message using the selected provider
       const provider = getProvider();
@@ -537,7 +537,6 @@ export function useWalletAuth() {
         },
         body: JSON.stringify({
           address,
-          displayName,
           message,
           signature,
           reservedToken, // Include alpha code reservation token
