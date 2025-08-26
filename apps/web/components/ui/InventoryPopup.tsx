@@ -160,7 +160,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
     return defaultInventoryItems[category].map(item => ({
       ...item,
       isOwned: isItemOwned(item.id, category),
-      isEquipped: false // Will be determined by the isItemEquipped function below
+      isEquipped: isItemEquipped(item) // Use the isItemEquipped function to determine equipped state
     }));
   };
 
@@ -253,21 +253,30 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
   };
 
   const isItemEquipped = (item: InventoryItem | { id: string; category: string }) => {
-    // Check if this item is equipped in the database
+    // First, check if this item is equipped in the database
     const equippedFromDB = userInventory.find(invItem => 
-      invItem.item_id === item.id && invItem.equipped
+      invItem.item_id === item.id && 
+      invItem.item_type === item.category && 
+      invItem.equipped === true
     );
     
     if (equippedFromDB) {
       return true;
     }
     
-    // Fallback to local state for items not in database yet
-    if (item.category === 'character' && item.id === equippedCharacter) {
-      return true;
-    }
-    if (item.category === 'background' && item.id === equippedBackground) {
-      return true;
+    // If no equipped item found in database for this category, check if this is the default equipped item
+    const categoryItems = userInventory.filter(invItem => 
+      invItem.item_type === item.category
+    );
+    
+    // If no items in database for this category, use local state as fallback
+    if (categoryItems.length === 0) {
+      if (item.category === 'character' && item.id === equippedCharacter) {
+        return true;
+      }
+      if (item.category === 'background' && item.id === equippedBackground) {
+        return true;
+      }
     }
     
     return false;

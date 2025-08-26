@@ -19,6 +19,7 @@ import { CharacterDialogue } from './CharacterDialogue';
 import { useDataSync } from '../../hooks/useDataSync';
 import { usePrimaryButton } from '@coinbase/onchainkit/minikit';
 import { AdventurerNamePrompt } from '../auth/AdventurerNamePrompt';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface SessionResult {
   xp_gained: number;
@@ -37,6 +38,7 @@ export function GameDashboard() {
   } = useGameStore();
   
   const { isLoading, error, lastSyncTime, syncFocusSession, refreshData } = useDataSync();
+  const { user } = useAuth();
   
   // Debug logging for player loading state
   useEffect(() => {
@@ -55,6 +57,28 @@ export function GameDashboard() {
       setShowAdventurerNamePrompt(true);
     }
   }, [player]);
+
+  // Handle app visibility changes to prevent loading screen getting stuck
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('GameDashboard: App became visible, checking data state');
+        const currentPlayer = useGameStore.getState().player;
+        
+        // If we have a user but no player data, try to refresh
+        if (user && !currentPlayer && !isLoading) {
+          console.log('GameDashboard: User exists but no player data, refreshing...');
+          refreshData();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user, isLoading, refreshData]);
 
   const handleAdventurerNameComplete = (displayName: string) => {
     console.log('GameDashboard: Adventurer name set:', displayName);

@@ -19,47 +19,81 @@ export function AddMiniAppPrompt({
   const [isVisible, setIsVisible] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [hasAdded, setHasAdded] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   
   const addFrame = useAddFrame();
   const { context } = useMiniKit();
 
+  // Check if app is already added to home screen
   useEffect(() => {
-    // Show prompt after delay
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, showAfterDelay);
+    const checkIfAdded = async () => {
+      try {
+        // Check if we're in Base App context
+        if (context?.client) {
+          // Check if the app is already added
+          const isAlreadyAdded = context.client.added || false;
+          
+          if (isAlreadyAdded) {
+            console.log('✅ App already added to home screen');
+            setHasAdded(true);
+            setIsVisible(false);
+          } else {
+            console.log('📱 App not yet added to home screen');
+            setHasAdded(false);
+          }
+        } else {
+          console.log('🌐 Not in Base App context, skipping add to home check');
+          setHasAdded(true); // Don't show in non-Base App context
+          setIsVisible(false);
+        }
+      } catch (error) {
+        console.error('Error checking if app is added:', error);
+        setHasAdded(false);
+      } finally {
+        setIsChecking(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
-  }, [showAfterDelay]);
+    checkIfAdded();
+  }, [context?.client]);
 
-  // Don't show if already added
   useEffect(() => {
-    if (context?.client?.added) {
-      setHasAdded(true);
-      setIsVisible(false);
+    // Only show prompt if not added and not checking
+    if (!hasAdded && !isChecking) {
+      const timer = setTimeout(() => {
+        setIsVisible(true);
+      }, showAfterDelay);
+
+      return () => clearTimeout(timer);
     }
-  }, [context?.client?.added]);
+  }, [hasAdded, isChecking, showAfterDelay]);
 
   const handleAddMiniApp = async () => {
     try {
       setIsAdding(true);
       
+      console.log('🔄 Attempting to add Mini App to home screen...');
+      
       // Call the Base App addFrame action
       const result = await addFrame();
+      
+      console.log('📱 Add frame result:', result);
       
       if (result) {
         setHasAdded(true);
         setIsVisible(false);
         onSuccess?.();
         
-        console.log('✅ Mini App added successfully:', result);
+        console.log('✅ Mini App added successfully to home screen');
       } else {
-        console.log('User cancelled or app already added');
+        console.log('❌ Add frame returned false or undefined');
+        // Don't set hasAdded to false here, let user try again
       }
       
     } catch (error) {
       console.error('❌ Failed to add Mini App:', error);
       onError?.(error as Error);
+      // Don't set hasAdded to false here, let user try again
     } finally {
       setIsAdding(false);
     }
@@ -69,7 +103,8 @@ export function AddMiniAppPrompt({
     setIsVisible(false);
   };
 
-  if (!isVisible || hasAdded) {
+  // Don't render if checking, already added, or not visible
+  if (isChecking || hasAdded || !isVisible) {
     return null;
   }
 
