@@ -136,7 +136,7 @@ function SharePageContent() {
           <img 
             src="/logo.svg" 
             alt="Defeat the Dragon Logo" 
-            className="h-24 w-24"
+            className="h-32 w-32"
           />
         </div>
         <h2 className="text-white text-xl font-bold mb-4">Welcome to Defeat the Dragon</h2>

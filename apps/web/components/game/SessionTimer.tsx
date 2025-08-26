@@ -44,7 +44,7 @@ export function SessionTimer({ onSessionStart, onSessionCancel }: SessionTimerPr
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="pixel-card p-4 max-w-sm mx-auto">
+      <div className="pixel-card p-4 w-80 mx-auto">
         <h2 className="text-lg font-bold text-center mb-4 text-[#f2751a]">
           Start Your Focus Session
         </h2>
