@@ -132,7 +132,13 @@ function SharePageContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center">
       <div className="text-center">
-        <div className="text-6xl mb-4">🐉</div>
+        <div className="mb-4 flex justify-center">
+          <img 
+            src="/logo.svg" 
+            alt="Defeat the Dragon Logo" 
+            className="h-16 w-16"
+          />
+        </div>
         <h2 className="text-white text-xl font-bold mb-4">Welcome to Defeat the Dragon</h2>
         <button
           onClick={() => window.location.href = '/'}
