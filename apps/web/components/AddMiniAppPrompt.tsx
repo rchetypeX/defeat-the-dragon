@@ -59,21 +59,21 @@ export function AddMiniAppPrompt({
   }
 
   return (
-    <div className={`fixed bottom-4 left-4 right-4 z-50 ${className}`}>
+    <div className={`fixed top-4 left-4 right-4 z-50 ${className}`}>
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-w-sm mx-auto">
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">🐉</span>
+              <span className="text-white text-sm font-bold">🏠</span>
             </div>
           </div>
           
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-medium text-gray-900">
-              Add to Farcaster
+              Add to Home
             </h3>
             <p className="text-xs text-gray-600 mt-1">
-              Get notifications for focus sessions, achievements, and daily challenges!
+              Install this app for quick access to your focus sessions and progress!
             </p>
             
             <div className="flex space-x-2 mt-3">

@@ -128,10 +128,9 @@ function HomePageContent() {
                     <img 
                       src="/logo.svg" 
                       alt="Defeat the Dragon Logo" 
-                      className="h-16 w-16"
+                      className="h-24 w-24"
                     />
                   </div>
-                  <h1 className="text-3xl font-bold text-white mb-2">Defeat the Dragon</h1>
                   <p className="text-gray-300">A Pomodoro-style Focus RPG</p>
                 </div>
 
