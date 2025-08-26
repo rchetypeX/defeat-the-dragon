@@ -28,7 +28,7 @@ description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pomodoro-style Focus 
           `${URL.replace(/\/$/, '')}/screenshots/character-select.png`
         ],
         iconUrl: process.env.NEXT_PUBLIC_APP_ICON || `${URL}/icon.png`,
-        splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${URL}/og-image.webp`,
+        splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${URL}/icon.png`,
         splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#221afe',
         homeUrl: URL,
         webhookUrl: `${URL}/api/webhook`,

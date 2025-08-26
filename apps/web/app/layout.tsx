@@ -50,7 +50,6 @@ export async function generateMetadata(): Promise<Metadata> {
     manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>", type: 'image/svg+xml', sizes: '32x32' },
       { url: '/favicon.svg', type: 'image/svg+xml', sizes: '32x32' },
       { url: '/favicon.ico', type: 'image/x-icon', sizes: '32x32' },
       { url: '/icon-simple.svg', type: 'image/svg+xml', sizes: '192x192' },
@@ -59,7 +58,7 @@ export async function generateMetadata(): Promise<Metadata> {
     apple: [
       { url: '/apple-touch-icon.png', type: 'image/png', sizes: '180x180' },
     ],
-    shortcut: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>",
+    shortcut: '/favicon.svg',
   },
       openGraph: {
       title: ogTitle,
@@ -102,7 +101,7 @@ export async function generateMetadata(): Promise<Metadata> {
             type: 'launch_frame',
             name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
             url: baseUrl,
-            splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${baseUrl}/og-image.webp`,
+            splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${baseUrl}/icon.png`,
             splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#221afe',
           },
         },
@@ -127,7 +126,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f2751a'/><text x='16' y='22' font-family='Arial' font-size='16' font-weight='bold' text-anchor='middle' fill='white'>D</text></svg>" type="image/svg+xml" />
+
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
