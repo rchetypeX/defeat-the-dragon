@@ -21,14 +21,11 @@ export function FarcasterWalletConnect({
   const handleConnect = async () => {
     try {
       setError(null);
-      const result = await connect({ connector: connectors[0] });
+      await connect({ connector: connectors[0] });
       
-      if (result.error) {
-        throw result.error;
-      }
-      
-      if (result.data?.address) {
-        onConnect?.(result.data.address);
+      // If we get here, the connection was successful
+      if (address) {
+        onConnect?.(address);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to connect wallet';

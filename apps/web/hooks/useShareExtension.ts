@@ -65,13 +65,14 @@ export function useShareExtension(): ShareExtensionInfo {
       }
 
       // Check SDK context (available after initialization)
-      if (sdk.context.location.type === 'cast_share') {
+      const context = await sdk.context;
+      if (context.location.type === 'cast_share') {
         console.log('🔗 Share Extension detected via SDK context');
         
         setIsShareContext(true);
-        setSharedCast(sdk.context.location.cast);
+        setSharedCast(context.location.cast);
         
-        console.log('✅ Shared cast data from SDK:', sdk.context.location.cast);
+        console.log('✅ Shared cast data from SDK:', context.location.cast);
         return;
       }
 

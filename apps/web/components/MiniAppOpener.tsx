@@ -47,7 +47,9 @@ export function MiniAppOpener({
       console.log('🔗 Opening Mini App:', universalLink);
       
       // Open the Mini App using the SDK
-      await sdk.actions.openMiniApp(universalLink);
+      await sdk.actions.openMiniApp({
+        url: universalLink,
+      });
       
       console.log('✅ Mini App opened successfully');
       onSuccess?.();

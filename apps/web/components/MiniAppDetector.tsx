@@ -8,7 +8,7 @@ interface MiniAppDetectorProps {
 }
 
 export function MiniAppDetector({ children }: MiniAppDetectorProps) {
-  const { farcasterReady, isFarcasterReady, isFarcasterLoading } = useFarcasterSDK();
+  const { ready: farcasterReady, isReady: isFarcasterReady, isLoading: isFarcasterLoading } = useFarcasterSDK();
 
   useEffect(() => {
     // Check if we're running as a Mini App

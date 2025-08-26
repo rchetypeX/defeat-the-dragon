@@ -1,4 +1,4 @@
-import { getNotificationTokens, sendNotification } from '../app/api/webhook/route';
+import { getNotificationTokens, sendNotification } from './webhookUtils';
 
 // Rate limiting cache (in production, use Redis or database)
 const rateLimitCache = new Map<string, { count: number; resetTime: number }>();

@@ -50,10 +50,11 @@ export default function SharePage() {
         }
 
         // Check SDK context
-        if (sdk.context.location.type === 'cast_share') {
+        const context = await sdk.context;
+        if (context.location.type === 'cast_share') {
           console.log('🔗 Share Extension via SDK');
           setIsShareContext(true);
-          setSharedCast(sdk.context.location.cast);
+          setSharedCast(context.location.cast);
         }
       } catch (err) {
         console.error('❌ Share extension error:', err);

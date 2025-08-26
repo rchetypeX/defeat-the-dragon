@@ -10,6 +10,9 @@ export interface UniversalLinkInfo {
   queryParams: Record<string, string>;
   universalLink: string | null;
   isUniversalLink: boolean;
+  navigateToSubPath: (newSubPath: string, newQueryParams?: Record<string, string>) => void;
+  generateUniversalLink: (subPath?: string, queryParams?: Record<string, string>) => string | null;
+  copyUniversalLink: (subPath?: string, queryParams?: Record<string, string>) => Promise<string>;
 }
 
 export function useUniversalLinks(): UniversalLinkInfo {
