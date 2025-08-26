@@ -14,6 +14,12 @@ import { useMiniKit, usePrimaryButton } from '@coinbase/onchainkit/minikit';
 import { ExternalLink } from '../components/ui/ExternalLink';
 import { useBaseAppAuth } from '../hooks/useBaseAppAuth';
 import { useContextAware } from '../hooks/useContextAware';
+import { useFarcasterSDK } from '../hooks/useFarcasterSDK';
+import { useFarcasterAuth } from '../hooks/useFarcasterAuth';
+import { useUniversalLinks } from '../hooks/useUniversalLinks';
+import { AddMiniAppPrompt } from '../components/AddMiniAppPrompt';
+import { FarcasterAuth } from '../components/auth/FarcasterAuth';
+import { MiniAppOpener, CopyUniversalLink, PopularMiniApps } from '../components/MiniAppOpener';
 import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
 import { SocialAcknowledgment } from '../components/social/SocialAcknowledgment';
 import { EntryPointExperience } from '../components/context/EntryPointExperience';
@@ -26,6 +32,38 @@ export default function HomePage() {
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
   const [walletKey, setWalletKey] = useState(0); // Key to force remount of WalletLoginForm
   const { setFrameReady, isFrameReady } = useMiniKit();
+  
+  // Farcaster SDK Integration (Required for Mini Apps)
+  const {
+    isReady: isFarcasterReady,
+    isLoading: isFarcasterLoading,
+    error: farcasterError,
+    ready: farcasterReady,
+  } = useFarcasterSDK();
+  
+  // Farcaster Authentication
+  const {
+    user: farcasterUser,
+    isAuthenticated: isFarcasterAuthenticated,
+    isLoading: isFarcasterAuthLoading,
+    error: farcasterAuthError,
+    quickAuth: farcasterQuickAuth,
+    signIn: farcasterSignIn,
+    signOut: farcasterSignOut,
+  } = useFarcasterAuth();
+  
+  // Universal Links
+  const {
+    appId,
+    appSlug,
+    subPath,
+    queryParams,
+    universalLink,
+    isUniversalLink,
+    navigateToSubPath,
+    generateUniversalLink,
+    copyUniversalLink,
+  } = useUniversalLinks();
   
   // Base App Authentication
   const {
@@ -51,6 +89,17 @@ export default function HomePage() {
       setFrameReady();
     }
   }, [isFrameReady, setFrameReady]);
+
+  // Log Farcaster SDK status for development
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 Farcaster SDK Status:', {
+        isFarcasterReady,
+        isFarcasterLoading,
+        farcasterError,
+      });
+    }
+  }, [isFarcasterReady, isFarcasterLoading, farcasterError]);
 
   // Check if this is the user's first visit
   useEffect(() => {
@@ -88,6 +137,28 @@ export default function HomePage() {
       } : null,
     });
   }, [user, loading]);
+
+  // Handle Farcaster SDK errors
+  useEffect(() => {
+    if (farcasterError) {
+      console.error('❌ Farcaster SDK Error:', farcasterError);
+      // In production, you might want to show a user-friendly error message
+      // or fallback to a different authentication method
+    }
+  }, [farcasterError]);
+
+  // Call Farcaster ready() when interface is ready to display
+  useEffect(() => {
+    // Only call ready() if we haven't already and the app is loaded
+    if (!isFarcasterReady && !isFarcasterLoading && !loading) {
+      // Small delay to ensure interface is stable and avoid jitter
+      const timer = setTimeout(() => {
+        farcasterReady();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isFarcasterReady, isFarcasterLoading, loading, farcasterReady]);
 
   const onboardingSteps = [
     {
@@ -342,9 +413,9 @@ export default function HomePage() {
           
           {/* Content */}
           <div className={`relative z-10 flex flex-col items-center justify-center px-2 sm:px-4 ${isBaseApp ? 'base-app-compact' : 'mobile-compact'}`} style={{ height: '100vh', maxHeight: '100vh', overflow: 'hidden' }}>
-            {/* App Logo */}
-            <div className="text-center mb-1 logo-container">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 mx-auto">
+            {/* App Logo - More compact */}
+            <div className="text-center mb-0.5 logo-container">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 mx-auto">
                 <img 
                   src="/logo.svg"
                   alt="Defeat the Dragon Logo" 
@@ -356,31 +427,31 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Authentication Tabs */}
-            <div className="w-full max-w-sm mb-1 auth-container">
-              <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1">
+            {/* Authentication Tabs - More compact */}
+            <div className="w-full max-w-sm mb-0.5 auth-container">
+              <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-0.5">
                 <button
                   onClick={() => setAuthMode('wallet')}
-                  className={`flex-1 py-1 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
+                  className={`flex-1 py-0.5 px-1 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
                     authMode === 'wallet'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
                   }`}
                 >
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0z" clipRule="evenodd" />
                   </svg>
                   <span>Wallet</span>
                 </button>
                 <button
                   onClick={() => setAuthMode('login')}
-                  className={`flex-1 py-1 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
+                  className={`flex-1 py-0.5 px-1 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
                     authMode === 'login'
                       ? 'bg-[#f2751a] text-white'
                       : 'text-[#fbbf24] hover:text-white'
                   }`}
                 >
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                   </svg>
@@ -389,14 +460,14 @@ export default function HomePage() {
               </div>
             </div>
             
-            {/* Authentication Form */}
-            <div className="w-full max-w-sm" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
+            {/* Authentication Form - More compact */}
+            <div className="w-full max-w-sm flex-1 flex flex-col justify-center overflow-hidden" style={{ minHeight: 0 }}>
               {authMode === 'wallet' && <WalletLoginForm key={walletKey} />}
               {authMode === 'login' && <LoginForm />}
               {authMode === 'signup' && <SignUpForm />}
             </div>
             
-            {/* Email Auth Toggle (only show when not in wallet mode) */}
+            {/* Email Auth Toggle (only show when not in wallet mode) - More compact */}
             {authMode !== 'wallet' && (
               <div className="mt-0.5 text-center">
                 <button
@@ -408,6 +479,63 @@ export default function HomePage() {
               </div>
             )}
 
+            {/* Farcaster Authentication */}
+            {!isFarcasterAuthenticated && (
+              <div className="w-full max-w-sm mb-4">
+                <FarcasterAuth 
+                  onSuccess={(user) => console.log('✅ Farcaster auth successful:', user)}
+                  onError={(error) => console.error('❌ Farcaster auth failed:', error)}
+                />
+              </div>
+            )}
+
+            {/* Universal Links Demo */}
+            {appId && appSlug && (
+              <div className="w-full max-w-sm mb-4">
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Universal Links</h3>
+                  
+                  {/* Copy Current Universal Link */}
+                  <CopyUniversalLink
+                    appId={appId}
+                    appSlug={appSlug}
+                    subPath={subPath || undefined}
+                    queryParams={Object.keys(queryParams).length > 0 ? queryParams : undefined}
+                    className="w-full mb-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                    onSuccess={() => console.log('✅ Universal Link copied')}
+                    onError={(error) => console.error('❌ Failed to copy Universal Link:', error)}
+                  />
+                  
+                  {/* Navigate to different sections */}
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => navigateToSubPath('leaderboard', { sort: 'score' })}
+                      className="w-full px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                    >
+                      Navigate to Leaderboard
+                    </button>
+                    <button
+                      onClick={() => navigateToSubPath('achievements', { achievement: 'dragon-slayer' })}
+                      className="w-full px-3 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+                    >
+                      Navigate to Achievements
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Popular Mini Apps */}
+            <div className="w-full max-w-sm mb-4">
+              <PopularMiniApps />
+            </div>
+
+            {/* Add Mini App Prompt */}
+            <AddMiniAppPrompt 
+              showAfterDelay={10000} // Show after 10 seconds
+              onSuccess={() => console.log('✅ Mini App added successfully')}
+              onError={(error) => console.error('❌ Failed to add Mini App:', error)}
+            />
 
           </div>
         </main>

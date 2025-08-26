@@ -163,8 +163,8 @@ export function SignUpForm() {
   }
 
   return (
-    <div className="max-w-md mx-auto pixel-card p-6">
-      <h2 className="text-2xl font-bold text-center mb-6 text-[#f2751a]">Join the Adventure</h2>
+    <div className="max-w-md mx-auto pixel-card p-2">
+      <h2 className="text-lg font-bold text-center mb-3 text-[#f2751a]">Join the Adventure</h2>
       
       {error && (
         <div className="bg-[#ef4444] text-white p-3 mb-4 border-2 border-[#654321]">

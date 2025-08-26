@@ -29,18 +29,18 @@ export function LoginForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto pixel-card p-6">
-      <h2 className="text-2xl font-bold text-center mb-6 text-[#f2751a]">Sign In</h2>
+    <div className="max-w-md mx-auto pixel-card p-2">
+      <h2 className="text-lg font-bold text-center mb-3 text-[#f2751a]">Sign In</h2>
       
       {error && (
-        <div className="bg-[#ef4444] text-white p-3 mb-4 border-2 border-[#654321]">
+        <div className="bg-[#ef4444] text-white p-2 mb-3 border-2 border-[#654321] text-xs">
           {error}
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-2">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-2 text-[#fbbf24]">
+          <label htmlFor="email" className="block text-xs font-medium mb-1 text-[#fbbf24]">
             Email
           </label>
           <input
@@ -49,7 +49,7 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full pixel-input"
+            className="w-full pixel-input text-xs"
             placeholder="Enter your email"
           />
         </div>

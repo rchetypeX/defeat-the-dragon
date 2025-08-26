@@ -104,11 +104,11 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
   }, [verifyCode]);
 
   return (
-    <div className="space-y-2">
-      <label htmlFor="alpha-code" className="block text-sm font-medium mb-1 text-[#fbbf24]">
+    <div className="space-y-1">
+      <label htmlFor="alpha-code" className="block text-xs font-medium mb-0.5 text-[#fbbf24]">
         Alpha access code
       </label>
-      <form onSubmit={handleSubmit} className="flex space-x-2">
+      <form onSubmit={handleSubmit} className="flex space-x-1">
         <input
           id="alpha-code"
           type="text"
@@ -123,7 +123,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
         <button
           type="submit"
           disabled={!code || isVerifying || disabled}
-          className="px-4 py-2 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] focus:outline-none focus:ring-2 focus:ring-[#f2751a] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+          className="px-2 py-1 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] focus:outline-none focus:ring-2 focus:ring-[#f2751a] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
         >
           {isVerifying ? 'Verifying...' : 'Verify'}
         </button>

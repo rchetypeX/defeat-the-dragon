@@ -453,14 +453,36 @@ input:focus, textarea:focus, select:focus {
 /* Make authentication form more compact for mobile */
 .mobile-compact .pixel-card {
   padding: 0.25rem !important;
-  max-height: 50vh !important;
+  max-height: 60vh !important;
   overflow-y: auto !important;
 }
 
 .mobile-compact .wallet-login-form {
-  max-height: 40vh !important;
+  max-height: 50vh !important;
   padding: 0.125rem !important;
   overflow-y: auto !important;
+}
+
+/* Ultra-compact for very small screens */
+@media (max-height: 600px) {
+  .mobile-compact .pixel-card {
+    padding: 0.125rem !important;
+    max-height: 70vh !important;
+  }
+  
+  .mobile-compact .wallet-login-form {
+    max-height: 60vh !important;
+    padding: 0.0625rem !important;
+  }
+  
+  .mobile-compact .logo-container {
+    margin-bottom: 0.0625rem !important;
+  }
+  
+  .mobile-compact .auth-container {
+    margin-top: 0.0625rem !important;
+    margin-bottom: 0.0625rem !important;
+  }
 }
 
 /* Ensure wallet login form fits in mobile viewport */
@@ -765,6 +787,32 @@ select:focus {
   /* Mobile optimization */
   max-width: 100%;
   margin: 0 auto;
+}
+
+/* Ultra-compact form elements for small screens */
+@media (max-height: 600px) {
+  .pixel-card {
+    padding: var(--spacing-2);
+    max-height: 95vh;
+  }
+  
+  .pixel-input {
+    padding: var(--spacing-2);
+    min-height: 2rem;
+  }
+  
+  .pixel-button {
+    padding: var(--spacing-2) var(--spacing-3);
+    min-height: 2rem;
+  }
+  
+  .space-y-1 > * + * {
+    margin-top: 0.25rem;
+  }
+  
+  .space-y-2 > * + * {
+    margin-top: 0.5rem;
+  }
 }
 
 /* Mobile-optimized wallet login form */

@@ -93,13 +93,13 @@ export function WalletLoginForm() {
     true;
 
   return (
-    <div className="max-w-md mx-auto pixel-card p-2 sm:p-3 wallet-login-form">
-      <h2 className="text-base sm:text-lg font-bold text-center mb-2 sm:mb-3 text-[#f2751a]">
+    <div className="max-w-md mx-auto pixel-card p-1 sm:p-2 wallet-login-form">
+      <h2 className="text-sm sm:text-base font-bold text-center mb-1 sm:mb-2 text-[#f2751a]">
         {shouldShowSignUp ? 'Create Account' : 'Sign In'}
       </h2>
       
       {authError && (
-        <div className="bg-[#ef4444] text-white p-2 mb-3 border-2 border-[#654321] text-xs sm:text-sm">
+        <div className="bg-[#ef4444] text-white p-1 mb-2 border-2 border-[#654321] text-xs">
           {authError}
         </div>
       )}
@@ -135,7 +135,7 @@ export function WalletLoginForm() {
         </div>
       )}
       
-      <div className="space-y-2">
+      <div className="space-y-1">
         {!isConnected ? (
           <div>
             <button
@@ -169,15 +169,15 @@ export function WalletLoginForm() {
             )}
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1">
             {/* Compact wallet display for mobile */}
-            <div className="bg-[#1a1a2e] p-2 border border-[#654321] rounded">
+            <div className="bg-[#1a1a2e] p-1 border border-[#654321] rounded">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-[#fbbf24] font-medium">Connected Wallet</p>
                 <button
                   onClick={handleDisconnect}
                   disabled={isConnecting}
-                  className="px-2 py-1 bg-[#ef4444] text-white text-xs rounded hover:bg-[#dc2626] disabled:opacity-50"
+                  className="px-1 py-0.5 bg-[#ef4444] text-white text-xs rounded hover:bg-[#dc2626] disabled:opacity-50"
                 >
                   Disconnect
                 </button>
@@ -192,8 +192,8 @@ export function WalletLoginForm() {
 
               {/* Available accounts dropdown - only show if multiple accounts */}
               {availableAccounts.length > 1 && (
-                <div className="mb-2">
-                  <label className="block text-xs text-[#fbbf24] mb-1">
+                <div className="mb-1">
+                  <label className="block text-xs text-[#fbbf24] mb-0.5">
                     Switch to different wallet:
                   </label>
                   <select
@@ -204,7 +204,7 @@ export function WalletLoginForm() {
                       }
                     }}
                     disabled={isSwitchingWallet}
-                    className="w-full bg-[#2d1b0e] border border-[#8b4513] rounded px-2 py-1 text-white text-xs wallet-address"
+                    className="w-full bg-[#2d1b0e] border border-[#8b4513] rounded px-1 py-0.5 text-white text-xs wallet-address"
                   >
                     {availableAccounts.map((acc) => (
                       <option key={acc} value={acc}>
@@ -219,7 +219,7 @@ export function WalletLoginForm() {
               <button
                 onClick={handleSwitchWallet}
                 disabled={isSwitchingWallet || isConnecting}
-                className="w-full px-3 py-2 bg-[#f2751a] text-white text-xs rounded hover:bg-[#e65a0a] disabled:opacity-50 flex items-center justify-center"
+                className="w-full px-2 py-1 bg-[#f2751a] text-white text-xs rounded hover:bg-[#e65a0a] disabled:opacity-50 flex items-center justify-center"
               >
                 {isSwitchingWallet ? (
                   <>
@@ -245,7 +245,7 @@ export function WalletLoginForm() {
                     />
                     
                     <div>
-                      <label htmlFor="displayName" className="block text-sm font-medium mb-2 text-[#fbbf24]">
+                      <label htmlFor="displayName" className="block text-xs font-medium mb-1 text-[#fbbf24]">
                         Adventurer Name
                       </label>
                       <input
@@ -254,13 +254,13 @@ export function WalletLoginForm() {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         required
-                        className="w-full pixel-input text-sm"
+                        className="w-full pixel-input text-xs"
                         placeholder="Enter your name"
                         maxLength={20}
                       />
                       
                       {/* Character count indicator */}
-                      <div className="mt-1 flex justify-between items-center">
+                      <div className="mt-0.5 flex justify-between items-center">
                         <p className="text-xs text-[#8B4513] font-medium">
                           Choose a name for your character (2-20 characters)
                         </p>

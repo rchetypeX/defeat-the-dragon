@@ -5,6 +5,8 @@ import './mobile-first.css';
 import { AuthProvider } from '../contexts/AuthContext';
 import { AudioProvider } from '../contexts/AudioContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
+import { WagmiContextProvider } from '../providers/WagmiProvider';
+import { MiniAppDetector } from '../components/MiniAppDetector';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -92,11 +94,12 @@ export async function generateMetadata(): Promise<Metadata> {
     telephone: false,
   },
       other: {
+      // Frame metadata for social sharing (backward compatibility)
       'fc:frame': JSON.stringify({
-        version: 'next',
+        version: '1',
         imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${baseUrl}/og-image.webp`,
         button: {
-          title: `Launch ${process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon'}`,
+          title: '🐉 Start Adventure',
           action: {
             type: 'launch_frame',
             name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
@@ -106,6 +109,23 @@ export async function generateMetadata(): Promise<Metadata> {
           },
         },
       }),
+      // Mini App metadata for Farcaster Mini Apps
+      'fc:miniapp': JSON.stringify({
+        version: '1',
+        imageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${baseUrl}/og-image.webp`,
+        button: {
+          title: '🐉 Start Adventure',
+          action: {
+            type: 'launch_miniapp',
+            name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
+            url: baseUrl,
+            splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${baseUrl}/icon.png`,
+            splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#221afe',
+          },
+        },
+      }),
+      // Universal Links domain metadata
+      'fc:miniapp:domain': baseUrl,
     },
   };
 }
@@ -169,11 +189,15 @@ export default function RootLayout({
         {/* Orientation warning for mobile landscape */}
         <div className="orientation-warning"></div>
         
-        <MiniKitContextProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </MiniKitContextProvider>
+        <WagmiContextProvider>
+          <MiniKitContextProvider>
+            <AuthProvider>
+              <MiniAppDetector>
+                {children}
+              </MiniAppDetector>
+            </AuthProvider>
+          </MiniKitContextProvider>
+        </WagmiContextProvider>
         <SpeedInsights />
         <Analytics />
       </body>

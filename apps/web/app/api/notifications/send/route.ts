@@ -1,138 +1,92 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-interface NotificationRequest {
-  userId: string;
-  type: 'session_complete' | 'session_failed' | 'level_up' | 'achievement' | 'boss_defeated' | 'daily_reminder' | 're_engagement';
-  title: string;
-  body: string;
-  data?: Record<string, any>;
-  priority?: 'low' | 'medium' | 'high' | 'urgent';
-}
+import { notificationService } from '../../../../lib/notificationService';
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, type, title, body, data, priority = 'medium' }: NotificationRequest = await request.json();
+    const body = await request.json();
+    const { type, fid, data } = body;
 
-    if (!userId || !type || !title || !body) {
+    if (!type || !fid) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: type, fid' },
         { status: 400 }
       );
     }
 
-    // Get user's notification preferences
-    const { data: userSettings, error: settingsError } = await supabase
-      .from('user_settings')
-      .select('notifications_enabled, notification_preferences')
-      .eq('user_id', userId)
-      .single();
+    let result;
 
-    if (settingsError) {
-      console.error('Error fetching user settings:', settingsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch user settings' },
-        { status: 500 }
-      );
-    }
-
-    // Check if notifications are enabled for this user
-    if (!userSettings?.notifications_enabled) {
-      return NextResponse.json(
-        { success: false, reason: 'Notifications disabled' },
-        { status: 200 }
-      );
-    }
-
-    // Check if this specific notification type is enabled
-    const preferences = userSettings.notification_preferences || {};
-    const notificationKey = type.replace(/_/g, '') as keyof typeof preferences;
-    
-    if (preferences[notificationKey] === false) {
-      return NextResponse.json(
-        { success: false, reason: 'Notification type disabled' },
-        { status: 200 }
-      );
-    }
-
-    // Get user's push subscription
-    const { data: pushSubscriptions, error: pushError } = await supabase
-      .from('push_subscriptions')
-      .select('*')
-      .eq('user_id', userId);
-
-    if (pushError) {
-      console.error('Error fetching push subscriptions:', pushError);
-      return NextResponse.json(
-        { error: 'Failed to fetch push subscriptions' },
-        { status: 500 }
-      );
-    }
-
-    if (!pushSubscriptions || pushSubscriptions.length === 0) {
-      return NextResponse.json(
-        { success: false, reason: 'No push subscriptions found' },
-        { status: 200 }
-      );
-    }
-
-    // Send push notifications to all user's devices
-    const notificationPromises = pushSubscriptions.map(async (subscription) => {
-      try {
-        // Here you would integrate with a push notification service
-        // For now, we'll log the notification
-        console.log('📱 Push notification would be sent:', {
-          userId,
-          type,
-          title,
-          body,
-          data,
-          priority,
-          endpoint: subscription.endpoint
+    switch (type) {
+      case 'focus_reminder':
+        result = await notificationService.sendFocusReminder(fid, data?.sessionType);
+        break;
+        
+      case 'achievement':
+        if (!data?.achievement) {
+          return NextResponse.json(
+            { error: 'Missing achievement data' },
+            { status: 400 }
+          );
+        }
+        result = await notificationService.sendAchievementNotification(fid, data.achievement);
+        break;
+        
+      case 'level_up':
+        if (!data?.level || !data?.character) {
+          return NextResponse.json(
+            { error: 'Missing level or character data' },
+            { status: 400 }
+          );
+        }
+        result = await notificationService.sendLevelUpNotification(fid, data.level, data.character);
+        break;
+        
+      case 'daily_challenge':
+        if (!data?.challenge) {
+          return NextResponse.json(
+            { error: 'Missing challenge data' },
+            { status: 400 }
+          );
+        }
+        result = await notificationService.sendDailyChallenge(fid, data.challenge);
+        break;
+        
+      case 'streak_milestone':
+        if (!data?.streakDays) {
+          return NextResponse.json(
+            { error: 'Missing streak days data' },
+            { status: 400 }
+          );
+        }
+        result = await notificationService.sendStreakMilestone(fid, data.streakDays);
+        break;
+        
+      case 'custom':
+        if (!data?.notificationId || !data?.title || !data?.body || !data?.targetUrl) {
+          return NextResponse.json(
+            { error: 'Missing custom notification data' },
+            { status: 400 }
+          );
+        }
+        result = await notificationService.sendToUser({
+          notificationId: data.notificationId,
+          title: data.title,
+          body: data.body,
+          targetUrl: data.targetUrl,
+          fid,
         });
-
-        // In production, you would use a service like:
-        // - Firebase Cloud Messaging (FCM)
-        // - OneSignal
-        // - Web Push API with VAPID
-        // - Base App's notification system
-
-        return { success: true, endpoint: subscription.endpoint };
-      } catch (error) {
-        console.error('Error sending push notification:', error);
-        return { success: false, endpoint: subscription.endpoint, error };
-      }
-    });
-
-    const results = await Promise.all(notificationPromises);
-    const successfulSends = results.filter(r => r.success).length;
-    const totalSends = results.length;
-
-    // Log notification to database for analytics
-    await supabase
-      .from('notification_logs')
-      .insert({
-        user_id: userId,
-        type,
-        title,
-        body,
-        data,
-        priority,
-        sent_count: successfulSends,
-        total_count: totalSends,
-        sent_at: new Date().toISOString()
-      });
+        break;
+        
+      default:
+        return NextResponse.json(
+          { error: 'Invalid notification type' },
+          { status: 400 }
+        );
+    }
 
     return NextResponse.json({
-      success: true,
-      sent: successfulSends,
-      total: totalSends,
-      results
+      success: result.success,
+      message: result.message,
+      details: result.details,
     });
 
   } catch (error) {
@@ -148,44 +102,25 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const fid = searchParams.get('fid');
 
-    if (!userId) {
+    if (!fid) {
       return NextResponse.json(
-        { error: 'User ID required' },
+        { error: 'Missing fid parameter' },
         { status: 400 }
       );
     }
 
-    // Get user's notification settings and recent logs
-    const [settingsResult, logsResult] = await Promise.all([
-      supabase
-        .from('user_settings')
-        .select('notifications_enabled, notification_preferences')
-        .eq('user_id', userId)
-        .single(),
-      supabase
-        .from('notification_logs')
-        .select('*')
-        .eq('user_id', userId)
-        .order('sent_at', { ascending: false })
-        .limit(10)
-    ]);
-
-    if (settingsResult.error) {
-      return NextResponse.json(
-        { error: 'Failed to fetch settings' },
-        { status: 500 }
-      );
-    }
-
+    // In a real implementation, you'd check the database
+    // For now, we'll return a mock response
     return NextResponse.json({
-      settings: settingsResult.data,
-      recentLogs: logsResult.data || []
+      hasNotifications: true,
+      lastNotification: new Date().toISOString(),
+      notificationCount: 0,
     });
 
   } catch (error) {
-    console.error('Error fetching notification status:', error);
+    console.error('Error checking notification status:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
