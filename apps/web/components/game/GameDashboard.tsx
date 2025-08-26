@@ -73,6 +73,20 @@ export function GameDashboard() {
   const { equippedCharacter, getCharacterImage } = useCharacterStore();
   const { equippedBackground, getBackgroundImage } = useBackgroundStore();
 
+  // Debug logging for focus button visibility
+  useEffect(() => {
+    console.log('GameDashboard: Focus button visibility debug:', {
+      showSessionTimer,
+      sessionResult: !!sessionResult,
+      showSettings,
+      showShop,
+      showInventory,
+      showAudioControls,
+      sessionProgressIsActive: sessionProgress.isActive,
+      shouldHideFocusButton: showSessionTimer || sessionResult || showSettings || showShop || showInventory || showAudioControls
+    });
+  }, [showSessionTimer, sessionResult, showSettings, showShop, showInventory, showAudioControls, sessionProgress.isActive]);
+
   // Primary Button Configuration
   const getPrimaryButtonConfig = useCallback(() => {
     if (sessionProgress.isActive) {

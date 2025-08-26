@@ -30,10 +30,13 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     if (session?.access_token) {
       token = session.access_token;
       console.log('SyncService: Found Supabase session token');
+    } else {
+      console.log('SyncService: No Supabase session found');
     }
   }
 
   console.log('SyncService: Token available:', !!token);
+  console.log('SyncService: Token type:', token ? (token.startsWith('wallet:') ? 'wallet' : 'supabase') : 'none');
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -41,7 +44,13 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   };
   
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    // For Supabase tokens, use 'Bearer' prefix
+    if (!token.startsWith('wallet:')) {
+      headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      // For wallet tokens, use the custom format
+      headers['Authorization'] = token;
+    }
   }
 
   console.log('SyncService: Making fetch request with headers:', Object.keys(headers));

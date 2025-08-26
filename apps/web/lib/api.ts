@@ -56,7 +56,13 @@ async function apiRequest<T>(
     };
     
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      // For Supabase tokens, use 'Bearer' prefix
+      if (!token.startsWith('wallet:')) {
+        headers['Authorization'] = `Bearer ${token}`;
+      } else {
+        // For wallet tokens, use the custom format
+        headers['Authorization'] = token;
+      }
     }
 
     const response = await fetch(`/api${endpoint}`, {

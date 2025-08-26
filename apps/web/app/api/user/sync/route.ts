@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
     if (user) {
       // Standard Supabase auth user
       userId = user.id;
+      console.log('User sync: Found Supabase user:', userId);
     } else {
       // Check if this is a wallet user by looking for wallet address in headers or cookies
       const walletUser = cookieStore.get('wallet-user');
@@ -56,6 +57,7 @@ export async function GET(request: NextRequest) {
         try {
           const walletData = JSON.parse(walletUser.value);
           userId = walletData.id;
+          console.log('User sync: Found wallet user from cookie:', userId);
         } catch (e) {
           console.error('Error parsing wallet user data:', e);
         }
@@ -64,10 +66,11 @@ export async function GET(request: NextRequest) {
       // Also check for wallet user in request headers (for API calls)
       if (!userId) {
         const authHeader = request.headers.get('authorization');
-        if (authHeader && authHeader.startsWith('Bearer wallet:')) {
+        if (authHeader && authHeader.startsWith('wallet:')) {
           try {
-            const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
+            const walletData = JSON.parse(authHeader.substring(7)); // Remove 'wallet:'
             userId = walletData.id;
+            console.log('User sync: Found wallet user from header:', userId);
           } catch (e) {
             console.error('Error parsing wallet user from header:', e);
           }
@@ -76,6 +79,8 @@ export async function GET(request: NextRequest) {
     }
     
     if (!userId) {
+      console.error('User sync: No user ID found. Auth header:', request.headers.get('authorization'));
+      console.error('User sync: Cookie wallet user:', cookieStore.get('wallet-user'));
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -246,6 +251,7 @@ export async function POST(request: NextRequest) {
     if (user) {
       // Standard Supabase auth user
       userId = user.id;
+      console.log('User sync: Found Supabase user:', userId);
     } else {
       // Check if this is a wallet user by looking for wallet address in headers or cookies
       const walletUser = cookieStore.get('wallet-user');
@@ -253,6 +259,7 @@ export async function POST(request: NextRequest) {
         try {
           const walletData = JSON.parse(walletUser.value);
           userId = walletData.id;
+          console.log('User sync: Found wallet user from cookie:', userId);
         } catch (e) {
           console.error('Error parsing wallet user data:', e);
         }
@@ -261,10 +268,11 @@ export async function POST(request: NextRequest) {
       // Also check for wallet user in request headers (for API calls)
       if (!userId) {
         const authHeader = request.headers.get('authorization');
-        if (authHeader && authHeader.startsWith('Bearer wallet:')) {
+        if (authHeader && authHeader.startsWith('wallet:')) {
           try {
-            const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
+            const walletData = JSON.parse(authHeader.substring(7)); // Remove 'wallet:'
             userId = walletData.id;
+            console.log('User sync: Found wallet user from header:', userId);
           } catch (e) {
             console.error('Error parsing wallet user from header:', e);
           }
@@ -273,8 +281,8 @@ export async function POST(request: NextRequest) {
     }
     
     if (!userId) {
-      console.error('POST: No user ID found. Auth header:', request.headers.get('authorization'));
-      console.error('POST: Cookie wallet user:', cookieStore.get('wallet-user'));
+      console.error('User sync: No user ID found. Auth header:', request.headers.get('authorization'));
+      console.error('User sync: Cookie wallet user:', cookieStore.get('wallet-user'));
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
