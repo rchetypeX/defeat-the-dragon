@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LoginForm } from '../components/auth/LoginForm';
 import { SignUpForm } from '../components/auth/SignUpForm';
@@ -25,7 +25,20 @@ import { SocialAcknowledgment } from '../components/social/SocialAcknowledgment'
 import { EntryPointExperience } from '../components/context/EntryPointExperience';
 import { SoundToggle } from '../components/ui/SoundToggle';
 
-export default function HomePage() {
+// Loading component for Suspense fallback
+function HomePageLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <h2 className="text-white text-xl font-bold">Loading...</h2>
+      </div>
+    </div>
+  );
+}
+
+// Main component that uses useSearchParams
+function HomePageContent() {
   const { user, loading } = useAuth();
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet'>('wallet');
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -92,454 +105,188 @@ export default function HomePage() {
 
   // Log Farcaster SDK status for development
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🎯 Farcaster SDK Status:', {
-        isFarcasterReady,
-        isFarcasterLoading,
-        farcasterError,
-      });
-    }
+    console.log('🔧 Farcaster SDK Status:', {
+      isReady: isFarcasterReady,
+      isLoading: isFarcasterLoading,
+      error: farcasterError,
+    });
   }, [isFarcasterReady, isFarcasterLoading, farcasterError]);
 
-  // Check if this is the user's first visit
+  // Log authentication status for development
   useEffect(() => {
-    const hasVisited = localStorage.getItem('hasVisitedBefore');
-    if (!hasVisited && !user) {
-      setShowOnboarding(true);
-    }
-  }, [user]);
-
-  // Log Base App authentication status for development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔐 Base App Auth Status:', {
-        isBaseApp,
-        isBaseAppAuthenticated,
-        contextFid,
-        verifiedUser: !!verifiedUser,
-        entryType,
-        isViralEntry,
-        isReturningUser,
-        platformType,
-      });
-    }
-  }, [isBaseApp, isBaseAppAuthenticated, contextFid, verifiedUser, entryType, isViralEntry, isReturningUser, platformType]);
-
-  // Debug user authentication state
-  useEffect(() => {
-    console.log('🔐 User Auth State:', {
+    console.log('🔐 Authentication Status:', {
       user: !!user,
       loading,
-      userDetails: user ? {
-        id: user.id,
-        email: user.email,
-        wallet_address: (user as any).wallet_address,
-      } : null,
+      farcasterUser: !!farcasterUser,
+      isFarcasterAuthenticated,
+      verifiedUser: !!verifiedUser,
+      isBaseAppAuthenticated,
+      isBaseApp,
     });
-  }, [user, loading]);
+  }, [user, loading, farcasterUser, isFarcasterAuthenticated, verifiedUser, isBaseAppAuthenticated, isBaseApp]);
 
-  // Handle Farcaster SDK errors
+  // Log context information for development
   useEffect(() => {
-    if (farcasterError) {
-      console.error('❌ Farcaster SDK Error:', farcasterError);
-      // In production, you might want to show a user-friendly error message
-      // or fallback to a different authentication method
-    }
-  }, [farcasterError]);
+    console.log('🌍 Context Information:', {
+      entryType,
+      isViralEntry,
+      isReturningUser,
+      platformType,
+      isContextAvailable,
+      subPath,
+      queryParams,
+    });
+  }, [entryType, isViralEntry, isReturningUser, platformType, isContextAvailable, subPath, queryParams]);
 
-  // Call Farcaster ready() when interface is ready to display
-  useEffect(() => {
-    // Only call ready() if we haven't already and the app is loaded
-    if (!isFarcasterReady && !isFarcasterLoading && !loading) {
-      // Small delay to ensure interface is stable and avoid jitter
-      const timer = setTimeout(() => {
-        farcasterReady();
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isFarcasterReady, isFarcasterLoading, loading, farcasterReady]);
-
-  const onboardingSteps = [
-    {
-      title: "Welcome to Defeat the Dragon!",
-      description: "Transform your focus sessions into an epic adventure. Level up your productivity while training to defeat the ultimate dragon!",
-      image: "/assets/images/onboarding-1.png"
-    },
-    {
-      title: "Complete Focus Sessions",
-      description: "Start focus sessions and earn XP, coins, and sparks. The longer you focus, the more rewards you gain!",
-      image: "/assets/images/onboarding-2.png"
-    },
-    {
-      title: "Level Up & Unlock Features",
-      description: "Gain levels, unlock new characters, backgrounds, and special abilities as you progress in your focus journey.",
-      image: "/assets/images/onboarding-3.png"
-    },
-
-  ];
-
-  const handleOnboardingNext = () => {
-    if (currentOnboardingStep < onboardingSteps.length - 1) {
-      setCurrentOnboardingStep(currentOnboardingStep + 1);
-    } else {
-      setShowOnboarding(false);
-      localStorage.setItem('hasVisitedBefore', 'true');
-    }
-  };
-
-  const handleOnboardingSkip = () => {
-    setShowOnboarding(false);
-    localStorage.setItem('hasVisitedBefore', 'true');
-  };
-
-  const handleSignUp = () => {
-    setAuthMode('wallet');
-  };
-
-  // Primary Button Configuration for Onboarding
-  const getOnboardingPrimaryButtonConfig = () => {
-    if (showOnboarding) {
-      if (currentOnboardingStep < onboardingSteps.length - 1) {
-        return {
-          text: 'NEXT',
-          action: handleOnboardingNext
-        };
-      } else {
-        return {
-          text: 'GET STARTED',
-          action: handleOnboardingNext
-        };
-      }
-    } else if (!user && !loading) {
-      return {
-        text: 'CONNECT WALLET',
-        action: () => {
-          // This will be handled by the wallet connection flow
-          console.log('Primary button: Connect wallet clicked');
-        }
-      };
-    } else {
-      return {
-        text: 'START FOCUSING',
-        action: () => {
-          // This will be handled by the game dashboard
-          console.log('Primary button: Start focusing clicked');
-        }
-      };
-    }
-  };
-
-  const onboardingPrimaryButtonConfig = getOnboardingPrimaryButtonConfig();
-
-  // Configure primary button for onboarding and authentication
-  usePrimaryButton(
-    { text: onboardingPrimaryButtonConfig.text },
-    onboardingPrimaryButtonConfig.action
-  );
-
-  // Reset wallet key when authMode changes away from 'wallet'
-  useEffect(() => {
-    if (authMode !== 'wallet') {
-      setWalletKey(prev => prev + 1);
-    }
-  }, [authMode]);
-
-  if (loading) {
-    return (
-      <ContextAwareLayout>
-        <main className="relative overflow-hidden">
-          {/* Background Forest Scene */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: 'url(/assets/images/forest-background.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          ></div>
-          
-          {/* Loading Content */}
-          <div className="relative z-10 min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-[#f2751a] mx-auto mb-4"></div>
-              <p className="text-lg text-white drop-shadow-lg">Loading...</p>
-            </div>
-          </div>
-        </main>
-      </ContextAwareLayout>
-    );
+  // Show loading state while authentication is being determined
+  if (loading || isFarcasterLoading || isFarcasterAuthLoading || isBaseAppLoading) {
+    return <HomePageLoading />;
   }
 
-  // Onboarding Modal
-  if (showOnboarding) {
-    const step = onboardingSteps[currentOnboardingStep];
-    
+  // User is not authenticated - show authentication options
+  if (!user && !farcasterUser && !verifiedUser) {
     return (
       <ContextAwareLayout>
-        <AudioProvider>
-          <main className="relative overflow-hidden">
-            {/* Background Music */}
+        <EntryPointExperience>
+          <AudioProvider>
             <BackgroundMusic 
               src="/assets/audio/background-music.mp3"
-              volume={0.2}
+              volume={0.3}
               loop={true}
               autoPlay={false}
               onLoad={() => console.log('Background music loaded')}
               onError={(error) => console.error('Background music error:', error)}
             />
-            {/* Focus Session Music */}
-            <FocusSessionMusic 
-              src="/assets/audio/focus-session-music.mp3"
-              volume={0.4}
-              loop={true}
-              autoPlay={false}
-              onLoad={() => console.log('Focus session music loaded')}
-              onError={(error) => console.error('Focus session music error:', error)}
-            />
-          
-            {/* Background Forest Scene */}
-            <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{
-                backgroundImage: 'url(/assets/images/forest-background.png)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
-              }}
-            ></div>
             
-            {/* Sound Toggle */}
-            <SoundToggle />
-            
-            {/* Onboarding Content */}
-            <div className="relative z-20 min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
-              {/* Large Logo - Outside the card */}
-              <div className="text-center mb-4 sm:mb-8">
-                <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 mx-auto mb-2 sm:mb-4">
-                  <img 
-                    src="/logo.svg"
-                    alt="Defeat the Dragon Logo" 
-                    className="w-full h-full object-contain"
-                    onLoad={() => {
-                      console.log('Logo.svg loaded successfully on onboarding');
+            <main className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center p-4">
+              <div className="max-w-md w-full space-y-6">
+                {/* Logo and Title */}
+                <div className="text-center">
+                  <div className="text-6xl mb-4">🐉</div>
+                  <h1 className="text-3xl font-bold text-white mb-2">Defeat the Dragon</h1>
+                  <p className="text-gray-300">A Pomodoro-style Focus RPG</p>
+                </div>
+
+                {/* Authentication Tabs */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                  <div className="flex space-x-1 mb-6">
+                    <button
+                      onClick={() => setAuthMode('wallet')}
+                      className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                        authMode === 'wallet'
+                          ? 'bg-blue-500 text-white'
+                          : 'text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      Wallet
+                    </button>
+                    <button
+                      onClick={() => setAuthMode('login')}
+                      className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                        authMode === 'login'
+                          ? 'bg-blue-500 text-white'
+                          : 'text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      Email
+                    </button>
+                    <button
+                      onClick={() => setAuthMode('signup')}
+                      className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                        authMode === 'signup'
+                          ? 'bg-blue-500 text-white'
+                          : 'text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+
+                  {/* Authentication Forms */}
+                  {authMode === 'wallet' && (
+                    <WalletLoginForm 
+                      key={walletKey}
+                    />
+                  )}
+                  
+                  {authMode === 'login' && (
+                    <LoginForm />
+                  )}
+                  
+                  {authMode === 'signup' && (
+                    <SignUpForm />
+                  )}
+                </div>
+
+                {/* Farcaster Authentication */}
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                  <h3 className="text-white font-semibold mb-4 text-center">Or connect with Farcaster</h3>
+                  <FarcasterAuth 
+                    onSuccess={() => {
+                      console.log('✅ Farcaster authentication successful');
+                    }}
+                    onError={(error) => {
+                      console.error('❌ Farcaster authentication failed:', error);
                     }}
                   />
                 </div>
-              </div>
 
-              <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-3 sm:p-6 max-w-sm w-full text-center">
-                {/* Progress Indicator */}
-                <div className="flex justify-center mb-3 sm:mb-6">
-                  {onboardingSteps.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full mx-1 ${
-                        index <= currentOnboardingStep ? 'bg-[#f2751a]' : 'bg-[#654321]'
-                      }`}
-                    />
-                  ))}
-                </div>
+                {/* Universal Links Demo */}
+                {universalLink && (
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+                    <h3 className="text-white font-semibold mb-4">Universal Link Demo</h3>
+                    <div className="space-y-2">
+                      <p className="text-gray-300 text-sm">App ID: {appId}</p>
+                      <p className="text-gray-300 text-sm">App Slug: {appSlug}</p>
+                      <p className="text-gray-300 text-sm">Universal Link: {universalLink}</p>
+                      <div className="flex space-x-2">
+                        <CopyUniversalLink
+                          appId={appId || 'demo'}
+                          appSlug={appSlug || 'demo'}
+                          className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors"
+                          onSuccess={() => console.log('✅ Universal link copied')}
+                          onError={(error) => console.error('❌ Failed to copy link:', error)}
+                        />
+                        <MiniAppOpener
+                          appId={appId || 'demo'}
+                          appSlug={appSlug || 'demo'}
+                          className="flex-1 px-3 py-2 bg-green-500 text-white rounded-md text-sm hover:bg-green-600 transition-colors"
+                          onSuccess={() => console.log('✅ Mini app opened')}
+                          onError={(error) => console.error('❌ Failed to open mini app:', error)}
+                        >
+                          Open Demo
+                        </MiniAppOpener>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                {/* Step Content */}
-                <div className="mb-3 sm:mb-6">
-                  <h2 className="text-lg sm:text-xl font-bold text-[#f2751a] mb-2 sm:mb-3">{step.title}</h2>
-                  <p className="text-[#fbbf24] text-xs sm:text-sm leading-relaxed">{step.description}</p>
-                </div>
+                {/* Popular Mini Apps */}
+                <PopularMiniApps className="bg-white/10 backdrop-blur-sm rounded-lg p-6" />
 
-                {/* Action Buttons */}
-                <div className="flex space-x-2 sm:space-x-3">
-                  <button
-                    onClick={handleOnboardingSkip}
-                    className="flex-1 py-2 px-3 sm:px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-xs sm:text-sm"
+                {/* External Links */}
+                <div className="text-center space-y-2">
+                  <ExternalLink 
+                    href="https://github.com/rchetypeX/defeat-the-dragon"
+                    className="text-gray-300 hover:text-white text-sm"
                   >
-                    Skip
-                  </button>
-                  <button
-                    onClick={handleOnboardingNext}
-                    className="flex-1 py-2 px-3 sm:px-4 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] transition-colors text-xs sm:text-sm"
-                  >
-                    {currentOnboardingStep === onboardingSteps.length - 1 ? 'Get Started' : 'Next'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </main>
-        </AudioProvider>
-      </ContextAwareLayout>
-    );
-  }
-
-  if (!user) {
-    return (
-      <ContextAwareLayout>
-        <SocialAcknowledgment />
-        <EntryPointExperience>
-          <AudioProvider>
-            <main className="relative overflow-hidden">
-          {/* Background Music */}
-          <BackgroundMusic 
-            src="/assets/audio/background-music.mp3"
-            volume={0.2}
-            loop={true}
-            autoPlay={false}
-            onLoad={() => console.log('Background music loaded')}
-            onError={(error) => console.error('Background music error:', error)}
-          />
-          {/* Focus Session Music */}
-          <FocusSessionMusic 
-            src="/assets/audio/focus-session-music.mp3"
-            volume={0.4}
-            loop={true}
-            autoPlay={false}
-            onLoad={() => console.log('Focus session music loaded')}
-            onError={(error) => console.error('Focus session music error:', error)}
-          />
-        
-          {/* Background Forest Scene */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: 'url(/assets/images/forest-background.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            }}
-          ></div>
-          
-          {/* Sound Toggle */}
-          <SoundToggle />
-          
-          {/* Content */}
-          <div className={`relative z-10 flex flex-col items-center justify-center px-2 sm:px-4 ${isBaseApp ? 'base-app-compact' : 'mobile-compact'}`} style={{ height: '100vh', maxHeight: '100vh', overflow: 'hidden' }}>
-            {/* App Logo - More compact */}
-            <div className="text-center mb-0.5 logo-container">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 mx-auto">
-                <img 
-                  src="/logo.svg"
-                  alt="Defeat the Dragon Logo" 
-                  className="w-full h-full object-contain"
-                  onLoad={() => {
-                    console.log('Logo.svg loaded successfully');
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Authentication Tabs - More compact */}
-            <div className="w-full max-w-sm mb-0.5 auth-container">
-              <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-0.5">
-                <button
-                  onClick={() => setAuthMode('wallet')}
-                  className={`flex-1 py-0.5 px-1 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
-                    authMode === 'wallet'
-                      ? 'bg-[#f2751a] text-white'
-                      : 'text-[#fbbf24] hover:text-white'
-                  }`}
-                >
-                  <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0z" clipRule="evenodd" />
-                  </svg>
-                  <span>Wallet</span>
-                </button>
-                <button
-                  onClick={() => setAuthMode('login')}
-                  className={`flex-1 py-0.5 px-1 rounded text-xs font-medium transition-colors flex items-center justify-center space-x-1 ${
-                    authMode === 'login'
-                      ? 'bg-[#f2751a] text-white'
-                      : 'text-[#fbbf24] hover:text-white'
-                  }`}
-                >
-                  <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                  </svg>
-                  <span>Email</span>
-                </button>
-              </div>
-            </div>
-            
-            {/* Authentication Form - More compact */}
-            <div className="w-full max-w-sm flex-1 flex flex-col justify-center overflow-hidden" style={{ minHeight: 0 }}>
-              {authMode === 'wallet' && <WalletLoginForm key={walletKey} />}
-              {authMode === 'login' && <LoginForm />}
-              {authMode === 'signup' && <SignUpForm />}
-            </div>
-            
-            {/* Email Auth Toggle (only show when not in wallet mode) - More compact */}
-            {authMode !== 'wallet' && (
-              <div className="mt-0.5 text-center">
-                <button
-                  onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-                  className="text-[#fbbf24] hover:text-white transition-colors text-xs underline"
-                >
-                  {authMode === 'login' ? "Don't have an account? Create Account" : "Already have an account? Sign In"}
-                </button>
-              </div>
-            )}
-
-            {/* Farcaster Authentication */}
-            {!isFarcasterAuthenticated && (
-              <div className="w-full max-w-sm mb-4">
-                <FarcasterAuth 
-                  onSuccess={(user) => console.log('✅ Farcaster auth successful:', user)}
-                  onError={(error) => console.error('❌ Farcaster auth failed:', error)}
-                />
-              </div>
-            )}
-
-            {/* Universal Links Demo */}
-            {appId && appSlug && (
-              <div className="w-full max-w-sm mb-4">
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Universal Links</h3>
-                  
-                  {/* Copy Current Universal Link */}
-                  <CopyUniversalLink
-                    appId={appId}
-                    appSlug={appSlug}
-                    subPath={subPath || undefined}
-                    queryParams={Object.keys(queryParams).length > 0 ? queryParams : undefined}
-                    className="w-full mb-2 px-3 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                    onSuccess={() => console.log('✅ Universal Link copied')}
-                    onError={(error) => console.error('❌ Failed to copy Universal Link:', error)}
-                  />
-                  
-                  {/* Navigate to different sections */}
-                  <div className="space-y-1">
-                    <button
-                      onClick={() => navigateToSubPath('leaderboard', { sort: 'score' })}
-                      className="w-full px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                    >
-                      Navigate to Leaderboard
-                    </button>
-                    <button
-                      onClick={() => navigateToSubPath('achievements', { achievement: 'dragon-slayer' })}
-                      className="w-full px-3 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
-                    >
-                      Navigate to Achievements
-                    </button>
+                    View on GitHub
+                  </ExternalLink>
+                  <div className="text-gray-400 text-xs">
+                    Built with Next.js, Supabase, and Farcaster
                   </div>
                 </div>
+
+                {/* Add Mini App Prompt */}
+                <AddMiniAppPrompt 
+                  showAfterDelay={10000} // Show after 10 seconds
+                  onSuccess={() => console.log('✅ Mini App added successfully')}
+                  onError={(error) => console.error('❌ Failed to add Mini App:', error)}
+                />
+
               </div>
-            )}
-
-            {/* Popular Mini Apps */}
-            <div className="w-full max-w-sm mb-4">
-              <PopularMiniApps />
-            </div>
-
-            {/* Add Mini App Prompt */}
-            <AddMiniAppPrompt 
-              showAfterDelay={10000} // Show after 10 seconds
-              onSuccess={() => console.log('✅ Mini App added successfully')}
-              onError={(error) => console.error('❌ Failed to add Mini App:', error)}
-            />
-
-          </div>
-        </main>
-      </AudioProvider>
+            </main>
+          </AudioProvider>
         </EntryPointExperience>
       </ContextAwareLayout>
     );
@@ -571,5 +318,14 @@ export default function HomePage() {
         </AudioProvider>
       </EntryPointExperience>
     </ContextAwareLayout>
+  );
+}
+
+// Main export with Suspense boundary
+export default function HomePage() {
+  return (
+    <Suspense fallback={<HomePageLoading />}>
+      <HomePageContent />
+    </Suspense>
   );
 }

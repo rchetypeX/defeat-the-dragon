@@ -19,26 +19,13 @@ const inter = Inter({ subsets: ['latin'] });
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz';
   
-  // Try to fetch dynamic metadata from database
-  let dynamicMetadata = null;
-  try {
-    const response = await fetch(`${baseUrl}/api/og-metadata?path=/`, {
-      cache: 'no-store' // Don't cache this to get fresh data
-    });
-    if (response.ok) {
-      dynamicMetadata = await response.json();
-    }
-  } catch (error) {
-    console.error('Failed to fetch dynamic metadata:', error);
-  }
-  
-  // Use dynamic metadata if available, otherwise fall back to defaults
-  const title = dynamicMetadata?.title || process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon';
-  const description = dynamicMetadata?.description || process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pomodoro-style Focus RPG that gamifies productivity';
-  const ogTitle = dynamicMetadata?.og_title || title;
-  const ogDescription = dynamicMetadata?.og_description || description;
-  const twitterTitle = dynamicMetadata?.twitter_title || title;
-  const twitterDescription = dynamicMetadata?.twitter_description || description;
+  // Use static metadata to avoid dynamic server usage errors
+  const title = process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon';
+  const description = process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pomodoro-style Focus RPG that gamifies productivity';
+  const ogTitle = title;
+  const ogDescription = description;
+  const twitterTitle = title;
+  const twitterDescription = description;
   
   return {
     metadataBase: new URL(baseUrl),
@@ -69,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'Defeat the Dragon',
       images: [
         {
-          url: dynamicMetadata?.og_image_url || '/og-image.webp',
+          url: '/og-image.webp',
           width: 1200,
           height: 630,
           alt: 'Defeat the Dragon - Focus RPG',
@@ -82,7 +69,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: twitterTitle,
       description: twitterDescription,
-      images: [dynamicMetadata?.twitter_image_url || '/og-image.webp'],
+      images: ['/og-image.webp'],
       creator: '@defeatdragon',
     },
   appleWebApp: {

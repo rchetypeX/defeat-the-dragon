@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { sdk } from '@farcaster/miniapp-sdk';
 
@@ -16,7 +16,20 @@ interface SharedCast {
   timestamp?: number;
 }
 
-export default function SharePage() {
+// Loading component for Suspense fallback
+function SharePageLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <h2 className="text-white text-xl font-bold">Analyzing Cast...</h2>
+      </div>
+    </div>
+  );
+}
+
+// Main component that uses useSearchParams
+function SharePageContent() {
   const searchParams = useSearchParams();
   const [sharedCast, setSharedCast] = useState<SharedCast | null>(null);
   const [isShareContext, setIsShareContext] = useState(false);
@@ -67,14 +80,7 @@ export default function SharePage() {
   }, [castHash, castFid, viewerFid]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <h2 className="text-white text-xl font-bold">Analyzing Cast...</h2>
-        </div>
-      </div>
-    );
+    return <SharePageLoading />;
   }
 
   if (isShareContext && sharedCast) {
@@ -136,5 +142,14 @@ export default function SharePage() {
         </button>
       </div>
     </div>
+  );
+}
+
+// Main export with Suspense boundary
+export default function SharePage() {
+  return (
+    <Suspense fallback={<SharePageLoading />}>
+      <SharePageContent />
+    </Suspense>
   );
 }
