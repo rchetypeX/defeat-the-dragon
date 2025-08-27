@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useGameStore } from '../lib/store';
 import { LoginForm } from '../components/auth/LoginForm';
 import { SignUpForm } from '../components/auth/SignUpForm';
 import { WalletLoginForm } from '../components/auth/WalletLoginForm';
@@ -86,13 +87,41 @@ function HomePageContent() {
     });
   }, [entryType, isViralEntry, isReturningUser, platformType, isContextAvailable]);
 
+  // Handle Base App authentication
+  useEffect(() => {
+    if (isBaseAppAuthenticated && verifiedUser && !user) {
+      console.log('🔐 Base App user detected, setting up user session:', verifiedUser);
+      
+      // Create a user session for the Base App user
+      const baseAppUser = {
+        id: verifiedUser.fid.toString(),
+        email: `${verifiedUser.username}@baseapp.local`,
+        username: verifiedUser.username,
+        displayName: verifiedUser.displayName,
+        pfpUrl: verifiedUser.pfpUrl,
+        fid: verifiedUser.fid
+      };
+      
+      // Store the Base App user in localStorage for consistency
+      localStorage.setItem('baseAppUser', JSON.stringify(baseAppUser));
+      
+      // Set the user in the game store
+      useGameStore.getState().setUser({
+        id: baseAppUser.id,
+        email: baseAppUser.email,
+      });
+      
+      console.log('✅ Base App user session created:', baseAppUser);
+    }
+  }, [isBaseAppAuthenticated, verifiedUser, user]);
+
   // Show loading state while authentication is being determined
   if (loading || isBaseAppLoading) {
     return <HomePageLoading />;
   }
 
   // User is not authenticated - show authentication options
-  if (!user && !verifiedUser) {
+  if (!user && !verifiedUser && !isBaseAppAuthenticated) {
     return (
       <ContextAwareLayout>
         <EntryPointExperience>

@@ -24,7 +24,11 @@ export function useDataSync() {
 
     const initializeData = async () => {
       try {
-        setIsLoading(true);
+        // Check if we already have player data to avoid unnecessary loading state
+        const existingPlayer = useGameStore.getState().player;
+        if (!existingPlayer) {
+          setIsLoading(true);
+        }
         setError(null);
 
         console.log('Initializing data for user:', user.id);
@@ -126,7 +130,11 @@ export function useDataSync() {
   // Force refresh data from database
   const refreshData = async () => {
     try {
-      setIsLoading(true);
+      // Only set loading to true if we don't already have player data
+      const currentPlayer = useGameStore.getState().player;
+      if (!currentPlayer) {
+        setIsLoading(true);
+      }
       setError(null);
       
       const result = await syncService.loadUserData();

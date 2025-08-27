@@ -50,6 +50,75 @@ export function GameDashboard() {
     });
   }, [player, isLoading, error, lastSyncTime]);
 
+  // Sync character store when player data is loaded
+  useEffect(() => {
+    if (player && !isLoading) {
+      // Load inventory to sync equipped character/background
+      const syncEquippedItems = async () => {
+        try {
+          // Get auth token for the request
+          let token: string | null = null;
+          
+          // Check if we have a wallet user in localStorage
+          const walletUserStr = localStorage.getItem('walletUser');
+          if (walletUserStr) {
+            try {
+              const walletUser = JSON.parse(walletUserStr);
+              token = `wallet:${JSON.stringify(walletUser)}`;
+            } catch (e) {
+              console.error('Error parsing wallet user:', e);
+            }
+          }
+          
+          // If no wallet token, try to get Supabase session
+          if (!token) {
+            const { supabase } = await import('../../lib/supabase');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.access_token) {
+              token = session.access_token;
+            }
+          }
+
+          const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+          };
+          
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+          
+          const response = await fetch('/api/inventory', { headers, credentials: 'include' });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.data) {
+              // Update character and background stores based on equipped items in database
+              const equippedCharacter = result.data.find((item: any) => 
+                item.item_type === 'character' && item.equipped
+              );
+              const equippedBackground = result.data.find((item: any) => 
+                item.item_type === 'background' && item.equipped
+              );
+              
+              if (equippedCharacter) {
+                setEquippedCharacter(equippedCharacter.item_id);
+                console.log('GameDashboard: Synced equipped character to:', equippedCharacter.item_id);
+              }
+              if (equippedBackground) {
+                setEquippedBackground(equippedBackground.item_id);
+                console.log('GameDashboard: Synced equipped background to:', equippedBackground.item_id);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error syncing equipped items:', error);
+        }
+      };
+
+      syncEquippedItems();
+    }
+  }, [player, isLoading]);
+
   // Check if new user needs to set adventurer name
   useEffect(() => {
     if (player && !player.display_name) {
@@ -65,10 +134,15 @@ export function GameDashboard() {
         console.log('GameDashboard: App became visible, checking data state');
         const currentPlayer = useGameStore.getState().player;
         
-        // If we have a user but no player data, try to refresh
-        if (user && !currentPlayer && !isLoading) {
+        // Only refresh if we have a user but no player data, and we're not already loading
+        // Also, don't refresh during an active focus session to prevent interruption
+        if (user && !currentPlayer && !isLoading && !sessionProgress.isActive) {
           console.log('GameDashboard: User exists but no player data, refreshing...');
           refreshData();
+        } else if (user && currentPlayer && !isLoading) {
+          console.log('GameDashboard: App visible, player data exists, no refresh needed');
+        } else if (sessionProgress.isActive) {
+          console.log('GameDashboard: App visible during active session, skipping refresh');
         }
       }
     };
@@ -78,7 +152,7 @@ export function GameDashboard() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user, isLoading, refreshData]);
+  }, [user, isLoading, refreshData, sessionProgress.isActive]);
 
   const handleAdventurerNameComplete = (displayName: string) => {
     console.log('GameDashboard: Adventurer name set:', displayName);
@@ -119,8 +193,77 @@ export function GameDashboard() {
   const [quoteTriggerCount, setQuoteTriggerCount] = useState(0);
   const [showAdventurerNamePrompt, setShowAdventurerNamePrompt] = useState(false);
   
-  const { equippedCharacter, getCharacterImage } = useCharacterStore();
-  const { equippedBackground, getBackgroundImage } = useBackgroundStore();
+  const { equippedCharacter, getCharacterImage, setEquippedCharacter } = useCharacterStore();
+  const { equippedBackground, getBackgroundImage, setEquippedBackground } = useBackgroundStore();
+
+  // Sync character store when player data is loaded
+  useEffect(() => {
+    if (player && !isLoading) {
+      // Load inventory to sync equipped character/background
+      const syncEquippedItems = async () => {
+        try {
+          // Get auth token for the request
+          let token: string | null = null;
+          
+          // Check if we have a wallet user in localStorage
+          const walletUserStr = localStorage.getItem('walletUser');
+          if (walletUserStr) {
+            try {
+              const walletUser = JSON.parse(walletUserStr);
+              token = `wallet:${JSON.stringify(walletUser)}`;
+            } catch (e) {
+              console.error('Error parsing wallet user:', e);
+            }
+          }
+          
+          // If no wallet token, try to get Supabase session
+          if (!token) {
+            const { supabase } = await import('../../lib/supabase');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.access_token) {
+              token = session.access_token;
+            }
+          }
+
+          const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+          };
+          
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+          
+          const response = await fetch('/api/inventory', { headers, credentials: 'include' });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.data) {
+              // Update character and background stores based on equipped items in database
+              const equippedCharacter = result.data.find((item: any) => 
+                item.item_type === 'character' && item.equipped
+              );
+              const equippedBackground = result.data.find((item: any) => 
+                item.item_type === 'background' && item.equipped
+              );
+              
+              if (equippedCharacter) {
+                setEquippedCharacter(equippedCharacter.item_id);
+                console.log('GameDashboard: Synced equipped character to:', equippedCharacter.item_id);
+              }
+              if (equippedBackground) {
+                setEquippedBackground(equippedBackground.item_id);
+                console.log('GameDashboard: Synced equipped background to:', equippedBackground.item_id);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error syncing equipped items:', error);
+        }
+      };
+
+      syncEquippedItems();
+    }
+  }, [player, isLoading, setEquippedCharacter, setEquippedBackground]);
 
   // Debug logging for focus button visibility
   useEffect(() => {
@@ -274,7 +417,9 @@ export function GameDashboard() {
     setQuoteTriggerCount(prev => prev + 1);
   };
 
-  if (!player || isLoading) {
+  // Only show loading screen if we don't have player data
+  // Don't show loading screen during active focus sessions to prevent interruption
+  if (!player) {
     return (
       <div className="min-h-screen relative overflow-hidden">
         {/* Background Scene */}

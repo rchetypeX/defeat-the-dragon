@@ -24,6 +24,20 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     }
   }
   
+  // Check if we have a Base App user in localStorage
+  if (!token && typeof window !== 'undefined') {
+    const baseAppUserStr = localStorage.getItem('baseAppUser');
+    if (baseAppUserStr) {
+      try {
+        const baseAppUser = JSON.parse(baseAppUserStr);
+        token = `baseapp:${JSON.stringify(baseAppUser)}`;
+        console.log('SyncService: Found Base App user token');
+      } catch (e) {
+        console.error('SyncService: Error parsing Base App user:', e);
+      }
+    }
+  }
+  
   // If no wallet token, try to get Supabase session
   if (!token && typeof window !== 'undefined') {
     const { data: { session } } = await supabase.auth.getSession();
@@ -36,7 +50,7 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   }
 
   console.log('SyncService: Token available:', !!token);
-  console.log('SyncService: Token type:', token ? (token.startsWith('wallet:') ? 'wallet' : 'supabase') : 'none');
+  console.log('SyncService: Token type:', token ? (token.startsWith('wallet:') ? 'wallet' : token.startsWith('baseapp:') ? 'baseapp' : 'supabase') : 'none');
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -45,10 +59,10 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   
   if (token) {
     // For Supabase tokens, use 'Bearer' prefix
-    if (!token.startsWith('wallet:')) {
+    if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
       headers['Authorization'] = `Bearer ${token}`;
     } else {
-      // For wallet tokens, use the custom format
+      // For wallet and Base App tokens, use the custom format
       headers['Authorization'] = token;
     }
   }

@@ -40,6 +40,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   };
 
+  // Check for Base App user in localStorage
+  const checkBaseAppUser = () => {
+    const baseAppUserStr = localStorage.getItem('baseAppUser');
+    if (baseAppUserStr) {
+      try {
+        const baseAppUser = JSON.parse(baseAppUserStr);
+        console.log('AuthContext: Found Base App user in localStorage:', baseAppUser);
+        return baseAppUser;
+      } catch (error) {
+        console.error('Error parsing Base App user data:', error);
+        localStorage.removeItem('baseAppUser');
+        return null;
+      }
+    }
+    return null;
+  };
+
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -82,9 +99,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error('Failed to load player data for wallet user:', error);
           }
         } else {
-          console.log('AuthContext: No wallet user found in localStorage');
-          setUser(null);
-          setGameUser(null);
+          // Check for Base App user
+          const baseAppUser = checkBaseAppUser();
+          if (baseAppUser) {
+            setUser(baseAppUser);
+            setGameUser({
+              id: baseAppUser.id,
+              email: baseAppUser.email,
+            });
+            // Load player data for Base App user
+            try {
+              const playerData = await getPlayerData();
+              if (playerData) {
+                useGameStore.getState().setPlayer(playerData);
+                console.log('AuthContext: Successfully loaded player data for Base App user');
+              }
+            } catch (error) {
+              console.error('Failed to load player data for Base App user:', error);
+            }
+          } else {
+            console.log('AuthContext: No wallet or Base App user found in localStorage');
+            setUser(null);
+            setGameUser(null);
+          }
         }
       }
     });
@@ -133,10 +170,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.error('Failed to load player data for wallet user after Supabase logout:', error);
           }
         } else {
-          console.log('AuthContext: No wallet user found after Supabase logout');
-          setUser(null);
-          setGameUser(null);
-          resetGame();
+          // Check for Base App user
+          const baseAppUser = checkBaseAppUser();
+          if (baseAppUser) {
+            setUser(baseAppUser);
+            setGameUser({
+              id: baseAppUser.id,
+              email: baseAppUser.email,
+            });
+            // Load player data for Base App user
+            try {
+              const playerData = await getPlayerData();
+              if (playerData) {
+                useGameStore.getState().setPlayer(playerData);
+                console.log('AuthContext: Successfully loaded player data for Base App user after Supabase logout');
+              }
+            } catch (error) {
+              console.error('Failed to load player data for Base App user after Supabase logout:', error);
+            }
+          } else {
+            console.log('AuthContext: No wallet or Base App user found after Supabase logout');
+            setUser(null);
+            setGameUser(null);
+            resetGame();
+          }
         }
       }
     });

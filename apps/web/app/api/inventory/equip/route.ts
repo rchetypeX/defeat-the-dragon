@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
     if (user) {
       // Standard Supabase auth user
       userId = user.id;
+      console.log('Equip: Found Supabase user from session:', userId);
     } else {
       // Check if this is a wallet user by looking for wallet address in headers or cookies
       const walletUser = cookieStore.get('wallet-user');
@@ -59,18 +60,44 @@ export async function POST(request: NextRequest) {
       // Also check for wallet user in request headers (for API calls)
       if (!userId) {
         const authHeader = request.headers.get('authorization');
-        if (authHeader && authHeader.startsWith('Bearer wallet:')) {
-          try {
-            const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
-            userId = walletData.id;
-          } catch (e) {
-            console.error('Error parsing wallet user from header:', e);
+        if (authHeader) {
+          if (authHeader.startsWith('Bearer wallet:')) {
+            try {
+              const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
+              userId = walletData.id;
+            } catch (e) {
+              console.error('Error parsing wallet user from header:', e);
+            }
+          } else if (authHeader.startsWith('wallet:')) {
+            try {
+              const walletData = JSON.parse(authHeader.substring(7)); // Remove 'wallet:'
+              userId = walletData.id;
+            } catch (e) {
+              console.error('Error parsing wallet user from header:', e);
+            }
+          } else if (authHeader.startsWith('Bearer baseapp:')) {
+            try {
+              const baseAppData = JSON.parse(authHeader.substring(14)); // Remove 'Bearer baseapp:'
+              userId = baseAppData.id;
+              console.log('Equip: Found Base App user from header:', userId);
+            } catch (e) {
+              console.error('Error parsing Base App user from header:', e);
+            }
+          } else if (authHeader.startsWith('baseapp:')) {
+            try {
+              const baseAppData = JSON.parse(authHeader.substring(8)); // Remove 'baseapp:'
+              userId = baseAppData.id;
+              console.log('Equip: Found Base App user from header:', userId);
+            } catch (e) {
+              console.error('Error parsing Base App user from header:', e);
+            }
           }
         }
       }
     }
     
     if (!userId) {
+      console.log('Equip: No user found, returning 401');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

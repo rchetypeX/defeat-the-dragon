@@ -102,6 +102,23 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
         console.log('Inventory loaded:', result.data);
         if (result.data) {
           setUserInventory(result.data);
+          
+          // Update character and background stores based on equipped items in database
+          const equippedCharacter = result.data.find((item: DatabaseInventoryItem) => 
+            item.item_type === 'character' && item.equipped
+          );
+          const equippedBackground = result.data.find((item: DatabaseInventoryItem) => 
+            item.item_type === 'background' && item.equipped
+          );
+          
+          if (equippedCharacter) {
+            setEquippedCharacter(equippedCharacter.item_id);
+            console.log('InventoryPopup: Updated equipped character to:', equippedCharacter.item_id);
+          }
+          if (equippedBackground) {
+            setEquippedBackground(equippedBackground.item_id);
+            console.log('InventoryPopup: Updated equipped background to:', equippedBackground.item_id);
+          }
         } else {
           setUserInventory([]);
         }
