@@ -20,6 +20,18 @@ async function getAuthToken(): Promise<string | null> {
     }
   }
   
+  // Check if we have a Base App user in localStorage
+  const baseAppUserStr = localStorage.getItem('baseAppUser');
+  if (baseAppUserStr) {
+    try {
+      const baseAppUser = JSON.parse(baseAppUserStr);
+      console.log('API: Found Base App user, using baseapp auth');
+      return `baseapp:${JSON.stringify(baseAppUser)}`;
+    } catch (e) {
+      console.error('API: Error parsing Base App user:', e);
+    }
+  }
+  
   // Check for Supabase session
   const { data: { session } } = await supabase.auth.getSession();
   if (session?.access_token) {
@@ -57,10 +69,10 @@ async function apiRequest<T>(
     
     if (token) {
       // For Supabase tokens, use 'Bearer' prefix
-      if (!token.startsWith('wallet:')) {
+      if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
         headers['Authorization'] = `Bearer ${token}`;
       } else {
-        // For wallet tokens, use the custom format
+        // For wallet and Base App tokens, use the custom format
         headers['Authorization'] = token;
       }
     }
@@ -195,6 +207,20 @@ export async function getPlayerData() {
             console.log('API: Found wallet user, using wallet auth');
           } catch (e) {
             console.error('API: Error parsing wallet user from localStorage:', e);
+          }
+        }
+        
+        // Check if this is a Base App user by looking for baseAppUser data in localStorage
+        if (!userId) {
+          const baseAppUserStr = localStorage.getItem('baseAppUser');
+          if (baseAppUserStr) {
+            try {
+              const baseAppUser = JSON.parse(baseAppUserStr);
+              userId = baseAppUser.id;
+              console.log('API: Found Base App user, using baseapp auth');
+            } catch (e) {
+              console.error('API: Error parsing Base App user from localStorage:', e);
+            }
           }
         }
       }

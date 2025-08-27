@@ -103,7 +103,20 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         }
       }
       
-      // If no wallet token, try to get Supabase session
+      // Check if we have a Base App user in localStorage
+      if (!token) {
+        const baseAppUserStr = localStorage.getItem('baseAppUser');
+        if (baseAppUserStr) {
+          try {
+            const baseAppUser = JSON.parse(baseAppUserStr);
+            token = `baseapp:${JSON.stringify(baseAppUser)}`;
+          } catch (e) {
+            console.error('Error parsing Base App user:', e);
+          }
+        }
+      }
+      
+      // If no wallet or Base App token, try to get Supabase session
       if (!token) {
         const { supabase } = await import('../../lib/supabase');
         const { data: { session } } = await supabase.auth.getSession();
@@ -117,7 +130,13 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       };
       
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        // For Supabase tokens, use 'Bearer' prefix
+        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+          headers['Authorization'] = `Bearer ${token}`;
+        } else {
+          // For wallet and Base App tokens, use the custom format
+          headers['Authorization'] = token;
+        }
       }
       
       // Load both character and background items
@@ -178,7 +197,20 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         }
       }
       
-      // If no wallet token, try to get Supabase session
+      // Check if we have a Base App user in localStorage
+      if (!token) {
+        const baseAppUserStr = localStorage.getItem('baseAppUser');
+        if (baseAppUserStr) {
+          try {
+            const baseAppUser = JSON.parse(baseAppUserStr);
+            token = `baseapp:${JSON.stringify(baseAppUser)}`;
+          } catch (e) {
+            console.error('Error parsing Base App user:', e);
+          }
+        }
+      }
+      
+      // If no wallet or Base App token, try to get Supabase session
       if (!token) {
         const { supabase } = await import('../../lib/supabase');
         const { data: { session } } = await supabase.auth.getSession();
@@ -192,7 +224,13 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       };
       
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        // For Supabase tokens, use 'Bearer' prefix
+        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+          headers['Authorization'] = `Bearer ${token}`;
+        } else {
+          // For wallet and Base App tokens, use the custom format
+          headers['Authorization'] = token;
+        }
       }
       
       const response = await fetch('/api/inventory', { headers, credentials: 'include' });
@@ -255,7 +293,20 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         }
       }
       
-      // If no wallet token, try to get Supabase session
+      // Check if we have a Base App user in localStorage
+      if (!token) {
+        const baseAppUserStr = localStorage.getItem('baseAppUser');
+        if (baseAppUserStr) {
+          try {
+            const baseAppUser = JSON.parse(baseAppUserStr);
+            token = `baseapp:${JSON.stringify(baseAppUser)}`;
+          } catch (e) {
+            console.error('Error parsing Base App user:', e);
+          }
+        }
+      }
+      
+      // If no wallet or Base App token, try to get Supabase session
       if (!token) {
         const { supabase } = await import('../../lib/supabase');
         const { data: { session } } = await supabase.auth.getSession();
@@ -269,7 +320,13 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       };
       
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        // For Supabase tokens, use 'Bearer' prefix
+        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+          headers['Authorization'] = `Bearer ${token}`;
+        } else {
+          // For wallet and Base App tokens, use the custom format
+          headers['Authorization'] = token;
+        }
       }
 
       const purchaseData = {

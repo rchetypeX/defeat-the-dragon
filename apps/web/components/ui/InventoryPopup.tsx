@@ -78,7 +78,20 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
         }
       }
       
-      // If no wallet token, try to get Supabase session
+      // Check if we have a Base App user in localStorage
+      if (!token) {
+        const baseAppUserStr = localStorage.getItem('baseAppUser');
+        if (baseAppUserStr) {
+          try {
+            const baseAppUser = JSON.parse(baseAppUserStr);
+            token = `baseapp:${JSON.stringify(baseAppUser)}`;
+          } catch (e) {
+            console.error('Error parsing Base App user:', e);
+          }
+        }
+      }
+      
+      // If no wallet or Base App token, try to get Supabase session
       if (!token) {
         const { supabase } = await import('../../lib/supabase');
         const { data: { session } } = await supabase.auth.getSession();
@@ -92,7 +105,13 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
       };
       
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        // For Supabase tokens, use 'Bearer' prefix
+        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+          headers['Authorization'] = `Bearer ${token}`;
+        } else {
+          // For wallet and Base App tokens, use the custom format
+          headers['Authorization'] = token;
+        }
       }
       
       const response = await fetch('/api/inventory', { headers, credentials: 'include' });
@@ -184,6 +203,8 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
   const handleEquip = async (item: InventoryItem) => {
     if (!item.isOwned) return;
     
+    console.log('InventoryPopup: Attempting to equip item:', item);
+    
     try {
       // Get auth token for the request
       let token: string | null = null;
@@ -199,7 +220,20 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
         }
       }
       
-      // If no wallet token, try to get Supabase session
+      // Check if we have a Base App user in localStorage
+      if (!token) {
+        const baseAppUserStr = localStorage.getItem('baseAppUser');
+        if (baseAppUserStr) {
+          try {
+            const baseAppUser = JSON.parse(baseAppUserStr);
+            token = `baseapp:${JSON.stringify(baseAppUser)}`;
+          } catch (e) {
+            console.error('Error parsing Base App user:', e);
+          }
+        }
+      }
+      
+      // If no wallet or Base App token, try to get Supabase session
       if (!token) {
         const { supabase } = await import('../../lib/supabase');
         const { data: { session } } = await supabase.auth.getSession();
@@ -213,8 +247,20 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
       };
       
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        // For Supabase tokens, use 'Bearer' prefix
+        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+          headers['Authorization'] = `Bearer ${token}`;
+        } else {
+          // For wallet and Base App tokens, use the custom format
+          headers['Authorization'] = token;
+        }
       }
+
+      console.log('InventoryPopup: Sending equip request with payload:', {
+        itemId: item.id,
+        itemType: item.category
+      });
+      console.log('InventoryPopup: Request headers:', headers);
 
       const response = await fetch('/api/inventory/equip', {
         method: 'POST',
@@ -225,6 +271,8 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
           itemType: item.category
         })
       });
+
+      console.log('InventoryPopup: Equip response status:', response.status);
 
       if (response.ok) {
         // Update local state
@@ -245,7 +293,8 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
         console.log(`Equipped ${item.name} for ${item.category}`);
       } else {
         const errorData = await response.json();
-        console.error('Failed to equip item:', errorData);
+        console.error('InventoryPopup: Failed to equip item:', errorData);
+        console.error('InventoryPopup: Response status:', response.status);
         setError('Failed to equip item');
       }
     } catch (error) {
