@@ -3,9 +3,14 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
+  console.log('=== ALPHA CODE VERIFICATION START ===');
+  console.log('Request URL:', request.url);
+  console.log('Request method:', request.method);
+  
   try {
-    console.log('=== ALPHA CODE VERIFICATION START ===');
-    const { code } = await request.json();
+    const body = await request.json();
+    console.log('Request body:', body);
+    const { code } = body;
     
     console.log('Received code:', code);
     
