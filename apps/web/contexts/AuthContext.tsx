@@ -20,12 +20,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<SupabaseSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasCheckedDatabase, setHasCheckedDatabase] = useState(false);
   
   const { setUser: setGameUser, resetGame } = useGameStore();
 
   // Database version check - force clear local storage if database was reset
   const checkDatabaseVersion = async () => {
     try {
+      // Only check if we have cached user data
+      const hasCachedData = localStorage.getItem('walletUser') || 
+                           localStorage.getItem('baseAppUser') || 
+                           localStorage.getItem('defeat-the-dragon-storage');
+      
+      if (!hasCachedData) {
+        // No cached data, no need to check database version
+        return true;
+      }
+
       // Get the current database version from a simple API call
       const response = await fetch('/api/bootstrap', {
         method: 'GET',
@@ -59,7 +70,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return true;
     } catch (error) {
       console.error('Error checking database version:', error);
-      return true; // Don't clear on network errors
+      // On network errors, don't clear storage - just continue normally
+      return true;
     }
   };
 
@@ -98,14 +110,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Check database version first
-    checkDatabaseVersion().then(async (databaseValid) => {
-      if (!databaseValid) {
-        return; // App will reload after clearing storage
-      }
-      
-      // Get initial session
-      supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // Check database version first (only once)
+    if (!hasCheckedDatabase) {
+      setHasCheckedDatabase(true);
+      checkDatabaseVersion().then(async (databaseValid) => {
+        if (!databaseValid) {
+          return; // App will reload after clearing storage
+        }
+        
+        // Continue with normal auth flow
+        initializeAuth();
+      });
+      return;
+    }
+    
+    // Get initial session
+    initializeAuth();
+  }, [hasCheckedDatabase, setGameUser, resetGame]);
+
+  const initializeAuth = () => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
         setSession(session);
         setLoading(false);
         
@@ -246,7 +270,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [setGameUser, resetGame]);
+  };
 
   const signIn = async (email: string, password: string) => {
     try {
