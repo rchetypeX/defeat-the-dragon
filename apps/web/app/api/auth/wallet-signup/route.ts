@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       try {
         // We need to get the original alpha code that was verified
         // For now, we'll use a direct database update since we don't have the original code
-        const { data: finalizeResult, error: finalizeError } = await supabase
+        const { error: finalizeError } = await supabase
           .from('alpha_codes')
           .update({
             used: true,
@@ -43,8 +43,20 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        if (!finalizeResult || finalizeResult.length === 0) {
-          console.error('No alpha code found to finalize with token:', reservedToken);
+        // Check if any rows were actually updated by querying the count
+        const { count, error: countError } = await supabase
+          .from('alpha_codes')
+          .select('*', { count: 'exact', head: true })
+          .eq('reserved_token', reservedToken)
+          .eq('used', false)
+          .gte('reserved_until', new Date().toISOString());
+
+        if (countError) {
+          console.error('Error checking alpha code count:', countError);
+        }
+
+        if (count && count > 0) {
+          console.error('Alpha code was not properly finalized - still exists with token:', reservedToken);
           return NextResponse.json(
             { error: 'Invalid or expired alpha code' },
             { status: 400 }
