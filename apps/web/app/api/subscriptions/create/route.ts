@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         user_id: userId,
         subscription_type: subscriptionType,
         status: 'active',
-        provider: 'ethereum',
+        provider: 'usdc',
         external_id: transactionHash,
         started_at: new Date().toISOString(),
         expires_at: expiresAt.toISOString(),

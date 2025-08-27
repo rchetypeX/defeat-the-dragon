@@ -291,6 +291,7 @@ export interface Database {
           subscription_type: string
           price_eth: number
           price_usd: number
+          price_usdc: number
           duration_days: number
           is_active: boolean
           description: string | null
@@ -301,8 +302,9 @@ export interface Database {
         Insert: {
           id?: string
           subscription_type: string
-          price_eth: number
+          price_eth?: number
           price_usd?: number
+          price_usdc: number
           duration_days: number
           is_active?: boolean
           description?: string | null
@@ -315,6 +317,7 @@ export interface Database {
           subscription_type?: string
           price_eth?: number
           price_usd?: number
+          price_usdc?: number
           duration_days?: number
           is_active?: boolean
           description?: string | null

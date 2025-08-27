@@ -1,7 +1,11 @@
 # Subscription System Setup Guide
 
 ## Overview
-The subscription system allows users to pay 0.0001 ETH on Base Network to get an "Inspiration Boon" subscription for 30 days. This enables them to earn Sparks from successful focus sessions.
+The subscription system allows users to pay USDC on Base Network to get an "Inspiration Boon" subscription. This enables them to earn Sparks from successful focus sessions.
+
+## Pricing
+- **Monthly**: $4.50 USDC (30 days)
+- **Annual**: $45.00 USDC (365 days) - Save 2 months!
 
 ## Setup Instructions
 
@@ -53,8 +57,9 @@ CREATE TRIGGER update_players_timestamp_trigger
 #### Subscription Popup
 - **Location**: `apps/web/components/ui/SubscriptionPopup.tsx`
 - **Features**:
-  - ETH payment on Base Network
+  - USDC payment on Base Network
   - Automatic network switching
+  - USDC balance checking
   - Transaction confirmation
   - BaseScan link for verification
   - Error handling
@@ -85,7 +90,7 @@ CREATE TRIGGER update_players_timestamp_trigger
 2. **Subscription popup opens** with payment details
 3. **User connects wallet** (MetaMask or similar)
 4. **System switches to Base Network** automatically
-5. **User confirms payment** of 0.0001 ETH
+5. **User confirms payment** of USDC
 6. **Transaction is processed** on Base Network
 7. **System waits for confirmation** (2-second intervals)
 8. **Subscription is created** in Supabase
@@ -95,7 +100,7 @@ CREATE TRIGGER update_players_timestamp_trigger
 ### 5. Testing
 
 #### Test Wallet Setup
-1. Get some test ETH from Base Network faucet
+1. Get some test USDC from Base Network faucet or bridge
 2. Set up MetaMask with Base Network
 3. Use test wallet for development
 

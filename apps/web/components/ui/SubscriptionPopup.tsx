@@ -2,6 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { 
+  transferUSDC, 
+  checkUSDCBalance, 
+  waitForUSDCTransaction, 
+  formatUSDC,
+  USDC_CONTRACT_ADDRESS 
+} from '../../lib/usdcPayment';
 
 interface SubscriptionPopupProps {
   isOpen: boolean;
@@ -16,6 +23,7 @@ interface SubscriptionPricing {
   subscription_type: string;
   price_eth: number;
   price_usd: number;
+  price_usdc: number;
   duration_days: number;
   description: string;
   benefits: string[];
@@ -33,6 +41,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [pricing, setPricing] = useState<Record<string, SubscriptionPricing>>({});
   const [isLoadingPricing, setIsLoadingPricing] = useState(false);
+  const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
   const { user } = useAuth();
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -67,18 +76,30 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         if (accounts.length > 0) {
           setIsWalletConnected(true);
           setWalletAddress(accounts[0]);
+          
+          // Check USDC balance
+          try {
+            const balanceCheck = await checkUSDCBalance(accounts[0], 0);
+            setUsdcBalance(balanceCheck.currentBalance);
+          } catch (error) {
+            console.error('Error checking USDC balance:', error);
+            setUsdcBalance(null);
+          }
         } else {
           setIsWalletConnected(false);
           setWalletAddress(null);
+          setUsdcBalance(null);
         }
       } catch (error) {
         console.error('Error checking wallet connection:', error);
         setIsWalletConnected(false);
         setWalletAddress(null);
+        setUsdcBalance(null);
       }
     } else {
       setIsWalletConnected(false);
       setWalletAddress(null);
+      setUsdcBalance(null);
     }
   };
 
@@ -270,44 +291,24 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         return;
       }
 
-      // Convert ETH to Wei (1 ETH = 10^18 Wei)
-      const price = currentPricing.price_eth.toString();
-      const valueInWei = BigInt(Math.floor(parseFloat(price) * 10**18));
-      const valueInHex = '0x' + valueInWei.toString(16);
+      // Check USDC balance
+      const balanceCheck = await checkUSDCBalance(account, currentPricing.price_usdc);
+      if (!balanceCheck.hasBalance) {
+        setError(`Insufficient USDC balance. You have ${formatUSDC(balanceCheck.currentBalance)} but need ${formatUSDC(balanceCheck.requiredAmount)}.`);
+        return;
+      }
 
-      // Get current gas price
-      const gasPrice = await window.ethereum.request({
-        method: 'eth_gasPrice',
-      });
-
-      // Estimate gas for the transaction
-      const gasEstimate = await window.ethereum.request({
-        method: 'eth_estimateGas',
-        params: [{
-          from: account,
-          to: MERCHANT_WALLET,
-          value: valueInHex,
-        }],
-      });
-
-      // Send transaction
-      const transactionParameters = {
+      // Transfer USDC
+      const txHash = await transferUSDC({
         to: MERCHANT_WALLET,
+        amount: currentPricing.price_usdc,
         from: account,
-        value: valueInHex,
-        gas: '0x' + Math.floor(Number(gasEstimate) * 1.1).toString(16), // Add 10% buffer
-        gasPrice: gasPrice,
-      };
-
-      const txHash = await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [transactionParameters],
       });
 
       setTransactionHash(txHash);
 
       // Wait for transaction confirmation
-      const receipt = await waitForTransaction(txHash);
+      const receipt = await waitForUSDCTransaction(txHash);
       
       if (receipt.status === '0x1') {
         // Transaction successful, update user subscription in Supabase
@@ -423,12 +424,20 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
           <>
             {/* Connected Wallet Info */}
             <div className="bg-[#1a1a2e] border-2 border-[#8B4513] rounded-lg p-3 mb-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-2">
                 <span className="text-[#fbbf24] text-sm font-medium">Connected Wallet:</span>
                 <span className="text-white text-xs font-mono">
                   {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
                 </span>
               </div>
+              {usdcBalance !== null && (
+                <div className="flex items-center justify-between">
+                  <span className="text-[#fbbf24] text-sm font-medium">USDC Balance:</span>
+                  <span className="text-white text-xs font-mono">
+                    {formatUSDC(usdcBalance)}
+                  </span>
+                </div>
+              )}
             </div>
 
         {/* Subscription Type Toggle */}
@@ -478,7 +487,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
                 <div className="flex justify-between">
                   <span className="text-[#8B4513] font-bold">Price:</span>
                   <span className="text-[#654321] font-bold">
-                    {pricing[subscriptionType].price_eth} ETH
+                    {formatUSDC(pricing[subscriptionType].price_usdc)} USDC
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -560,7 +569,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         {/* Network Info */}
         <div className="mt-4 text-center">
           <p className="text-xs text-[#654321]">
-            Make sure you're connected to Base Network
+            Make sure you're connected to Base Network and have USDC
           </p>
         </div>
           </>

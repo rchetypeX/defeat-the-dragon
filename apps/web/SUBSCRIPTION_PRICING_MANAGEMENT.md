@@ -12,8 +12,9 @@ The subscription pricing system allows you to **centrally manage pricing** for a
 |--------|------|-------------|
 | `id` | UUID | Primary key |
 | `subscription_type` | VARCHAR(50) | Unique identifier ('monthly', 'annual') |
-| `price_eth` | DECIMAL(10,6) | Price in ETH (e.g., 0.002) |
+| `price_eth` | DECIMAL(10,6) | Price in ETH (deprecated - use price_usdc) |
 | `price_usd` | DECIMAL(10,2) | Price in USD for reference |
+| `price_usdc` | DECIMAL(10,2) | Price in USDC (e.g., 4.50) |
 | `duration_days` | INTEGER | Duration in days (30 for monthly, 365 for annual) |
 | `is_active` | BOOLEAN | Whether this pricing is active |
 | `description` | TEXT | Optional description |
@@ -23,10 +24,10 @@ The subscription pricing system allows you to **centrally manage pricing** for a
 
 ### Current Pricing (Initial Setup)
 
-| Subscription Type | Price (ETH) | Price (USD) | Duration | Status |
-|-------------------|-------------|-------------|----------|--------|
-| Monthly | 0.002 | $4.50 | 30 days | Active |
-| Annual | 0.02 | $45.00 | 365 days | Active |
+| Subscription Type | Price (USDC) | Price (USD) | Duration | Status |
+|-------------------|--------------|-------------|----------|--------|
+| Monthly | $4.50 | $4.50 | 30 days | Active |
+| Annual | $45.00 | $45.00 | 365 days | Active |
 
 ## How to Update Pricing
 
@@ -45,8 +46,8 @@ The subscription pricing system allows you to **centrally manage pricing** for a
 3. **Example: Increase Monthly Price**
    ```sql
    UPDATE subscription_pricing_master 
-   SET price_eth = 0.003, 
-       price_usd = 6.75,
+   SET price_usdc = 5.99, 
+       price_usd = 5.99,
        updated_at = NOW()
    WHERE subscription_type = 'monthly';
    ```
