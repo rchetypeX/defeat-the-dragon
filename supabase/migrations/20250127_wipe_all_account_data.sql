@@ -5,7 +5,6 @@
 -- First, let's see what we're about to delete
 SELECT 
   'Current Data Counts:' as info,
-  (SELECT COUNT(*) FROM auth.users) as total_auth_users,
   (SELECT COUNT(*) FROM players) as total_players,
   (SELECT COUNT(*) FROM sessions) as total_sessions,
   (SELECT COUNT(*) FROM user_inventory) as total_inventory_items,
@@ -51,9 +50,8 @@ END $$;
 -- 7. Clear all player data
 DELETE FROM players WHERE user_id IS NOT NULL;
 
--- 8. Clear authentication users (this will cascade to all related data)
--- Note: This requires superuser privileges and will delete ALL auth users
-DELETE FROM auth.users WHERE id IS NOT NULL;
+-- Note: auth.users requires superuser privileges and cannot be cleared via this migration
+-- To clear auth users, go to Supabase Dashboard → Authentication → Users and delete manually
 
 -- Re-enable user-created triggers
 DO $$
@@ -67,7 +65,6 @@ END $$;
 -- Verify the cleanup
 SELECT 
   'After Cleanup Data Counts:' as info,
-  (SELECT COUNT(*) FROM auth.users) as remaining_auth_users,
   (SELECT COUNT(*) FROM players) as remaining_players,
   (SELECT COUNT(*) FROM sessions) as remaining_sessions,
   (SELECT COUNT(*) FROM user_inventory) as remaining_inventory_items,
