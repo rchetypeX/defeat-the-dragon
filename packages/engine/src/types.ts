@@ -53,9 +53,7 @@ export const SessionSchema = z.object({
   started_at: z.string().datetime(),
   ended_at: z.string().datetime().optional(),
   outcome: SessionOutcome.optional(),
-  disturbed_seconds: z.number().int().min(0).default(0),
-  dungeon_floor: z.number().int().min(0).default(0),
-  boss_tier: BossTier.default('none')
+  // disturbed_seconds, dungeon_floor, boss_tier removed as part of database cleanup
 });
 
 export const InventorySchema = z.object({
@@ -121,8 +119,8 @@ export const StartSessionResponse = z.object({
 export const CompleteSessionRequest = z.object({
   session_id: z.string().uuid(),
   actual_duration_minutes: z.number().int().min(0),
-  disturbed_seconds: z.number().int().min(0),
   outcome: SessionOutcome
+  // disturbed_seconds removed as part of database cleanup
 });
 
 export const CompleteSessionResponse = z.object({

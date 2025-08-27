@@ -177,10 +177,8 @@ export const useGameStore = create<GameState & GameActions>()(
               id: response.session_id,
               user_id: get().user.id!,
               action,
-              started_at: new Date().toISOString(),
-              disturbed_seconds: 0,
-              dungeon_floor: 0,
-              boss_tier: 'none'
+              started_at: new Date().toISOString()
+              // disturbed_seconds, dungeon_floor, boss_tier removed as part of database cleanup
             };
             
             console.log('Store: Created session object:', session);
@@ -206,10 +204,8 @@ export const useGameStore = create<GameState & GameActions>()(
               id: 'mock-session-id',
               user_id: 'mock-user-id',
               action,
-              started_at: new Date().toISOString(),
-              disturbed_seconds: 0,
-              dungeon_floor: 0,
-              boss_tier: 'none'
+              started_at: new Date().toISOString()
+              // disturbed_seconds, dungeon_floor, boss_tier removed as part of database cleanup
             };
             
             console.log('Store: Using mock session:', mockSession);
@@ -256,8 +252,8 @@ export const useGameStore = create<GameState & GameActions>()(
             const response = await completeSession({
               session_id: state.currentSession.id,
               actual_duration_minutes: actualDurationMinutes,
-              disturbed_seconds: state.sessionProgress.disturbedSeconds,
               outcome
+              // disturbed_seconds removed as part of database cleanup
             });
             
             console.log('Session completion response:', response);

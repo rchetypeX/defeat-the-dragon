@@ -71,7 +71,8 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json();
-    const { op_id, started_at, ended_at, action, disturbed_seconds, context } = body;
+    const { op_id, started_at, ended_at, action, context } = body;
+    // disturbed_seconds removed as part of database cleanup
 
     // Validate required fields
     if (!op_id || !started_at || !ended_at || !action) {

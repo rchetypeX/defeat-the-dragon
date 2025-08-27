@@ -557,31 +557,8 @@ export async function POST(request: NextRequest) {
       results.purchases = purchaseResults;
     }
 
-    // Update achievements if provided
-    if (achievements && Array.isArray(achievements)) {
-      const achievementUpdates = achievements.map(async (achievement) => {
-        const { data, error } = await supabase
-          .from('user_achievements')
-          .upsert({
-            user_id: userId,
-            achievement_id: achievement.achievement_id,
-            progress: achievement.progress,
-            completed: achievement.completed,
-            completed_at: achievement.completed_at
-          })
-          .select()
-          .single();
-
-        return { 
-          achievement_id: achievement.achievement_id, 
-          success: !error, 
-          error: error?.message 
-        };
-      });
-
-      const achievementResults = await Promise.all(achievementUpdates);
-      results.achievements = achievementResults;
-    }
+    // Note: user_achievements table has been removed as part of database cleanup
+    // Achievement functionality can be re-added when the achievement system is implemented
 
     return NextResponse.json({
       success: true,

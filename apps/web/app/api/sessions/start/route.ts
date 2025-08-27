@@ -129,9 +129,7 @@ export async function POST(request: NextRequest) {
         user_id: 'mock-user-id',
         action,
         started_at: startedAt.toISOString(),
-        disturbed_seconds: 0,
-        dungeon_floor: 0,
-        boss_tier: 'none'
+        // disturbed_seconds, dungeon_floor, boss_tier removed as part of database cleanup
       };
       sessionError = null;
       console.log('API: Created mock session');
@@ -143,9 +141,7 @@ export async function POST(request: NextRequest) {
           user_id: userId,
           action,
           started_at: startedAt.toISOString(),
-          disturbed_seconds: 0,
-          dungeon_floor: 0,
-          boss_tier: 'none'
+                  // disturbed_seconds, dungeon_floor, boss_tier removed as part of database cleanup
         })
         .select()
         .single();

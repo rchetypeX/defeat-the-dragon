@@ -248,88 +248,8 @@ export interface Database {
           outcome?: 'success' | 'fail' | 'early_stop' | null
         }
       }
-      subscriptions: {
-        Row: {
-          id: string
-          user_id: string
-          subscription_type: string
-          status: string
-          provider: string | null
-          external_id: string | null
-          started_at: string
-          expires_at: string | null
-          user_tag: string | null
-          auto_tag_enabled: boolean
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          subscription_type: string
-          status?: string
-          provider?: string | null
-          external_id?: string | null
-          started_at?: string
-          expires_at?: string | null
-          user_tag?: string | null
-          auto_tag_enabled?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          subscription_type?: string
-          status?: string
-          provider?: string | null
-          external_id?: string | null
-          started_at?: string
-          expires_at?: string | null
-          user_tag?: string | null
-          auto_tag_enabled?: boolean
-          created_at?: string
-        }
-      }
-      shop_items: {
-        Row: {
-          id: string
-          sku: string
-          name: string
-          price: number
-          price_sale: number
-          type: string
-          class_lock: string | null
-          is_active: boolean
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          sku: string
-          name: string
-          price: number
-          price_sale?: number
-          type: string
-          class_lock?: string | null
-          is_active?: boolean
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          sku?: string
-          name?: string
-          price?: number
-          price_sale?: number
-          type?: string
-          class_lock?: string | null
-          is_active?: boolean
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
+      // subscriptions table removed - use user_subscriptions instead
+      // shop_items table removed - use shop_items_master instead
       level_progression_master: {
         Row: {
           id: string
@@ -522,40 +442,10 @@ export interface Database {
           purchased_at?: string
         }
       }
-      user_achievements: {
-        Row: {
-          id: string
-          user_id: string
-          achievement_id: string
-          progress: number
-          completed: boolean
-          completed_at: string | null
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          achievement_id: string
-          progress?: number
-          completed?: boolean
-          completed_at?: string | null
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          achievement_id?: string
-          progress?: number
-          completed?: boolean
-          completed_at?: string | null
-        }
-      }
+      // user_achievements table removed - can be re-added when achievement system is implemented
     }
     Views: {
-      alpha_codes_summary: {
-        Row: {
-          used: boolean | null
-          count: number
-        }
-      }
+      // alpha_codes_summary view removed - can be replaced with direct queries
     }
     Functions: {
       alpha_verify_and_reserve: {
