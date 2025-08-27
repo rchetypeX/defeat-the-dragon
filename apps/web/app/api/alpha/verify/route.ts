@@ -4,9 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== ALPHA CODE VERIFICATION START ===');
     const { code } = await request.json();
     
+    console.log('Received code:', code);
+    
     if (!code || typeof code !== 'string') {
+      console.log('Invalid code format');
       return NextResponse.json(
         { error: 'alpha code invalid' },
         { status: 400 }
@@ -19,6 +23,26 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
+    
+    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log('Service Role Key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    
+    // First, let's check if the alpha_codes table has any data
+    const { data: tableCheck, error: tableError } = await supabase
+      .from('alpha_codes')
+      .select('count')
+      .limit(1);
+    
+    console.log('Table check result:', { tableCheck, tableError });
+    
+    // Get all codes for debugging
+    const { data: allCodes, error: allError } = await supabase
+      .from('alpha_codes')
+      .select('code_hash, used')
+      .limit(5);
+    
+    console.log('All codes in database:', allCodes);
+    console.log('All codes error:', allError);
     
     // Normalize the code (remove spaces, convert to uppercase)
     const normalizedCode = code.replace(/[\s-]/g, '').toUpperCase();
