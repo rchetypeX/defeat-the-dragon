@@ -137,7 +137,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           onChange={handleCodeChange}
           onKeyPress={handleKeyPress}
           placeholder="DTD-XXXX-XXXX"
-          maxLength={12} // Full DTD-XXXX-XXXX format
+          maxLength={13} // Allow for DTD-XXXX-XXXX format (12 chars) + extra space
           className="flex-1 pixel-input text-xs placeholder:text-xs"
           disabled={disabled || isVerifying}
         />
