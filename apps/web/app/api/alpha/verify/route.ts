@@ -1,15 +1,11 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   console.log('=== ALPHA CODE VERIFICATION START ===');
-  console.log('Request URL:', request.url);
-  console.log('Request method:', request.method);
   
   try {
     const body = await request.json();
-    console.log('Request body:', body);
     const { code } = body;
     
     console.log('Received code:', code);
@@ -23,122 +19,53 @@ export async function POST(request: NextRequest) {
     }
 
     // Use service role client for database operations
-    const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     
-    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log('Service Role Key exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    // Clean and normalize the code
+    const cleanCode = code.trim().toUpperCase();
+    console.log('Cleaned code:', cleanCode);
     
-    // First, let's check if the alpha_codes table has any data
-    const { data: tableCheck, error: tableError } = await supabase
+    // Simple: Look for the exact code in the database
+    const { data: alphaCode, error: fetchError } = await supabase
       .from('alpha_codes')
-      .select('count')
-      .limit(1);
+      .select('*')
+      .eq('code_hash', cleanCode)
+      .eq('used', false)
+      .single();
     
-    console.log('Table check result:', { tableCheck, tableError });
-    
-    // Get all codes for debugging
-    const { data: allCodes, error: allError } = await supabase
-      .from('alpha_codes')
-      .select('code_hash, used')
-      .limit(5);
-    
-    console.log('All codes in database:', allCodes);
-    console.log('All codes error:', allError);
-    
-    // Normalize the code (remove spaces, convert to uppercase)
-    const normalizedCode = code.replace(/[\s-]/g, '').toUpperCase();
-    console.log('Alpha code verification attempt:', { originalCode: code, normalizedCode });
-    
-    // Try to find the alpha code - it could be stored as plain text or hashed
-    let alphaCode = null;
-    let fetchError = null;
-    
-         // First try: Look for plain text code (DTD-XXXX-XXXX format)
-     const { data: plainTextCode, error: plainTextError } = await supabase
-       .from('alpha_codes')
-       .select('*')
-       .eq('code_hash', code.toUpperCase()) // Try exact match first
-       .eq('used', false)
-       .single();
-     
-     if (plainTextCode) {
-       alphaCode = plainTextCode;
-       console.log('Found alpha code as plain text');
-     } else {
-       // Second try: Look for code with DTD prefix if not already present
-       const codeWithPrefix = code.toUpperCase().startsWith('DTD') ? code.toUpperCase() : `DTD-${code.toUpperCase()}`;
-       const { data: prefixedCode, error: prefixedError } = await supabase
-         .from('alpha_codes')
-         .select('*')
-         .eq('code_hash', codeWithPrefix)
-         .eq('used', false)
-         .single();
-       
-       if (prefixedCode) {
-         alphaCode = prefixedCode;
-         console.log('Found alpha code with DTD prefix');
-       } else {
-         // Third try: Look for normalized code (DTDXXXX-XXXX format)
-         const { data: normalizedCodeResult, error: normalizedError } = await supabase
-           .from('alpha_codes')
-           .select('*')
-           .eq('code_hash', normalizedCode)
-           .eq('used', false)
-           .single();
-         
-         if (normalizedCodeResult) {
-           alphaCode = normalizedCodeResult;
-           console.log('Found alpha code as normalized text');
-         } else {
-           fetchError = normalizedError;
-           console.log('Alpha code not found in any format');
-         }
-       }
-     }
-
     console.log('Database query result:', { alphaCode, fetchError });
 
     if (fetchError) {
       console.error('Alpha code fetch error:', fetchError);
       return NextResponse.json(
-        { error: `Database error: ${fetchError.message}` },
+        { error: 'alpha code invalid' },
         { status: 400 }
       );
     }
 
     if (!alphaCode) {
-      console.error('Alpha code not found or already used:', normalizedCode);
+      console.error('Alpha code not found or already used:', cleanCode);
       
-      // Let's also check what codes exist in the database for debugging
-      const { data: allCodes, error: debugError } = await supabase
+      // Debug: Show what codes exist
+      const { data: allCodes } = await supabase
         .from('alpha_codes')
         .select('code_hash, used')
-        .limit(10);
+        .limit(5);
       
-      console.log('Debug: First 10 codes in database:', allCodes);
-      console.log('Debug: Looking for code:', code.toUpperCase());
-      console.log('Debug: Looking for normalized code:', normalizedCode);
+      console.log('Available codes in database:', allCodes);
       
       return NextResponse.json(
-        { 
-          error: 'alpha code invalid',
-          debug: {
-            searchedFor: code.toUpperCase(),
-            normalizedSearch: normalizedCode,
-            availableCodes: allCodes?.slice(0, 3) || []
-          }
-        },
+        { error: 'alpha code invalid' },
         { status: 400 }
       );
     }
 
     // Check if code is already reserved
     if (alphaCode.reserved_token && alphaCode.reserved_until && new Date(alphaCode.reserved_until) > new Date()) {
-      console.error('Alpha code is already reserved:', normalizedCode);
+      console.error('Alpha code is already reserved:', cleanCode);
       return NextResponse.json(
         { error: 'alpha code invalid' },
         { status: 400 }
@@ -167,6 +94,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('✅ Alpha code verified and reserved successfully');
     return NextResponse.json({
       reserved_token: reservedToken,
       reserved_until: reservedUntil

@@ -14,34 +14,9 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
   const [lastAttempt, setLastAttempt] = useState(0);
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'verifying' | 'verified' | 'denied' | 'used'>('none');
 
-  const formatCode = useCallback((input: string): string => {
-    // Remove spaces and convert to uppercase, but keep dashes for formatting
-    const cleaned = input.replace(/\s/g, '').toUpperCase();
-    
-    // If it already starts with DTD, don't add another prefix
-    if (cleaned.startsWith('DTD')) {
-      return cleaned;
-    }
-    
-    // Remove any existing dashes and format properly
-    const normalized = cleaned.replace(/-/g, '');
-    
-    // Format as DTD-XXXX-XXXX
-    if (normalized.length >= 8) {
-      // Full format: DTD-XXXX-XXXX
-      return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4, 8)}`;
-    } else if (normalized.length >= 4) {
-      // Partial format: DTD-XXXX-...
-      return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4)}`;
-    } else {
-      // Don't add DTD prefix until we have at least 4 characters
-      return normalized;
-    }
-  }, []);
-
   const handleCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Just store the raw input, don't format it
+    // Just store the raw input, no formatting
     setCode(input);
   }, []);
 
@@ -59,20 +34,13 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
     setVerificationStatus('verifying');
 
     try {
-      // Clean and normalize the code for API
-      const cleaned = code.replace(/\s/g, '').toUpperCase();
-      const normalized = cleaned.replace(/-/g, '');
-      
-      // Ensure we send the full code with DTD prefix to the API
-      const fullCode = cleaned.startsWith('DTD') ? cleaned : `DTD-${normalized}`;
-      
-      // Call the API to verify and reserve the code
+      // Send the raw code to the API
       const response = await fetch('/api/alpha/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code: fullCode }),
+        body: JSON.stringify({ code: code }),
       });
 
       const data = await response.json();
@@ -83,13 +51,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           onError('Too many attempts. Please wait a moment.');
         } else {
           setVerificationStatus('denied');
-          // Show debug info if available
-          if (data.debug) {
-            console.log('Alpha code debug info:', data.debug);
-            onError(`alpha code invalid - Check console for debug info`);
-          } else {
-            onError(data.error || 'alpha code invalid');
-          }
+          onError(data.error || 'alpha code invalid');
         }
         return;
       }
@@ -150,23 +112,23 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           {isVerifying ? 'Verifying...' : 'Verify'}
         </button>
       </div>
-             <p className="text-xs text-[#8B4513]">
-         Enter your alpha access code to join the alpha test
-       </p>
-       
-       {/* Verification Status */}
-       {verificationStatus !== 'none' && (
-         <div className={`text-xs p-1 rounded ${
-           verificationStatus === 'verified' ? 'bg-green-100 text-green-700 border border-green-300' :
-           verificationStatus === 'denied' ? 'bg-red-100 text-red-700 border border-red-300' :
-           verificationStatus === 'verifying' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
-           'bg-gray-100 text-gray-700 border border-gray-300'
-         }`}>
-           {verificationStatus === 'verified' && '✅ Alpha code verified successfully!'}
-           {verificationStatus === 'denied' && '❌ Alpha code invalid or already used'}
-           {verificationStatus === 'verifying' && '⏳ Verifying alpha code...'}
-         </div>
-       )}
+      <p className="text-xs text-[#8B4513]">
+        Enter your alpha access code to join the alpha test
+      </p>
+      
+      {/* Verification Status */}
+      {verificationStatus !== 'none' && (
+        <div className={`text-xs p-1 rounded ${
+          verificationStatus === 'verified' ? 'bg-green-100 text-green-700 border border-green-300' :
+          verificationStatus === 'denied' ? 'bg-red-100 text-red-700 border border-red-300' :
+          verificationStatus === 'verifying' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
+          'bg-gray-100 text-gray-700 border border-gray-300'
+        }`}>
+          {verificationStatus === 'verified' && '✅ Alpha code verified successfully!'}
+          {verificationStatus === 'denied' && '❌ Alpha code invalid or already used'}
+          {verificationStatus === 'verifying' && '⏳ Verifying alpha code...'}
+        </div>
+      )}
     </div>
   );
 }

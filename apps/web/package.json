@@ -25,6 +25,7 @@
     "wipe:all-data": "tsx scripts/wipeAllData.ts",
     "test:alpha-db": "tsx scripts/testAlphaCodeDatabase.ts",
     "add:alpha-codes": "tsx scripts/addProductionAlphaCodes.ts",
+    "setup:alpha-codes": "tsx scripts/simpleAlphaCodeSetup.ts",
     "test:session": "tsx scripts/testSessionCompletion.ts"
   },
   "dependencies": {
