@@ -28,12 +28,17 @@ async function wipeAllData() {
   console.log('🧹 Starting data wipe process...\n');
 
   try {
-    // 1. Get current data counts
-    console.log('📊 Current data counts:');
-    
-    const { data: playerCount } = await supabase
-      .from('players')
-      .select('id', { count: 'exact', head: true });
+         // 1. Get current data counts
+     console.log('📊 Current data counts:');
+     
+     // Get auth users count (requires admin privileges)
+     const { data: authUsersCount } = await supabase
+       .from('auth.users')
+       .select('id', { count: 'exact', head: true });
+     
+     const { data: playerCount } = await supabase
+       .from('players')
+       .select('id', { count: 'exact', head: true });
     
     const { data: sessionCount } = await supabase
       .from('sessions')
@@ -43,34 +48,42 @@ async function wipeAllData() {
       .from('user_inventory')
       .select('id', { count: 'exact', head: true });
     
-    const { data: settingsCount } = await supabase
-      .from('user_settings')
-      .select('id', { count: 'exact', head: true });
-    
-    const { data: opsCount } = await supabase
-      .from('ops_seen')
-      .select('id', { count: 'exact', head: true });
-    
-    const { data: alphaCodesCount } = await supabase
-      .from('alpha_codes')
-      .select('id', { count: 'exact', head: true });
+         const { data: settingsCount } = await supabase
+       .from('user_settings')
+       .select('id', { count: 'exact', head: true });
+     
+     const { data: purchasesCount } = await supabase
+       .from('user_purchases')
+       .select('id', { count: 'exact', head: true });
+     
+     const { data: opsCount } = await supabase
+       .from('ops_seen')
+       .select('id', { count: 'exact', head: true });
+     
+     const { data: alphaCodesCount } = await supabase
+       .from('alpha_codes')
+       .select('id', { count: 'exact', head: true });
 
-    console.log(`   Players: ${playerCount || 0}`);
-    console.log(`   Sessions: ${sessionCount || 0}`);
-    console.log(`   Inventory items: ${inventoryCount || 0}`);
-    console.log(`   User settings: ${settingsCount || 0}`);
-    console.log(`   Ops seen: ${opsCount || 0}`);
-    console.log(`   Alpha codes: ${alphaCodesCount || 0}\n`);
+     console.log(`   Auth users: ${authUsersCount || 0}`);
+     console.log(`   Players: ${playerCount || 0}`);
+     console.log(`   Sessions: ${sessionCount || 0}`);
+     console.log(`   Inventory items: ${inventoryCount || 0}`);
+     console.log(`   User settings: ${settingsCount || 0}`);
+     console.log(`   User purchases: ${purchasesCount || 0}`);
+     console.log(`   Ops seen: ${opsCount || 0}`);
+     console.log(`   Alpha codes: ${alphaCodesCount || 0}\n`);
 
     // 2. Confirm with user
     console.log('⚠️  WARNING: This will permanently delete ALL user data!');
     console.log('   This includes:');
-    console.log('   - All player accounts');
-    console.log('   - All session history');
-    console.log('   - All inventory items');
-    console.log('   - All user settings');
-    console.log('   - All operation tracking');
-    console.log('\n   Alpha codes will be preserved for admin testing.\n');
+         console.log('   - All authentication users');
+     console.log('   - All player accounts');
+     console.log('   - All session history');
+     console.log('   - All inventory items');
+     console.log('   - All user settings');
+     console.log('   - All user purchases');
+     console.log('   - All operation tracking');
+     console.log('\n   Alpha codes will be preserved for admin testing.\n');
 
     // For safety, require explicit confirmation
     console.log('To proceed, please type "WIPE ALL DATA" (case sensitive):');
@@ -88,12 +101,18 @@ async function wipeAllData() {
 
     console.log('🗑️  Proceeding with data wipe...\n');
 
-    // 3. Disable triggers temporarily
-    console.log('🔧 Disabling triggers...');
-    await supabase.rpc('exec_sql', { sql: 'ALTER TABLE players DISABLE TRIGGER ALL;' });
-    await supabase.rpc('exec_sql', { sql: 'ALTER TABLE sessions DISABLE TRIGGER ALL;' });
-    await supabase.rpc('exec_sql', { sql: 'ALTER TABLE user_inventory DISABLE TRIGGER ALL;' });
-    await supabase.rpc('exec_sql', { sql: 'ALTER TABLE user_settings DISABLE TRIGGER ALL;' });
+         // 3. Disable user-created triggers temporarily
+     console.log('🔧 Disabling user-created triggers...');
+     await supabase.rpc('exec_sql', { 
+       sql: `
+         DO $$
+         BEGIN
+           IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_prevent_unauthorized_player_updates') THEN
+             ALTER TABLE players DISABLE TRIGGER trigger_prevent_unauthorized_player_updates;
+           END IF;
+         END $$;
+       `
+     });
 
     // 4. Clear data in dependency order
     console.log('🗑️  Clearing sessions...');
@@ -120,55 +139,89 @@ async function wipeAllData() {
       console.log('   ✅ Inventory cleared');
     }
 
-    console.log('🗑️  Clearing user settings...');
-    const { error: settingsError } = await supabase
-      .from('user_settings')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
-    
-    if (settingsError) {
-      console.error('❌ Error clearing user settings:', settingsError);
-    } else {
-      console.log('   ✅ User settings cleared');
-    }
+         console.log('🗑️  Clearing user settings...');
+     const { error: settingsError } = await supabase
+       .from('user_settings')
+       .delete()
+       .neq('id', '00000000-0000-0000-0000-000000000000');
+     
+     if (settingsError) {
+       console.error('❌ Error clearing user settings:', settingsError);
+     } else {
+       console.log('   ✅ User settings cleared');
+     }
 
-    console.log('🗑️  Clearing ops seen...');
-    const { error: opsError } = await supabase
-      .from('ops_seen')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
-    
-    if (opsError) {
-      console.error('❌ Error clearing ops seen:', opsError);
-    } else {
-      console.log('   ✅ Ops seen cleared');
-    }
+     console.log('🗑️  Clearing user purchases...');
+     const { error: purchasesError } = await supabase
+       .from('user_purchases')
+       .delete()
+       .neq('id', '00000000-0000-0000-0000-000000000000');
+     
+     if (purchasesError) {
+       console.error('❌ Error clearing user purchases:', purchasesError);
+     } else {
+       console.log('   ✅ User purchases cleared');
+     }
 
-    console.log('🗑️  Clearing players...');
-    const { error: playersError } = await supabase
-      .from('players')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
-    
-    if (playersError) {
-      console.error('❌ Error clearing players:', playersError);
-    } else {
-      console.log('   ✅ Players cleared');
-    }
+     console.log('🗑️  Clearing ops seen...');
+     const { error: opsError } = await supabase
+       .from('ops_seen')
+       .delete()
+       .neq('id', '00000000-0000-0000-0000-000000000000');
+     
+     if (opsError) {
+       console.error('❌ Error clearing ops seen:', opsError);
+     } else {
+       console.log('   ✅ Ops seen cleared');
+     }
 
-    // 5. Re-enable triggers
-    console.log('🔧 Re-enabling triggers...');
-    await supabase.rpc('exec_sql', { sql: 'ALTER TABLE players ENABLE TRIGGER ALL;' });
-    await supabase.rpc('exec_sql', { sql: 'ALTER TABLE sessions ENABLE TRIGGER ALL;' });
-    await supabase.rpc('exec_sql', { sql: 'ALTER TABLE user_inventory ENABLE TRIGGER ALL;' });
-    await supabase.rpc('exec_sql', { sql: 'ALTER TABLE user_settings ENABLE TRIGGER ALL;' });
+         console.log('🗑️  Clearing players...');
+     const { error: playersError } = await supabase
+       .from('players')
+       .delete()
+       .neq('id', '00000000-0000-0000-0000-000000000000');
+     
+     if (playersError) {
+       console.error('❌ Error clearing players:', playersError);
+     } else {
+       console.log('   ✅ Players cleared');
+     }
 
-    // 6. Verify cleanup
-    console.log('\n📊 After cleanup data counts:');
-    
-    const { data: finalPlayerCount } = await supabase
-      .from('players')
-      .select('id', { count: 'exact', head: true });
+     console.log('🗑️  Clearing authentication users...');
+     const { error: authUsersError } = await supabase
+       .from('auth.users')
+       .delete()
+       .neq('id', '00000000-0000-0000-0000-000000000000');
+     
+     if (authUsersError) {
+       console.error('❌ Error clearing auth users:', authUsersError);
+     } else {
+       console.log('   ✅ Authentication users cleared');
+     }
+
+         // 5. Re-enable user-created triggers
+     console.log('🔧 Re-enabling user-created triggers...');
+     await supabase.rpc('exec_sql', { 
+       sql: `
+         DO $$
+         BEGIN
+           IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_prevent_unauthorized_player_updates') THEN
+             ALTER TABLE players ENABLE TRIGGER trigger_prevent_unauthorized_player_updates;
+           END IF;
+         END $$;
+       `
+     });
+
+         // 6. Verify cleanup
+     console.log('\n📊 After cleanup data counts:');
+     
+     const { data: finalAuthUsersCount } = await supabase
+       .from('auth.users')
+       .select('id', { count: 'exact', head: true });
+     
+     const { data: finalPlayerCount } = await supabase
+       .from('players')
+       .select('id', { count: 'exact', head: true });
     
     const { data: finalSessionCount } = await supabase
       .from('sessions')
@@ -178,24 +231,30 @@ async function wipeAllData() {
       .from('user_inventory')
       .select('id', { count: 'exact', head: true });
     
-    const { data: finalSettingsCount } = await supabase
-      .from('user_settings')
-      .select('id', { count: 'exact', head: true });
-    
-    const { data: finalOpsCount } = await supabase
-      .from('ops_seen')
-      .select('id', { count: 'exact', head: true });
-    
-    const { data: finalAlphaCodesCount } = await supabase
-      .from('alpha_codes')
-      .select('id', { count: 'exact', head: true });
+         const { data: finalSettingsCount } = await supabase
+       .from('user_settings')
+       .select('id', { count: 'exact', head: true });
+     
+     const { data: finalPurchasesCount } = await supabase
+       .from('user_purchases')
+       .select('id', { count: 'exact', head: true });
+     
+     const { data: finalOpsCount } = await supabase
+       .from('ops_seen')
+       .select('id', { count: 'exact', head: true });
+     
+     const { data: finalAlphaCodesCount } = await supabase
+       .from('alpha_codes')
+       .select('id', { count: 'exact', head: true });
 
-    console.log(`   Players: ${finalPlayerCount || 0}`);
-    console.log(`   Sessions: ${finalSessionCount || 0}`);
-    console.log(`   Inventory items: ${finalInventoryCount || 0}`);
-    console.log(`   User settings: ${finalSettingsCount || 0}`);
-    console.log(`   Ops seen: ${finalOpsCount || 0}`);
-    console.log(`   Alpha codes: ${finalAlphaCodesCount || 0}`);
+     console.log(`   Auth users: ${finalAuthUsersCount || 0}`);
+     console.log(`   Players: ${finalPlayerCount || 0}`);
+     console.log(`   Sessions: ${finalSessionCount || 0}`);
+     console.log(`   Inventory items: ${finalInventoryCount || 0}`);
+     console.log(`   User settings: ${finalSettingsCount || 0}`);
+     console.log(`   User purchases: ${finalPurchasesCount || 0}`);
+     console.log(`   Ops seen: ${finalOpsCount || 0}`);
+     console.log(`   Alpha codes: ${finalAlphaCodesCount || 0}`);
 
     // 7. Show alpha codes status
     const { data: alphaCodes } = await supabase

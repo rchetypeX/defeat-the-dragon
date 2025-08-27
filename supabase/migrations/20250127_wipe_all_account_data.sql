@@ -5,18 +5,23 @@
 -- First, let's see what we're about to delete
 SELECT 
   'Current Data Counts:' as info,
+  (SELECT COUNT(*) FROM auth.users) as total_auth_users,
   (SELECT COUNT(*) FROM players) as total_players,
   (SELECT COUNT(*) FROM sessions) as total_sessions,
   (SELECT COUNT(*) FROM user_inventory) as total_inventory_items,
   (SELECT COUNT(*) FROM user_settings) as total_user_settings,
-  (SELECT COUNT(*) FROM alpha_code_attempts) as total_alpha_attempts,
+  (SELECT COUNT(*) FROM user_purchases) as total_user_purchases,
   (SELECT COUNT(*) FROM ops_seen) as total_ops_seen;
 
--- Disable triggers temporarily to avoid conflicts
-ALTER TABLE players DISABLE TRIGGER ALL;
-ALTER TABLE sessions DISABLE TRIGGER ALL;
-ALTER TABLE user_inventory DISABLE TRIGGER ALL;
-ALTER TABLE user_settings DISABLE TRIGGER ALL;
+-- Disable user-created triggers temporarily to avoid conflicts
+-- Only disable the specific triggers we created, not system triggers
+DO $$
+BEGIN
+  -- Disable the player update trigger if it exists
+  IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_prevent_unauthorized_player_updates') THEN
+    ALTER TABLE players DISABLE TRIGGER trigger_prevent_unauthorized_player_updates;
+  END IF;
+END $$;
 
 -- Clear all user-related data (in dependency order)
 -- 1. Clear session data
@@ -31,7 +36,10 @@ DELETE FROM user_settings WHERE user_id IS NOT NULL;
 -- 4. Clear ops seen data
 DELETE FROM ops_seen WHERE user_id IS NOT NULL;
 
--- 5. Clear alpha code attempts (if table still exists)
+-- 5. Clear user purchases data
+DELETE FROM user_purchases WHERE user_id IS NOT NULL;
+
+-- 6. Clear alpha code attempts (if table still exists)
 -- Note: This table might have been removed in previous migrations
 DO $$
 BEGIN
@@ -40,22 +48,31 @@ BEGIN
   END IF;
 END $$;
 
--- 6. Clear all player data
+-- 7. Clear all player data
 DELETE FROM players WHERE user_id IS NOT NULL;
 
--- Re-enable triggers
-ALTER TABLE players ENABLE TRIGGER ALL;
-ALTER TABLE sessions ENABLE TRIGGER ALL;
-ALTER TABLE user_inventory ENABLE TRIGGER ALL;
-ALTER TABLE user_settings ENABLE TRIGGER ALL;
+-- 8. Clear authentication users (this will cascade to all related data)
+-- Note: This requires superuser privileges and will delete ALL auth users
+DELETE FROM auth.users WHERE id IS NOT NULL;
+
+-- Re-enable user-created triggers
+DO $$
+BEGIN
+  -- Re-enable the player update trigger if it exists
+  IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_prevent_unauthorized_player_updates') THEN
+    ALTER TABLE players ENABLE TRIGGER trigger_prevent_unauthorized_player_updates;
+  END IF;
+END $$;
 
 -- Verify the cleanup
 SELECT 
   'After Cleanup Data Counts:' as info,
+  (SELECT COUNT(*) FROM auth.users) as remaining_auth_users,
   (SELECT COUNT(*) FROM players) as remaining_players,
   (SELECT COUNT(*) FROM sessions) as remaining_sessions,
   (SELECT COUNT(*) FROM user_inventory) as remaining_inventory_items,
   (SELECT COUNT(*) FROM user_settings) as remaining_user_settings,
+  (SELECT COUNT(*) FROM user_purchases) as remaining_user_purchases,
   (SELECT COUNT(*) FROM ops_seen) as remaining_ops_seen;
 
 -- Show remaining alpha codes (these should be preserved for admin use)
