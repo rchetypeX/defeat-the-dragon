@@ -28,8 +28,10 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
     
     // Format as DTD-XXXX-XXXX
     if (normalized.length >= 8) {
+      // Full format: DTD-XXXX-XXXX
       return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4, 8)}`;
     } else if (normalized.length >= 4) {
+      // Partial format: DTD-XXXX-...
       return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4)}`;
     } else {
       // Don't add DTD prefix until we have at least 4 characters
@@ -39,9 +41,9 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
 
   const handleCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    const formatted = formatCode(input);
-    setCode(formatted);
-  }, [formatCode]);
+    // Just store the raw input, don't format it
+    setCode(input);
+  }, []);
 
   const verifyCode = useCallback(async () => {
     if (!code || isVerifying || disabled) return;
@@ -134,8 +136,8 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           value={code}
           onChange={handleCodeChange}
           onKeyPress={handleKeyPress}
-          placeholder="XXXX-XXXX"
-          maxLength={12} // Allow full DTD-XXXX-XXXX format
+          placeholder="DTD-XXXX-XXXX"
+          maxLength={12} // Full DTD-XXXX-XXXX format
           className="flex-1 pixel-input text-xs placeholder:text-xs"
           disabled={disabled || isVerifying}
         />
