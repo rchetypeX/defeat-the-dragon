@@ -22,6 +22,7 @@
     "admin:alpha": "tsx scripts/adminAlphaCodes.ts",
     "alpha:generate": "tsx scripts/generatePlainTextCodes.ts",
     "alpha:test-usage": "tsx scripts/testAlphaCodeUsage.ts",
+    "wipe:all-data": "tsx scripts/wipeAllData.ts",
     "test:session": "tsx scripts/testSessionCompletion.ts"
   },
   "dependencies": {
