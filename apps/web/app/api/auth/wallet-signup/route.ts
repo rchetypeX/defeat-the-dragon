@@ -21,12 +21,30 @@ export async function POST(request: NextRequest) {
     // If reservedToken is provided, finalize the alpha code
     if (reservedToken) {
       try {
-        const { data: finalizeResult, error: finalizeError } = await supabase.rpc('alpha_finalize_with_token', {
-          p_reserved_token: reservedToken
-        });
+        // We need to get the original alpha code that was verified
+        // For now, we'll use a direct database update since we don't have the original code
+        const { data: finalizeResult, error: finalizeError } = await supabase
+          .from('alpha_codes')
+          .update({
+            used: true,
+            used_at: new Date().toISOString(),
+            reserved_token: null,
+            reserved_until: null
+          })
+          .eq('reserved_token', reservedToken)
+          .eq('used', false)
+          .gte('reserved_until', new Date().toISOString());
 
         if (finalizeError) {
           console.error('Alpha code finalization error:', finalizeError);
+          return NextResponse.json(
+            { error: 'Invalid or expired alpha code' },
+            { status: 400 }
+          );
+        }
+
+        if (!finalizeResult || finalizeResult.length === 0) {
+          console.error('No alpha code found to finalize with token:', reservedToken);
           return NextResponse.json(
             { error: 'Invalid or expired alpha code' },
             { status: 400 }
