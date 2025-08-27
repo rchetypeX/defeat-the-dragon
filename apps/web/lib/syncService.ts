@@ -138,21 +138,28 @@ export interface SyncResult {
 
 class SyncService {
   /**
-   * Load all user data from database
+   * Load all user data from database using bootstrap endpoint
    */
   async loadUserData(): Promise<SyncResult> {
     try {
-      console.log('SyncService: Loading user data from database...');
-      const response = await apiRequest<SyncResult>('/user/sync');
+      console.log('SyncService: Loading user data from bootstrap endpoint...');
+      const response = await apiRequest<any>('/bootstrap');
       
-      if (response.success && response.data) {
-        console.log('SyncService: Received data from database:', response.data);
-        this.updateLocalStores(response.data);
+      if (response) {
+        console.log('SyncService: Received bootstrap data:', response);
+        this.updateLocalStoresFromBootstrap(response);
+        return {
+          success: true,
+          data: response
+        };
       }
 
-      return response;
+      return {
+        success: false,
+        error: 'No data received from bootstrap'
+      };
     } catch (error) {
-      console.error('Failed to load user data:', error);
+      console.error('Failed to load user data from bootstrap:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -284,6 +291,50 @@ class SyncService {
     }
 
     return syncData;
+  }
+
+  /**
+   * Update local stores with data from bootstrap endpoint
+   */
+  private updateLocalStoresFromBootstrap(data: any) {
+    const gameStore = useGameStore.getState();
+    const characterStore = useCharacterStore.getState();
+    const backgroundStore = useBackgroundStore.getState();
+
+    // Update player data
+    if (data.player) {
+      console.log('SyncService: Updating local stores with bootstrap data:', data.player);
+      
+      gameStore.setPlayer(data.player);
+      
+      // Verify the player data was set correctly
+      const updatedPlayer = useGameStore.getState().player;
+      console.log('SyncService: Player data after setPlayer:', updatedPlayer);
+    }
+
+    // Update equipped character and background
+    if (data.equipped) {
+      if (data.equipped.character_sku) {
+        characterStore.setEquippedCharacter(data.equipped.character_sku);
+        console.log('SyncService: Updated equipped character to:', data.equipped.character_sku);
+      }
+      if (data.equipped.background_sku) {
+        backgroundStore.setEquippedBackground(data.equipped.background_sku);
+        console.log('SyncService: Updated equipped background to:', data.equipped.background_sku);
+      }
+    }
+
+    // Update inventory (only IDs and equipped status)
+    if (data.inventory_ids && Array.isArray(data.inventory_ids)) {
+      const inventoryItems = data.inventory_ids.map((item: any) => ({
+        sku: item.id,
+        type: item.type,
+        qty: 1, // Default quantity for owned items
+        equipped: item.equipped,
+      }));
+      gameStore.setInventory(inventoryItems);
+      console.log('SyncService: Updated inventory with', inventoryItems.length, 'items');
+    }
   }
 
   /**
