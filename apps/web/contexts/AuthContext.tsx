@@ -23,6 +23,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   const { setUser: setGameUser, resetGame } = useGameStore();
 
+  // Database version check - force clear local storage if database was reset
+  const checkDatabaseVersion = async () => {
+    try {
+      // Get the current database version from a simple API call
+      const response = await fetch('/api/bootstrap', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.status === 401) {
+        // If we get 401, it means the user doesn't exist in the database
+        // Clear all local storage and reset the app
+        console.log('AuthContext: Database reset detected (401), clearing local storage...');
+        localStorage.clear();
+        sessionStorage.clear();
+        resetGame();
+        window.location.reload();
+        return false;
+      }
+      
+      // Check for database reset header
+      const databaseReset = response.headers.get('X-Database-Reset');
+      if (databaseReset === 'true') {
+        console.log('AuthContext: Database reset detected (header), clearing local storage...');
+        localStorage.clear();
+        sessionStorage.clear();
+        resetGame();
+        window.location.reload();
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error checking database version:', error);
+      return true; // Don't clear on network errors
+    }
+  };
+
   // Check for wallet user in localStorage
   const checkWalletUser = () => {
     const walletUserStr = localStorage.getItem('walletUser');
@@ -58,8 +98,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // Check database version first
+    checkDatabaseVersion().then(async (databaseValid) => {
+      if (!databaseValid) {
+        return; // App will reload after clearing storage
+      }
+      
+      // Get initial session
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setLoading(false);
       
@@ -196,6 +242,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       }
+        });
+      });
     });
 
     return () => subscription.unsubscribe();

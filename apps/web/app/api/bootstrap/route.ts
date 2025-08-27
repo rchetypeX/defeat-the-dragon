@@ -181,6 +181,9 @@ export async function GET(request: NextRequest) {
       .eq('id', userId)
       .single();
 
+    // Check if this is a fresh database (no existing data)
+    const isFreshDatabase = !player || player.level === 1 && player.xp === 0 && player.coins === 0;
+    
     // Prepare response
     const response = {
       profile: profile || { id: userId, display_name: player?.display_name || 'Adventurer' },
@@ -207,7 +210,13 @@ export async function GET(request: NextRequest) {
 
     console.log('Bootstrap: Successfully loaded data for user:', userId);
     
-    return NextResponse.json(response);
+    // Add database reset detection header
+    const responseWithHeaders = NextResponse.json(response);
+    if (isFreshDatabase) {
+      responseWithHeaders.headers.set('X-Database-Reset', 'true');
+    }
+    
+    return responseWithHeaders;
 
   } catch (error) {
     console.error('Bootstrap error:', error);
