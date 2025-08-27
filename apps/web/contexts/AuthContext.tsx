@@ -106,70 +106,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Get initial session
       supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-      
-      if (session?.user) {
-        // Supabase session exists - use it
-        setUser(session.user);
-        setGameUser({
-          id: session.user.id,
-          email: session.user.email!,
-        });
-        // Load player data
-        try {
-          const playerData = await getPlayerData();
-          if (playerData) {
-            useGameStore.getState().setPlayer(playerData);
-          }
-        } catch (error) {
-          console.error('Failed to load player data:', error);
-        }
-      } else {
-        // No Supabase session - check for wallet user
-        const walletUser = checkWalletUser();
-        if (walletUser) {
-          setUser(walletUser);
+        setSession(session);
+        setLoading(false);
+        
+        if (session?.user) {
+          // Supabase session exists - use it
+          setUser(session.user);
           setGameUser({
-            id: walletUser.id,
-            email: walletUser.email || `${walletUser.wallet_address}@wallet.local`,
+            id: session.user.id,
+            email: session.user.email!,
           });
-          // Load player data for wallet user
+          // Load player data
           try {
             const playerData = await getPlayerData();
             if (playerData) {
               useGameStore.getState().setPlayer(playerData);
-              console.log('AuthContext: Successfully loaded player data for wallet user');
             }
           } catch (error) {
-            console.error('Failed to load player data for wallet user:', error);
+            console.error('Failed to load player data:', error);
           }
         } else {
-          // Check for Base App user
-          const baseAppUser = checkBaseAppUser();
-          if (baseAppUser) {
-            setUser(baseAppUser);
+          // No Supabase session - check for wallet user
+          const walletUser = checkWalletUser();
+          if (walletUser) {
+            setUser(walletUser);
             setGameUser({
-              id: baseAppUser.id,
-              email: baseAppUser.email,
+              id: walletUser.id,
+              email: walletUser.email || `${walletUser.wallet_address}@wallet.local`,
             });
-            // Load player data for Base App user
+            // Load player data for wallet user
             try {
               const playerData = await getPlayerData();
               if (playerData) {
                 useGameStore.getState().setPlayer(playerData);
-                console.log('AuthContext: Successfully loaded player data for Base App user');
+                console.log('AuthContext: Successfully loaded player data for wallet user');
               }
             } catch (error) {
-              console.error('Failed to load player data for Base App user:', error);
+              console.error('Failed to load player data for wallet user:', error);
             }
           } else {
-            console.log('AuthContext: No wallet or Base App user found in localStorage');
-            setUser(null);
-            setGameUser(null);
+            // Check for Base App user
+            const baseAppUser = checkBaseAppUser();
+            if (baseAppUser) {
+              setUser(baseAppUser);
+              setGameUser({
+                id: baseAppUser.id,
+                email: baseAppUser.email,
+              });
+              // Load player data for Base App user
+              try {
+                const playerData = await getPlayerData();
+                if (playerData) {
+                  useGameStore.getState().setPlayer(playerData);
+                  console.log('AuthContext: Successfully loaded player data for Base App user');
+                }
+              } catch (error) {
+                console.error('Failed to load player data for Base App user:', error);
+              }
+            } else {
+              console.log('AuthContext: No wallet or Base App user found in localStorage');
+              setUser(null);
+              setGameUser(null);
+            }
           }
         }
-      }
+      });
     });
 
     // Listen for auth changes
