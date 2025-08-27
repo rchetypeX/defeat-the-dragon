@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
       // Base App user token
       try {
         const baseAppData = JSON.parse(authHeader.substring(8)); // Remove 'baseapp:'
-        userId = baseAppData.id;
+        // Convert Base App numeric ID to a consistent UUID format
+        userId = `baseapp-${baseAppData.id}`;
         console.log('API: Base App user detected, user ID:', userId);
       } catch (e) {
         console.error('API: Error parsing Base App token:', e);

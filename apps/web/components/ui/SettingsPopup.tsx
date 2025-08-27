@@ -300,6 +300,19 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
         {/* Footer */}
         <div className="text-center text-sm text-gray-400">
           <p>Your progress will be saved locally</p>
+          
+          {/* Social Links */}
+          <div className="mt-4 pt-4 border-t border-[#8b4513]">
+            <a
+              href="https://x.com/rchetypeX"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#fbbf24] hover:text-[#f2751a] transition-colors text-sm underline inline-flex items-center gap-1"
+            >
+              <span>🐦</span>
+              Follow @rchetypeX for app updates
+            </a>
+          </div>
         </div>
       </div>
 

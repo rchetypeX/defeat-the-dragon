@@ -107,6 +107,18 @@ export function LoginForm() {
         </button>
       </div>
 
+      {/* External Links */}
+      <div className="mt-4 text-center">
+        <a
+          href="https://rchetype.xyz"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#fbbf24] hover:text-[#f2751a] transition-colors text-sm underline block"
+        >
+          Visit rchetype.xyz
+        </a>
+      </div>
+
       {/* Forgot Password Modal */}
       {showForgotPassword && (
         <ForgotPasswordModal

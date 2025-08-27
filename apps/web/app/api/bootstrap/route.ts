@@ -62,7 +62,8 @@ export async function GET(request: NextRequest) {
           } else if (token.startsWith('baseapp:')) {
             try {
               const baseAppData = JSON.parse(token.substring(8));
-              userId = baseAppData.id;
+              // Convert Base App numeric ID to a consistent UUID format
+              userId = `baseapp-${baseAppData.id}`;
               console.log('Bootstrap: Found Base App user from Bearer token:', userId);
             } catch (e) {
               console.error('Error parsing Base App user from Bearer token:', e);
@@ -92,7 +93,8 @@ export async function GET(request: NextRequest) {
         } else if (authHeader.startsWith('baseapp:')) {
           try {
             const baseAppData = JSON.parse(authHeader.substring(8));
-            userId = baseAppData.id;
+            // Convert Base App numeric ID to a consistent UUID format
+            userId = `baseapp-${baseAppData.id}`;
             console.log('Bootstrap: Found Base App user from header:', userId);
           } catch (e) {
             console.error('Error parsing Base App user from header:', e);

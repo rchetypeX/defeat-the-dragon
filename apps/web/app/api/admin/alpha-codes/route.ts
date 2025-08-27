@@ -57,7 +57,8 @@ async function validateAdminAccess(request: NextRequest): Promise<string | null>
   } else if (authHeader.startsWith('baseapp:')) {
     try {
       const baseAppData = JSON.parse(authHeader.substring(8));
-      userId = baseAppData.id;
+      // Convert Base App numeric ID to a consistent UUID format
+      userId = `baseapp-${baseAppData.id}`;
     } catch (e) {
       console.error('Admin API: Error parsing Base App token:', e);
       return null;

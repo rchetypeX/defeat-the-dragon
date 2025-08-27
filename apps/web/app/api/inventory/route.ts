@@ -113,7 +113,8 @@ export async function GET(request: NextRequest) {
           } else if (authHeader.startsWith('Bearer baseapp:')) {
             try {
               const baseAppData = JSON.parse(authHeader.substring(14)); // Remove 'Bearer baseapp:'
-              userId = baseAppData.id;
+              // Convert Base App numeric ID to a consistent UUID format
+              userId = `baseapp-${baseAppData.id}`;
               console.log('Inventory: Found Base App user from header:', userId);
             } catch (e) {
               console.error('Error parsing Base App user from header:', e);
@@ -121,7 +122,8 @@ export async function GET(request: NextRequest) {
           } else if (authHeader.startsWith('baseapp:')) {
             try {
               const baseAppData = JSON.parse(authHeader.substring(8)); // Remove 'baseapp:'
-              userId = baseAppData.id;
+              // Convert Base App numeric ID to a consistent UUID format
+              userId = `baseapp-${baseAppData.id}`;
               console.log('Inventory: Found Base App user from header:', userId);
             } catch (e) {
               console.error('Error parsing Base App user from header:', e);
