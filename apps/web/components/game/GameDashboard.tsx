@@ -143,6 +143,7 @@ export function GameDashboard() {
     console.log('GameDashboard: Focus button visibility debug:', {
       showSessionTimer,
       sessionResult: !!sessionResult,
+      sessionResultDetails: sessionResult,
       showSettings,
       showShop,
       showInventory,
@@ -226,7 +227,7 @@ export function GameDashboard() {
     try {
       console.log('GameDashboard: About to call completeSession...');
       const result = await completeSession('success');
-      console.log('GameDashboard: Session completed successfully');
+      console.log('GameDashboard: Session completed successfully, result:', result);
       console.log('GameDashboard: Setting session result');
       setSessionResult(result);
       setShowSessionTimer(false);
@@ -236,6 +237,7 @@ export function GameDashboard() {
       console.log('GameDashboard: Session completed - data already synced via session system');
       
       // Show enhanced notification
+      console.log('GameDashboard: About to show session complete notification');
       await showSessionComplete(
         result.xp_gained, 
         result.coins_gained, 
@@ -246,6 +248,7 @@ export function GameDashboard() {
       
       // Show level up notification if applicable
       if (result.level_up && result.new_level) {
+        console.log('GameDashboard: About to show level up notification');
         await showLevelUp(result.new_level, ['New character class', 'Enhanced abilities']);
       }
       
@@ -556,16 +559,26 @@ export function GameDashboard() {
 
          {/* Success Message - Full Screen Overlay */}
          {sessionResult && (
-           <SuccessMessage
-             xpGained={sessionResult.xp_gained}
-             coinsGained={sessionResult.coins_gained}
-             sparksGained={sessionResult.sparks_gained}
-             levelUp={sessionResult.level_up}
-             newLevel={sessionResult.new_level}
-             onDismiss={handleDismissSuccess}
-             onKeepFocusing={handleKeepFocusing}
-             onGoHome={handleGoHome}
-           />
+           <>
+             {/* Debug overlay to confirm sessionResult is set */}
+             <div className="fixed inset-0 bg-red-500 bg-opacity-50 flex items-center justify-center z-40">
+               <div className="bg-white p-4 rounded">
+                 <h2>DEBUG: Session Result Set!</h2>
+                 <pre>{JSON.stringify(sessionResult, null, 2)}</pre>
+                 <button onClick={() => setSessionResult(null)}>Close Debug</button>
+               </div>
+             </div>
+             <SuccessMessage
+               xpGained={sessionResult.xp_gained}
+               coinsGained={sessionResult.coins_gained}
+               sparksGained={sessionResult.sparks_gained}
+               levelUp={sessionResult.level_up}
+               newLevel={sessionResult.new_level}
+               onDismiss={handleDismissSuccess}
+               onKeepFocusing={handleKeepFocusing}
+               onGoHome={handleGoHome}
+             />
+           </>
          )}
       </div>
       
