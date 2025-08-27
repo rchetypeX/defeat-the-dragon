@@ -21,20 +21,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<SupabaseSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [hasCheckedDatabase, setHasCheckedDatabase] = useState(false);
   
   const { setUser: setGameUser, resetGame } = useGameStore();
 
   // Database version check - force clear local storage if database was reset
   const checkDatabaseVersion = async () => {
     try {
-      // Only check if we have cached user data
+      // Only check if we have cached user data that might be stale
       const hasCachedData = localStorage.getItem('walletUser') || 
                            localStorage.getItem('baseAppUser') || 
                            localStorage.getItem('defeat-the-dragon-storage');
       
       if (!hasCachedData) {
         // No cached data, no need to check database version
+        return true;
+      }
+
+      // For Base App, don't check database version as it might cause loops
+      // Base App handles its own authentication and data management
+      if (typeof window !== 'undefined' && window.location.href.includes('baseapp')) {
+        console.log('AuthContext: Base App detected, skipping database version check');
         return true;
       }
 
@@ -111,23 +117,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Check database version first (only once)
-    if (!hasCheckedDatabase) {
-      setHasCheckedDatabase(true);
-      checkDatabaseVersion().then(async (databaseValid) => {
-        if (!databaseValid) {
-          return; // App will reload after clearing storage
-        }
-        
-        // Continue with normal auth flow
-        initializeAuth();
-      });
-      return;
-    }
-    
-    // Get initial session
+    // Skip database version check for now to prevent refresh loops
+    // TODO: Implement a more robust database version check later
     initializeAuth();
-  }, [hasCheckedDatabase, setGameUser, resetGame]);
+  }, [setGameUser, resetGame]);
 
   const initializeAuth = () => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {

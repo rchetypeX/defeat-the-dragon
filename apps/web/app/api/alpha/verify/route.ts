@@ -13,54 +13,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cookieStore = cookies();
-    const supabase = createServerClient(
+    // Use service role client for database operations
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              );
-            } catch {
-              // The `setAll` method was called from a Server Component.
-              // This can be ignored if you have middleware refreshing
-              // user sessions.
-            }
-          },
-        },
-      }
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     
-    // Verify and reserve the code
-    const { data, error } = await supabase.rpc('alpha_verify_and_reserve', {
+    // Verify the alpha code
+    const { data, error } = await supabase.rpc('verify_alpha_code', {
       p_code: code
     });
 
     if (error) {
+      console.error('Alpha code verification RPC error:', error);
       return NextResponse.json(
         { error: 'alpha code invalid' },
         { status: 400 }
       );
     }
 
-    if (!data || data.length === 0) {
+    if (!data) {
       return NextResponse.json(
         { error: 'alpha code invalid' },
         { status: 400 }
       );
     }
-
-    const { reserved_token, reserved_until } = data[0];
 
     return NextResponse.json({
-      reserved_token,
-      reserved_until
+      success: true,
+      message: 'Alpha code verified successfully'
     });
 
   } catch (error) {
