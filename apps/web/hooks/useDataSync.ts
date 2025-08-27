@@ -15,10 +15,17 @@ export function useDataSync() {
   // Debounce sync calls to prevent excessive API usage
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingSyncRef = useRef<boolean>(false);
+  const initializedRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (!user) {
       setIsLoading(false);
+      initializedRef.current = false;
+      return;
+    }
+
+    // Prevent multiple initializations
+    if (initializedRef.current) {
       return;
     }
 
@@ -56,6 +63,7 @@ export function useDataSync() {
 
         setLastSyncTime(new Date());
         console.log('Data initialization complete');
+        initializedRef.current = true;
       } catch (err) {
         console.error('Failed to initialize data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load data');

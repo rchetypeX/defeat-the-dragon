@@ -278,8 +278,12 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
         // Update local state
         if (item.category === 'character') {
           setEquippedCharacter(item.id);
+          // Update character store
+          useCharacterStore.getState().setEquippedCharacter(item.id);
         } else if (item.category === 'background') {
           setEquippedBackground(item.id);
+          // Update background store
+          useBackgroundStore.getState().setEquippedBackground(item.id);
         }
         
         setEquippedItems(prev => ({

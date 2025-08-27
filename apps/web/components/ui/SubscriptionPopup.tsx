@@ -9,7 +9,7 @@ interface SubscriptionPopupProps {
   onSuccess?: () => void;
 }
 
-const MERCHANT_WALLET = process.env.NEXT_PUBLIC_MERCHANT_WALLET || '0x1234567890123456789012345678901234567890'; // Set NEXT_PUBLIC_MERCHANT_WALLET in your .env.local
+const MERCHANT_WALLET = process.env.NEXT_PUBLIC_MERCHANT_WALLET || '0x1a9Fce96e04ba06D9190339DF817b43837fa0eA9'; // Set NEXT_PUBLIC_MERCHANT_WALLET in your .env.local
 
 interface SubscriptionPricing {
   id: string;

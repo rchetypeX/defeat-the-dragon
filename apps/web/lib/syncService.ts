@@ -147,6 +147,15 @@ class SyncService {
       
       if (response) {
         console.log('SyncService: Received bootstrap data:', response);
+        
+        // Don't override local changes that haven't been synced yet
+        const currentPlayer = useGameStore.getState().player;
+        if (currentPlayer && currentPlayer.display_name && 
+            response.player && response.player.display_name !== currentPlayer.display_name) {
+          console.log('SyncService: Preserving local display name change:', currentPlayer.display_name);
+          response.player.display_name = currentPlayer.display_name;
+        }
+        
         this.updateLocalStoresFromBootstrap(response);
         return {
           success: true,

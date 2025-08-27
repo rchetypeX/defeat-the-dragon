@@ -122,8 +122,8 @@ export async function GET(request: NextRequest) {
         user_id: userId,
         level: 1,
         xp: 0,
-        coins: 100,
-        sparks: 50,
+        coins: 0,
+        sparks: 0,
         created_at: new Date().toISOString()
       };
       
@@ -185,8 +185,8 @@ export async function GET(request: NextRequest) {
       player: {
         level: player?.level || 1,
         xp: player?.xp || 0,
-        coins: player?.coins || 100,
-        sparks: player?.sparks || 50,
+        coins: player?.coins || 0,
+        sparks: player?.sparks || 0,
         display_name: player?.display_name || 'Adventurer'
       },
       equipped: {

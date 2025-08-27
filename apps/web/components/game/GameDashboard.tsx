@@ -53,69 +53,9 @@ export function GameDashboard() {
   // Sync character store when player data is loaded
   useEffect(() => {
     if (player && !isLoading) {
-      // Load inventory to sync equipped character/background
-      const syncEquippedItems = async () => {
-        try {
-          // Get auth token for the request
-          let token: string | null = null;
-          
-          // Check if we have a wallet user in localStorage
-          const walletUserStr = localStorage.getItem('walletUser');
-          if (walletUserStr) {
-            try {
-              const walletUser = JSON.parse(walletUserStr);
-              token = `wallet:${JSON.stringify(walletUser)}`;
-            } catch (e) {
-              console.error('Error parsing wallet user:', e);
-            }
-          }
-          
-          // If no wallet token, try to get Supabase session
-          if (!token) {
-            const { supabase } = await import('../../lib/supabase');
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.access_token) {
-              token = session.access_token;
-            }
-          }
-
-          const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-          };
-          
-          if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-          }
-          
-          const response = await fetch('/api/inventory', { headers, credentials: 'include' });
-          
-          if (response.ok) {
-            const result = await response.json();
-            if (result.data) {
-              // Update character and background stores based on equipped items in database
-              const equippedCharacter = result.data.find((item: any) => 
-                item.item_type === 'character' && item.equipped
-              );
-              const equippedBackground = result.data.find((item: any) => 
-                item.item_type === 'background' && item.equipped
-              );
-              
-              if (equippedCharacter) {
-                setEquippedCharacter(equippedCharacter.item_id);
-                console.log('GameDashboard: Synced equipped character to:', equippedCharacter.item_id);
-              }
-              if (equippedBackground) {
-                setEquippedBackground(equippedBackground.item_id);
-                console.log('GameDashboard: Synced equipped background to:', equippedBackground.item_id);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error syncing equipped items:', error);
-        }
-      };
-
-      syncEquippedItems();
+      // The bootstrap endpoint already provides equipped character/background data
+      // This effect is now handled by the syncService.updateLocalStoresFromBootstrap method
+      // No need for additional API calls here
     }
   }, [player, isLoading]);
 
@@ -196,74 +136,7 @@ export function GameDashboard() {
   const { equippedCharacter, getCharacterImage, setEquippedCharacter } = useCharacterStore();
   const { equippedBackground, getBackgroundImage, setEquippedBackground } = useBackgroundStore();
 
-  // Sync character store when player data is loaded
-  useEffect(() => {
-    if (player && !isLoading) {
-      // Load inventory to sync equipped character/background
-      const syncEquippedItems = async () => {
-        try {
-          // Get auth token for the request
-          let token: string | null = null;
-          
-          // Check if we have a wallet user in localStorage
-          const walletUserStr = localStorage.getItem('walletUser');
-          if (walletUserStr) {
-            try {
-              const walletUser = JSON.parse(walletUserStr);
-              token = `wallet:${JSON.stringify(walletUser)}`;
-            } catch (e) {
-              console.error('Error parsing wallet user:', e);
-            }
-          }
-          
-          // If no wallet token, try to get Supabase session
-          if (!token) {
-            const { supabase } = await import('../../lib/supabase');
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.access_token) {
-              token = session.access_token;
-            }
-          }
 
-          const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-          };
-          
-          if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-          }
-          
-          const response = await fetch('/api/inventory', { headers, credentials: 'include' });
-          
-          if (response.ok) {
-            const result = await response.json();
-            if (result.data) {
-              // Update character and background stores based on equipped items in database
-              const equippedCharacter = result.data.find((item: any) => 
-                item.item_type === 'character' && item.equipped
-              );
-              const equippedBackground = result.data.find((item: any) => 
-                item.item_type === 'background' && item.equipped
-              );
-              
-              if (equippedCharacter) {
-                setEquippedCharacter(equippedCharacter.item_id);
-                console.log('GameDashboard: Synced equipped character to:', equippedCharacter.item_id);
-              }
-              if (equippedBackground) {
-                setEquippedBackground(equippedBackground.item_id);
-                console.log('GameDashboard: Synced equipped background to:', equippedBackground.item_id);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error syncing equipped items:', error);
-        }
-      };
-
-      syncEquippedItems();
-    }
-  }, [player, isLoading, setEquippedCharacter, setEquippedBackground]);
 
   // Debug logging for focus button visibility
   useEffect(() => {

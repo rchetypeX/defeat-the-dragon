@@ -10,7 +10,7 @@ Add the following to your `.env.local` file:
 
 ```bash
 # Your Base Network wallet address to receive payments
-NEXT_PUBLIC_MERCHANT_WALLET=0xYourWalletAddressHere
+NEXT_PUBLIC_MERCHANT_WALLET=0x1a9Fce96e04ba06D9190339DF817b43837fa0eA9
 ```
 
 ### 2. Database Migration
