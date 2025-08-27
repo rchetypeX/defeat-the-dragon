@@ -46,7 +46,7 @@ async function getAuthToken(): Promise<string | null> {
 /**
  * Make an authenticated API request
  */
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string, 
   options: RequestInit = {}
 ): Promise<T> {
