@@ -22,14 +22,42 @@ export async function POST(request: NextRequest) {
     
     // Normalize the code (remove spaces, convert to uppercase)
     const normalizedCode = code.replace(/[\s-]/g, '').toUpperCase();
+    console.log('Alpha code verification attempt:', { originalCode: code, normalizedCode });
     
-    // First, check if the alpha code exists and is available
-    const { data: alphaCode, error: fetchError } = await supabase
+    // Try to find the alpha code - it could be stored as plain text or hashed
+    let alphaCode = null;
+    let fetchError = null;
+    
+    // First try: Look for plain text code (DTD-XXXX-XXXX format)
+    const { data: plainTextCode, error: plainTextError } = await supabase
       .from('alpha_codes')
       .select('*')
-      .eq('code_hash', normalizedCode)
+      .eq('code_hash', code.toUpperCase()) // Try exact match first
       .eq('used', false)
       .single();
+    
+    if (plainTextCode) {
+      alphaCode = plainTextCode;
+      console.log('Found alpha code as plain text');
+    } else {
+      // Second try: Look for normalized code (DTDXXXX-XXXX format)
+      const { data: normalizedCodeResult, error: normalizedError } = await supabase
+        .from('alpha_codes')
+        .select('*')
+        .eq('code_hash', normalizedCode)
+        .eq('used', false)
+        .single();
+      
+      if (normalizedCodeResult) {
+        alphaCode = normalizedCodeResult;
+        console.log('Found alpha code as normalized text');
+      } else {
+        fetchError = normalizedError;
+        console.log('Alpha code not found in either format');
+      }
+    }
+
+    console.log('Database query result:', { alphaCode, fetchError });
 
     if (fetchError) {
       console.error('Alpha code fetch error:', fetchError);
@@ -41,6 +69,17 @@ export async function POST(request: NextRequest) {
 
     if (!alphaCode) {
       console.error('Alpha code not found or already used:', normalizedCode);
+      
+      // Let's also check what codes exist in the database for debugging
+      const { data: allCodes, error: debugError } = await supabase
+        .from('alpha_codes')
+        .select('code_hash, used')
+        .limit(10);
+      
+      console.log('Debug: First 10 codes in database:', allCodes);
+      console.log('Debug: Looking for code:', code.toUpperCase());
+      console.log('Debug: Looking for normalized code:', normalizedCode);
+      
       return NextResponse.json(
         { error: 'alpha code invalid' },
         { status: 400 }

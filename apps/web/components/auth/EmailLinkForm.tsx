@@ -120,6 +120,7 @@ export function EmailLinkForm({ onSuccess, onCancel }: EmailLinkFormProps) {
             placeholder="Create a password (min 6 characters)"
             minLength={6}
             required
+            autoComplete="new-password"
           />
         </div>
 

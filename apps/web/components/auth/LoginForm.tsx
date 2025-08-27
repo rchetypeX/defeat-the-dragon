@@ -67,6 +67,7 @@ export function LoginForm() {
               required
               className="w-full pixel-input pr-10"
               placeholder="Enter your password"
+              autoComplete="current-password"
             />
             <button
               type="button"

@@ -223,6 +223,7 @@ export function SignUpForm() {
                 minLength={6}
                 className="w-full pixel-input text-xs placeholder:text-xs pr-10"
                 placeholder="Enter password"
+                autoComplete="new-password"
               />
              <button
                type="button"
