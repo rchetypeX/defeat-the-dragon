@@ -20,20 +20,36 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     
-    // First, verify the alpha code
-    const { data: verifyData, error: verifyError } = await supabase.rpc('verify_alpha_code', {
-      p_code: code
-    });
+    // Normalize the code (remove spaces, convert to uppercase)
+    const normalizedCode = code.replace(/[\s-]/g, '').toUpperCase();
+    
+    // First, check if the alpha code exists and is available
+    const { data: alphaCode, error: fetchError } = await supabase
+      .from('alpha_codes')
+      .select('*')
+      .eq('code_hash', normalizedCode)
+      .eq('used', false)
+      .single();
 
-    if (verifyError) {
-      console.error('Alpha code verification RPC error:', verifyError);
+    if (fetchError) {
+      console.error('Alpha code fetch error:', fetchError);
       return NextResponse.json(
         { error: 'alpha code invalid' },
         { status: 400 }
       );
     }
 
-    if (!verifyData || verifyData.length === 0 || !verifyData[0].is_valid) {
+    if (!alphaCode) {
+      console.error('Alpha code not found or already used:', normalizedCode);
+      return NextResponse.json(
+        { error: 'alpha code invalid' },
+        { status: 400 }
+      );
+    }
+
+    // Check if code is already reserved
+    if (alphaCode.reserved_token && alphaCode.reserved_until && new Date(alphaCode.reserved_until) > new Date()) {
+      console.error('Alpha code is already reserved:', normalizedCode);
       return NextResponse.json(
         { error: 'alpha code invalid' },
         { status: 400 }
@@ -42,30 +58,25 @@ export async function POST(request: NextRequest) {
 
     // Generate a reservation token
     const reservedToken = `reserved_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const reservedUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes from now
     
     // Reserve the alpha code
-    const { data: reserveData, error: reserveError } = await supabase.rpc('reserve_alpha_code', {
-      p_code: code,
-      p_reservation_token: reservedToken,
-      p_reservation_duration_minutes: 5
-    });
+    const { error: reserveError } = await supabase
+      .from('alpha_codes')
+      .update({
+        reserved_token: reservedToken,
+        reserved_until: reservedUntil
+      })
+      .eq('id', alphaCode.id)
+      .eq('used', false);
 
     if (reserveError) {
-      console.error('Alpha code reservation RPC error:', reserveError);
+      console.error('Alpha code reservation error:', reserveError);
       return NextResponse.json(
         { error: 'alpha code invalid' },
         { status: 400 }
       );
     }
-
-    if (!reserveData || reserveData.length === 0 || !reserveData[0].success) {
-      return NextResponse.json(
-        { error: 'alpha code invalid' },
-        { status: 400 }
-      );
-    }
-
-    const reservedUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes from now
 
     return NextResponse.json({
       reserved_token: reservedToken,
