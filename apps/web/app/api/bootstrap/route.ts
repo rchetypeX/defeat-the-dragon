@@ -187,7 +187,8 @@ export async function GET(request: NextRequest) {
         xp: player?.xp || 0,
         coins: player?.coins || 0,
         sparks: player?.sparks || 0,
-        display_name: player?.display_name || 'Adventurer'
+        display_name: player?.display_name || 'Adventurer',
+        wallet_address: player?.wallet_address || null
       },
       equipped: {
         character_sku: settings?.equipped_character || 'fighter',
