@@ -40,9 +40,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate a reservation token and expiry time
+    const reservedToken = `reserved_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const reservedUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes from now
+
     return NextResponse.json({
-      success: true,
-      message: 'Alpha code verified successfully'
+      reserved_token: reservedToken,
+      reserved_until: reservedUntil
     });
 
   } catch (error) {

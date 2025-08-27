@@ -87,6 +87,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     verifyCode();
   }, [verifyCode]);
 
@@ -102,7 +103,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
       <label htmlFor="alpha-code" className="block text-xs font-medium mb-0.5 text-[#fbbf24]">
         Alpha access code
       </label>
-      <form onSubmit={handleSubmit} className="flex space-x-1">
+      <div className="flex space-x-1">
         <input
           id="alpha-code"
           type="text"
@@ -115,13 +116,14 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           disabled={disabled || isVerifying}
         />
         <button
-          type="submit"
+          type="button"
+          onClick={verifyCode}
           disabled={!code || isVerifying || disabled}
           className="px-2 py-1 bg-[#f2751a] text-white rounded hover:bg-[#e65a0a] focus:outline-none focus:ring-2 focus:ring-[#f2751a] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
         >
           {isVerifying ? 'Verifying...' : 'Verify'}
         </button>
-      </form>
+      </div>
       <p className="text-xs text-[#8B4513]">
         Enter your alpha access code to join the alpha test
       </p>
