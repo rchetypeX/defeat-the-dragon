@@ -31,15 +31,8 @@ async function testAlphaCodes() {
       return;
     }
 
-    const { data: attempts, error: attemptsError } = await supabase
-      .from('alpha_code_attempts')
-      .select('count')
-      .limit(1);
-
-    if (attemptsError) {
-      console.error('❌ alpha_code_attempts table not found or accessible');
-      return;
-    }
+    // Note: alpha_code_attempts table has been removed
+    console.log('   ✅ alpha_code_attempts table removed (unnecessary for alpha testing)');
 
     console.log('✅ Database tables are accessible\n');
 
@@ -92,16 +85,9 @@ async function testAlphaCodes() {
       console.log('   Summary:', summary);
     }
 
-    // Test 4: Check cleanup function
-    console.log('\n4. Testing cleanup function...');
-    const { data: cleanupResult, error: cleanupError } = await supabase.rpc('cleanup_old_alpha_attempts');
-
-    if (cleanupError) {
-      console.error('❌ cleanup_old_alpha_attempts function error:', cleanupError.message);
-    } else {
-      console.log('✅ cleanup_old_alpha_attempts function working');
-      console.log(`   Cleaned up ${cleanupResult} old attempts`);
-    }
+    // Note: cleanup function removed since attempts table is gone
+    console.log('\n4. Cleanup function:');
+    console.log('   ✅ cleanup_old_alpha_attempts function removed (unnecessary)');
 
     console.log('\n🎉 Alpha Code System is ready!');
     console.log('\nNext steps:');

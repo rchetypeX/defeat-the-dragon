@@ -47,32 +47,7 @@ export interface Database {
           created_at?: string
         }
       }
-      alpha_code_attempts: {
-        Row: {
-          id: string
-          ip_address: string | null
-          user_agent: string | null
-          code_hash: string | null
-          success: boolean | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          ip_address?: string | null
-          user_agent?: string | null
-          code_hash?: string | null
-          success?: boolean | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          ip_address?: string | null
-          user_agent?: string | null
-          code_hash?: string | null
-          success?: boolean | null
-          created_at?: string
-        }
-      }
+      // alpha_code_attempts table removed - unnecessary for alpha testing
       players: {
         Row: {
           id: string

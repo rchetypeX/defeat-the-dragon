@@ -107,3 +107,7 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Alpha codes (security - never commit these!)
+alpha_codes*.txt
+alpha_codes*.csv

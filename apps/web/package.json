@@ -15,7 +15,14 @@
     "db:migrate": "supabase db push",
     "db:seed": "tsx scripts/seed.ts",
     "alpha:generate": "tsx scripts/generateAlphaCodes.ts",
-    "alpha:test": "tsx scripts/testAlphaCodes.ts"
+    "alpha:test": "tsx scripts/testAlphaCodes.ts",
+    "alpha:reset": "tsx scripts/resetAlphaCodesDirect.ts",
+    "alpha:check": "tsx scripts/checkAlphaCodes.ts",
+    "alpha:export": "tsx scripts/exportAlphaCodes.ts",
+    "admin:alpha": "tsx scripts/adminAlphaCodes.ts",
+    "alpha:generate": "tsx scripts/generatePlainTextCodes.ts",
+    "alpha:test-usage": "tsx scripts/testAlphaCodeUsage.ts",
+    "test:session": "tsx scripts/testSessionCompletion.ts"
   },
   "dependencies": {
     "@coinbase/onchainkit": "^0.38.19",
