@@ -16,7 +16,6 @@ export async function GET(request: Request) {
       },
       baseBuilder: {
         allowedAddresses: [
-          "0xdc05E6f1d506A509C26A33C9Fcd178890DB2a97b", // Your Base Build wallet address
           "0x1a9Fce96e04ba06D9190339DF817b43837fa0eA9"  // Your Base Account address for mini app ownership
         ]
       },
