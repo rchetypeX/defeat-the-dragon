@@ -14,14 +14,19 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
   const [lastAttempt, setLastAttempt] = useState(0);
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'verifying' | 'verified' | 'denied' | 'used'>('none');
 
-  const normalizeCode = useCallback((input: string): string => {
-    // Remove spaces, dashes, and convert to uppercase
-    return input.replace(/[\s-]/g, '').toUpperCase();
-  }, []);
-
   const formatCode = useCallback((input: string): string => {
-    const normalized = normalizeCode(input);
-    // Only add DTD prefix when we have enough characters
+    // Remove spaces and convert to uppercase, but keep dashes for formatting
+    const cleaned = input.replace(/\s/g, '').toUpperCase();
+    
+    // If it already starts with DTD, don't add another prefix
+    if (cleaned.startsWith('DTD')) {
+      return cleaned;
+    }
+    
+    // Remove any existing dashes and format properly
+    const normalized = cleaned.replace(/-/g, '');
+    
+    // Format as DTD-XXXX-XXXX
     if (normalized.length >= 8) {
       return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4, 8)}`;
     } else if (normalized.length >= 4) {
@@ -30,7 +35,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
       // Don't add DTD prefix until we have at least 4 characters
       return normalized;
     }
-  }, [normalizeCode]);
+  }, []);
 
   const handleCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
@@ -52,9 +57,12 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
     setVerificationStatus('verifying');
 
     try {
-      const normalizedCode = normalizeCode(code);
+      // Clean and normalize the code for API
+      const cleaned = code.replace(/\s/g, '').toUpperCase();
+      const normalized = cleaned.replace(/-/g, '');
+      
       // Ensure we send the full code with DTD prefix to the API
-      const fullCode = normalizedCode.startsWith('DTD') ? normalizedCode : `DTD-${normalizedCode}`;
+      const fullCode = cleaned.startsWith('DTD') ? cleaned : `DTD-${normalized}`;
       
       // Call the API to verify and reserve the code
       const response = await fetch('/api/alpha/verify', {
@@ -99,7 +107,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
     } finally {
       setIsVerifying(false);
     }
-  }, [code, isVerifying, disabled, lastAttempt, normalizeCode, onCodeVerified, onError]);
+  }, [code, isVerifying, disabled, lastAttempt, onCodeVerified, onError]);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
