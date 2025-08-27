@@ -275,7 +275,10 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
       console.log('InventoryPopup: Equip response status:', response.status);
 
       if (response.ok) {
-        // Update local state
+        const result = await response.json();
+        console.log('InventoryPopup: Equip response data:', result);
+        
+        // Update local state immediately based on the successful equip
         if (item.category === 'character') {
           setEquippedCharacter(item.id);
           // Update character store
@@ -291,8 +294,16 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
           [item.category]: item.id
         }));
         
-        // Reload inventory to reflect changes
-        await loadUserInventory();
+        // Update the local inventory state to reflect the equip change
+        setUserInventory(prev => {
+          const updated = prev.map(invItem => ({
+            ...invItem,
+            equipped: (invItem.item_type === item.category && invItem.item_id === item.id) || 
+                     (invItem.item_type === item.category && invItem.item_id !== item.id ? false : invItem.equipped)
+          }));
+          console.log('InventoryPopup: Updated local inventory state:', updated);
+          return updated;
+        });
         
         console.log(`Equipped ${item.name} for ${item.category}`);
       } else {
@@ -331,6 +342,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
     );
     
     if (equippedFromDB) {
+      console.log(`InventoryPopup: Item ${item.id} is equipped in database`);
       return true;
     }
     
@@ -342,13 +354,16 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
     // If no items in database for this category, use local state as fallback
     if (categoryItems.length === 0) {
       if (item.category === 'character' && item.id === equippedCharacter) {
+        console.log(`InventoryPopup: Item ${item.id} is equipped in character store`);
         return true;
       }
       if (item.category === 'background' && item.id === equippedBackground) {
+        console.log(`InventoryPopup: Item ${item.id} is equipped in background store`);
         return true;
       }
     }
     
+    console.log(`InventoryPopup: Item ${item.id} is not equipped`);
     return false;
   };
 

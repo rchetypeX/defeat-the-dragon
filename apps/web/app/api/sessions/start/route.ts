@@ -17,25 +17,52 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
     console.log('API: Auth header present:', !!authHeader);
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('API: Invalid auth header');
+    if (!authHeader) {
+      console.log('API: Missing auth header');
       return NextResponse.json(
-        { error: 'Missing or invalid authorization header' },
+        { error: 'Missing authorization header' },
         { status: 401 }
       );
     }
 
-    // Extract the token
-    const token = authHeader.substring(7);
-    console.log('API: Token extracted, length:', token.length);
-    
     let userId: string | null = null;
     let isWalletUser = false;
     
-    // Check if this is a wallet user token
-    if (token.startsWith('wallet:')) {
+    // Handle different auth token types
+    if (authHeader.startsWith('Bearer ')) {
+      // Standard Bearer token (Supabase JWT)
+      const token = authHeader.substring(7);
+      console.log('API: Bearer token detected, length:', token.length);
+      
+      if (token === 'mock-token-for-development') {
+        console.log('API: Using mock token, skipping Supabase auth');
+        userId = 'mock-user-id';
+      } else {
+        // Standard Supabase JWT token
+        console.log('API: Standard JWT token detected');
+        try {
+          const { data: { user }, error } = await supabase.auth.getUser(token);
+          if (error || !user) {
+            console.error('API: JWT token validation failed:', error);
+            return NextResponse.json(
+              { error: 'Invalid or expired token' },
+              { status: 401 }
+            );
+          }
+          userId = user.id;
+          console.log('API: JWT user validated, user ID:', userId);
+        } catch (e) {
+          console.error('API: Error validating JWT token:', e);
+          return NextResponse.json(
+            { error: 'Invalid or expired token' },
+            { status: 401 }
+          );
+        }
+      }
+    } else if (authHeader.startsWith('wallet:')) {
+      // Wallet user token
       try {
-        const walletData = JSON.parse(token.substring(7)); // Remove 'wallet:'
+        const walletData = JSON.parse(authHeader.substring(7)); // Remove 'wallet:'
         userId = walletData.id;
         isWalletUser = true;
         console.log('API: Wallet user detected, user ID:', userId);
@@ -46,30 +73,25 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         );
       }
-    } else if (token === 'mock-token-for-development') {
-      console.log('API: Using mock token, skipping Supabase auth');
-      userId = 'mock-user-id';
-    } else {
-      // Standard Supabase JWT token
-      console.log('API: Standard JWT token detected');
+    } else if (authHeader.startsWith('baseapp:')) {
+      // Base App user token
       try {
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (error || !user) {
-          console.error('API: JWT token validation failed:', error);
-          return NextResponse.json(
-            { error: 'Invalid or expired token' },
-            { status: 401 }
-          );
-        }
-        userId = user.id;
-        console.log('API: JWT user validated, user ID:', userId);
+        const baseAppData = JSON.parse(authHeader.substring(8)); // Remove 'baseapp:'
+        userId = baseAppData.id;
+        console.log('API: Base App user detected, user ID:', userId);
       } catch (e) {
-        console.error('API: Error validating JWT token:', e);
+        console.error('API: Error parsing Base App token:', e);
         return NextResponse.json(
-          { error: 'Invalid or expired token' },
+          { error: 'Invalid Base App token format' },
           { status: 401 }
         );
       }
+    } else {
+      console.log('API: Invalid auth header format');
+      return NextResponse.json(
+        { error: 'Invalid authorization header format' },
+        { status: 401 }
+      );
     }
     
     if (!userId) {

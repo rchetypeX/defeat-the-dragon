@@ -233,25 +233,48 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
           )}
 
           {isWalletUser && (
-            <button
-              onClick={() => setShowEmailLink(true)}
-              className="w-full px-4 py-3 bg-[#f2751a] hover:bg-[#e65a0a] transition-colors rounded text-white font-semibold mb-3"
-            >
-              📧 Link Email
-            </button>
+            <>
+              <button
+                onClick={() => setShowEmailLink(true)}
+                className="w-full px-4 py-3 bg-[#f2751a] hover:bg-[#e65a0a] transition-colors rounded text-white font-semibold mb-3"
+              >
+                📧 Link Email
+              </button>
+              <div className="p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded text-sm mb-3">
+                <div className="font-semibold mb-2">🔗 You're signed in with wallet. Link an email to access your account from other devices.</div>
+                <div className="flex items-center">
+                  <span className="text-blue-600 mr-2">🔗 Wallet:</span>
+                  <span className="font-mono">{player?.wallet_address}</span>
+                </div>
+              </div>
+            </>
           )}
 
           {/* Show "already linked" message only when wallet is actually connected */}
           {player?.wallet_address && (
             <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded text-sm mb-3">
-              ✅ Your account is linked! You can sign in with either method.
+              <div className="font-semibold mb-2">✅ Your account is linked! You can sign in with either method.</div>
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center">
+                  <span className="text-green-600 mr-2">📧 Email:</span>
+                  <span className="font-mono">{user?.email}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-green-600 mr-2">🔗 Wallet:</span>
+                  <span className="font-mono">{player.wallet_address}</span>
+                </div>
+              </div>
             </div>
           )}
 
           {/* Show status for email-only users */}
           {isEmailUser && !player?.wallet_address && (
             <div className="p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded text-sm mb-3">
-              📧 You're signed in with email. Connect a wallet to link your accounts.
+              <div className="font-semibold mb-2">📧 You're signed in with email. Connect a wallet to link your accounts.</div>
+              <div className="flex items-center">
+                <span className="text-blue-600 mr-2">📧 Email:</span>
+                <span className="font-mono">{user?.email}</span>
+              </div>
             </div>
           )}
         </div>
