@@ -57,41 +57,55 @@ export async function POST(request: NextRequest) {
     let alphaCode = null;
     let fetchError = null;
     
-    // First try: Look for plain text code (DTD-XXXX-XXXX format)
-    const { data: plainTextCode, error: plainTextError } = await supabase
-      .from('alpha_codes')
-      .select('*')
-      .eq('code_hash', code.toUpperCase()) // Try exact match first
-      .eq('used', false)
-      .single();
-    
-    if (plainTextCode) {
-      alphaCode = plainTextCode;
-      console.log('Found alpha code as plain text');
-    } else {
-      // Second try: Look for normalized code (DTDXXXX-XXXX format)
-      const { data: normalizedCodeResult, error: normalizedError } = await supabase
-        .from('alpha_codes')
-        .select('*')
-        .eq('code_hash', normalizedCode)
-        .eq('used', false)
-        .single();
-      
-      if (normalizedCodeResult) {
-        alphaCode = normalizedCodeResult;
-        console.log('Found alpha code as normalized text');
-      } else {
-        fetchError = normalizedError;
-        console.log('Alpha code not found in either format');
-      }
-    }
+         // First try: Look for plain text code (DTD-XXXX-XXXX format)
+     const { data: plainTextCode, error: plainTextError } = await supabase
+       .from('alpha_codes')
+       .select('*')
+       .eq('code_hash', code.toUpperCase()) // Try exact match first
+       .eq('used', false)
+       .single();
+     
+     if (plainTextCode) {
+       alphaCode = plainTextCode;
+       console.log('Found alpha code as plain text');
+     } else {
+       // Second try: Look for code with DTD prefix if not already present
+       const codeWithPrefix = code.toUpperCase().startsWith('DTD') ? code.toUpperCase() : `DTD-${code.toUpperCase()}`;
+       const { data: prefixedCode, error: prefixedError } = await supabase
+         .from('alpha_codes')
+         .select('*')
+         .eq('code_hash', codeWithPrefix)
+         .eq('used', false)
+         .single();
+       
+       if (prefixedCode) {
+         alphaCode = prefixedCode;
+         console.log('Found alpha code with DTD prefix');
+       } else {
+         // Third try: Look for normalized code (DTDXXXX-XXXX format)
+         const { data: normalizedCodeResult, error: normalizedError } = await supabase
+           .from('alpha_codes')
+           .select('*')
+           .eq('code_hash', normalizedCode)
+           .eq('used', false)
+           .single();
+         
+         if (normalizedCodeResult) {
+           alphaCode = normalizedCodeResult;
+           console.log('Found alpha code as normalized text');
+         } else {
+           fetchError = normalizedError;
+           console.log('Alpha code not found in any format');
+         }
+       }
+     }
 
     console.log('Database query result:', { alphaCode, fetchError });
 
     if (fetchError) {
       console.error('Alpha code fetch error:', fetchError);
       return NextResponse.json(
-        { error: 'alpha code invalid' },
+        { error: `Database error: ${fetchError.message}` },
         { status: 400 }
       );
     }
@@ -110,7 +124,14 @@ export async function POST(request: NextRequest) {
       console.log('Debug: Looking for normalized code:', normalizedCode);
       
       return NextResponse.json(
-        { error: 'alpha code invalid' },
+        { 
+          error: 'alpha code invalid',
+          debug: {
+            searchedFor: code.toUpperCase(),
+            normalizedSearch: normalizedCode,
+            availableCodes: allCodes?.slice(0, 3) || []
+          }
+        },
         { status: 400 }
       );
     }

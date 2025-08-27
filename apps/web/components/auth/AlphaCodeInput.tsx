@@ -21,13 +21,13 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
 
   const formatCode = useCallback((input: string): string => {
     const normalized = normalizeCode(input);
-    // Format as DTD-XXXX-XXXX
-    if (normalized.length <= 4) {
-      return normalized;
-    } else if (normalized.length <= 8) {
-      return `${normalized.slice(0, 4)}-${normalized.slice(4)}`;
+    // Format as DTD-XXXX-XXXX, automatically adding DTD prefix
+    if (normalized.length <= 3) {
+      return `DTD-${normalized}`;
+    } else if (normalized.length <= 7) {
+      return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4)}`;
     } else {
-      return `${normalized.slice(0, 4)}-${normalized.slice(4, 8)}`;
+      return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4, 8)}`;
     }
   }, [normalizeCode]);
 
@@ -70,7 +70,13 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           onError('Too many attempts. Please wait a moment.');
         } else {
           setVerificationStatus('denied');
-          onError('alpha code invalid');
+          // Show debug info if available
+          if (data.debug) {
+            console.log('Alpha code debug info:', data.debug);
+            onError(`alpha code invalid - Check console for debug info`);
+          } else {
+            onError(data.error || 'alpha code invalid');
+          }
         }
         return;
       }
@@ -108,7 +114,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
   return (
     <div className="space-y-1">
       <label htmlFor="alpha-code" className="block text-xs font-medium mb-0.5 text-[#fbbf24]">
-        Alpha access code
+        Alpha access code (DTD-XXXX-XXXX)
       </label>
       <div className="flex space-x-1">
         <input
@@ -117,8 +123,8 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           value={code}
           onChange={handleCodeChange}
           onKeyPress={handleKeyPress}
-          placeholder="DTD-XXXX-XXXX"
-          maxLength={12} // DTD-XXXX-XXXX
+          placeholder="XXXX-XXXX"
+          maxLength={9} // XXXX-XXXX (8 chars + 1 dash)
           className="flex-1 pixel-input text-xs placeholder:text-xs"
           disabled={disabled || isVerifying}
         />
