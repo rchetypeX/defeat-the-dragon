@@ -21,13 +21,14 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
 
   const formatCode = useCallback((input: string): string => {
     const normalized = normalizeCode(input);
-    // Format as DTD-XXXX-XXXX, automatically adding DTD prefix
-    if (normalized.length <= 3) {
-      return `DTD-${normalized}`;
-    } else if (normalized.length <= 7) {
+    // Only add DTD prefix when we have enough characters
+    if (normalized.length >= 8) {
+      return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4, 8)}`;
+    } else if (normalized.length >= 4) {
       return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4)}`;
     } else {
-      return `DTD-${normalized.slice(0, 4)}-${normalized.slice(4, 8)}`;
+      // Don't add DTD prefix until we have at least 4 characters
+      return normalized;
     }
   }, [normalizeCode]);
 
@@ -52,6 +53,8 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
 
     try {
       const normalizedCode = normalizeCode(code);
+      // Ensure we send the full code with DTD prefix to the API
+      const fullCode = normalizedCode.startsWith('DTD') ? normalizedCode : `DTD-${normalizedCode}`;
       
       // Call the API to verify and reserve the code
       const response = await fetch('/api/alpha/verify', {
@@ -59,7 +62,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code: normalizedCode }),
+        body: JSON.stringify({ code: fullCode }),
       });
 
       const data = await response.json();
@@ -124,7 +127,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           onChange={handleCodeChange}
           onKeyPress={handleKeyPress}
           placeholder="XXXX-XXXX"
-          maxLength={9} // XXXX-XXXX (8 chars + 1 dash)
+          maxLength={12} // Allow full DTD-XXXX-XXXX format
           className="flex-1 pixel-input text-xs placeholder:text-xs"
           disabled={disabled || isVerifying}
         />
