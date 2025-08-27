@@ -537,6 +537,7 @@ export function useWalletAuth() {
         },
         body: JSON.stringify({
           address,
+          displayName: `Player_${address.slice(2, 8)}`, // Generate a display name from wallet address
           message,
           signature,
           reservedToken, // Include alpha code reservation token

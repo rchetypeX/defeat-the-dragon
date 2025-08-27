@@ -12,6 +12,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
   const [code, setCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [lastAttempt, setLastAttempt] = useState(0);
+  const [verificationStatus, setVerificationStatus] = useState<'none' | 'verifying' | 'verified' | 'denied' | 'used'>('none');
 
   const normalizeCode = useCallback((input: string): string => {
     // Remove spaces, dashes, and convert to uppercase
@@ -47,6 +48,7 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
     setLastAttempt(now);
 
     setIsVerifying(true);
+    setVerificationStatus('verifying');
 
     try {
       const normalizedCode = normalizeCode(code);
@@ -64,21 +66,26 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
 
       if (!response.ok) {
         if (response.status === 429) {
+          setVerificationStatus('denied');
           onError('Too many attempts. Please wait a moment.');
         } else {
+          setVerificationStatus('denied');
           onError('alpha code invalid');
         }
         return;
       }
 
       if (data.reserved_token && data.reserved_until) {
+        setVerificationStatus('verified');
         onCodeVerified(data.reserved_token, data.reserved_until);
       } else {
+        setVerificationStatus('denied');
         onError('alpha code invalid');
       }
 
     } catch (error) {
       console.error('Alpha code verification error:', error);
+      setVerificationStatus('denied');
       onError('alpha code invalid');
     } finally {
       setIsVerifying(false);
@@ -124,9 +131,23 @@ export function AlphaCodeInput({ onCodeVerified, onError, disabled = false }: Al
           {isVerifying ? 'Verifying...' : 'Verify'}
         </button>
       </div>
-      <p className="text-xs text-[#8B4513]">
-        Enter your alpha access code to join the alpha test
-      </p>
+             <p className="text-xs text-[#8B4513]">
+         Enter your alpha access code to join the alpha test
+       </p>
+       
+       {/* Verification Status */}
+       {verificationStatus !== 'none' && (
+         <div className={`text-xs p-1 rounded ${
+           verificationStatus === 'verified' ? 'bg-green-100 text-green-700 border border-green-300' :
+           verificationStatus === 'denied' ? 'bg-red-100 text-red-700 border border-red-300' :
+           verificationStatus === 'verifying' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
+           'bg-gray-100 text-gray-700 border border-gray-300'
+         }`}>
+           {verificationStatus === 'verified' && '✅ Alpha code verified successfully!'}
+           {verificationStatus === 'denied' && '❌ Alpha code invalid or already used'}
+           {verificationStatus === 'verifying' && '⏳ Verifying alpha code...'}
+         </div>
+       )}
     </div>
   );
 }
