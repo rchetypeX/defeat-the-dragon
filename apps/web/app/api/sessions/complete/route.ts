@@ -69,19 +69,25 @@ async function calculateSessionRewards(sessionType: string, durationMinutes: num
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse request body
+    // Parse and validate request body using the CompleteSessionRequest schema
     const body = await request.json();
-    const { op_id, started_at, ended_at, action, context } = body;
-    // disturbed_seconds removed as part of database cleanup
-
-    // Validate required fields
-    if (!op_id || !started_at || !ended_at || !action) {
+    console.log('Session complete: Received request body:', body);
+    
+    const validationResult = CompleteSessionRequest.safeParse(body);
+    if (!validationResult.success) {
+      console.log('Session complete: Validation failed:', validationResult.error);
       return NextResponse.json(
-        { error: 'Missing required fields: op_id, started_at, ended_at, action' },
+        { error: 'Invalid request data', details: validationResult.error },
         { status: 400 }
       );
     }
+    
+    const { session_id, actual_duration_minutes, outcome } = validationResult.data;
+    console.log('Session complete: Validated data:', { session_id, actual_duration_minutes, outcome });
 
+    // Generate a unique operation ID for idempotency
+    const op_id = crypto.randomUUID();
+    
     // Check for idempotency - if we've seen this op_id before, return the previous response
     const { data: existingOp } = await supabase
       .from('ops_seen')
@@ -107,57 +113,39 @@ export async function POST(request: NextRequest) {
     
     // Handle different auth token types
     if (authHeader.startsWith('Bearer ')) {
+      // Standard Bearer token (Supabase JWT)
       const token = authHeader.substring(7);
+      console.log('Session complete: Bearer token detected, length:', token.length);
       
-      if (token.startsWith('wallet:')) {
-        try {
-          const walletData = JSON.parse(token.substring(7));
-          userId = walletData.id;
-          console.log('Session complete: Wallet user detected, user ID:', userId);
-        } catch (e) {
-          console.error('Session complete: Error parsing wallet token:', e);
-          return NextResponse.json(
-            { error: 'Invalid wallet token format' },
-            { status: 401 }
-          );
-        }
-      } else if (token.startsWith('baseapp:')) {
-        try {
-          const baseAppData = JSON.parse(token.substring(8));
-          userId = baseAppData.id;
-          console.log('Session complete: Base App user detected, user ID:', userId);
-        } catch (e) {
-          console.error('Session complete: Error parsing Base App token:', e);
-          return NextResponse.json(
-            { error: 'Invalid Base App token format' },
-            { status: 401 }
-          );
-        }
+      if (token === 'mock-token-for-development') {
+        console.log('Session complete: Using mock token, skipping Supabase auth');
+        userId = 'mock-user-id';
       } else {
-        // It's a Supabase token, verify it
+        // Standard Supabase JWT token
+        console.log('Session complete: Standard JWT token detected');
         try {
           const { data: { user }, error } = await supabase.auth.getUser(token);
-          if (user && !error) {
-            userId = user.id;
-            console.log('Session complete: Supabase user detected, user ID:', userId);
-          } else {
-            console.error('Session complete: Invalid Supabase token:', error);
+          if (error || !user) {
+            console.error('Session complete: JWT token validation failed:', error);
             return NextResponse.json(
-              { error: 'Invalid Supabase token' },
+              { error: 'Invalid or expired token' },
               { status: 401 }
             );
           }
+          userId = user.id;
+          console.log('Session complete: JWT user validated, user ID:', userId);
         } catch (e) {
-          console.error('Session complete: Error verifying Supabase token:', e);
+          console.error('Session complete: Error validating JWT token:', e);
           return NextResponse.json(
-            { error: 'Invalid Supabase token' },
+            { error: 'Invalid or expired token' },
             { status: 401 }
           );
         }
       }
     } else if (authHeader.startsWith('wallet:')) {
+      // Wallet user token
       try {
-        const walletData = JSON.parse(authHeader.substring(7));
+        const walletData = JSON.parse(authHeader.substring(7)); // Remove 'wallet:'
         userId = walletData.id;
         console.log('Session complete: Wallet user detected, user ID:', userId);
       } catch (e) {
@@ -168,8 +156,9 @@ export async function POST(request: NextRequest) {
         );
       }
     } else if (authHeader.startsWith('baseapp:')) {
+      // Base App user token
       try {
-        const baseAppData = JSON.parse(authHeader.substring(8));
+        const baseAppData = JSON.parse(authHeader.substring(8)); // Remove 'baseapp:'
         userId = baseAppData.id;
         console.log('Session complete: Base App user detected, user ID:', userId);
       } catch (e) {
@@ -179,6 +168,13 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         );
       }
+    } else {
+      console.log('Session complete: Invalid auth header format');
+      return NextResponse.json(
+        { error: 'Invalid authorization header format' },
+        { status: 401 }
+      );
+          }
     }
 
     if (!userId) {
@@ -188,29 +184,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate session duration
-    const startTime = new Date(started_at);
-    const endTime = new Date(ended_at);
-    const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+    // Look up the session in the database
+    const { data: session, error: sessionError } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('id', session_id)
+      .eq('user_id', userId)
+      .single();
 
-    // Validate duration (prevent backdating and ensure reasonable duration)
-    const now = new Date();
-    const maxBackdateMinutes = 10; // Allow 10 minutes of backdating
+    if (sessionError || !session) {
+      console.error('Session complete: Error fetching session:', sessionError);
+      return NextResponse.json(
+        { error: 'Session not found' },
+        { status: 404 }
+      );
+    }
+
+    console.log('Session complete: Found session:', session);
+
+    // Validate that the session hasn't already been completed
+    if (session.ended_at) {
+      return NextResponse.json(
+        { error: 'Session has already been completed' },
+        { status: 400 }
+      );
+    }
+
+    // Use the actual duration from the request
+    const durationMinutes = actual_duration_minutes;
+    const action = session.action;
+
+    // Validate duration (prevent unreasonable duration)
     const maxDurationMinutes = 480; // 8 hours max
-
-    if (endTime > now) {
-      return NextResponse.json(
-        { error: 'Session end time cannot be in the future' },
-        { status: 400 }
-      );
-    }
-
-    if (endTime < new Date(now.getTime() - maxBackdateMinutes * 60 * 1000)) {
-      return NextResponse.json(
-        { error: 'Session end time is too far in the past' },
-        { status: 400 }
-      );
-    }
 
     if (durationMinutes < 0 || durationMinutes > maxDurationMinutes) {
       return NextResponse.json(
@@ -234,8 +239,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate rewards
-    const rewards = await calculateSessionRewards(action, durationMinutes, true);
+    // Calculate rewards based on outcome
+    const isSuccessful = outcome === 'success';
+    const rewards = await calculateSessionRewards(action, durationMinutes, isSuccessful);
     
     // Calculate new values
     const newXP = player.xp + rewards.xp;
@@ -264,6 +270,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Mark the session as completed
+    const { error: sessionUpdateError } = await supabase
+      .from('sessions')
+      .update({
+        ended_at: new Date().toISOString()
+      })
+      .eq('id', session_id);
+
+    if (sessionUpdateError) {
+      console.error('Session complete: Error updating session:', sessionUpdateError);
+      return NextResponse.json(
+        { error: 'Failed to update session' },
+        { status: 500 }
+      );
+    }
+
     // Record the operation as seen for idempotency
     await supabase
       .from('ops_seen')
@@ -275,19 +297,13 @@ export async function POST(request: NextRequest) {
       })
       .single();
 
-    // Prepare response
-    const response = {
-      xp_delta: rewards.xp,
-      coins_delta: rewards.coins,
-      sparks_delta: rewards.sparks,
+    // Prepare response according to CompleteSessionResponse schema
+    const response: z.infer<typeof CompleteSessionResponse> = {
+      xp_gained: rewards.xp,
+      coins_gained: rewards.coins,
+      sparks_gained: rewards.sparks,
       level_up: levelUp,
-      player: {
-        level: newLevel,
-        xp: newXP,
-        coins: newCoins,
-        sparks: newSparks,
-        display_name: player.display_name
-      }
+      new_level: newLevel
     };
 
     // Store the response for idempotency

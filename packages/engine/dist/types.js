@@ -42,9 +42,7 @@ exports.SessionSchema = zod_1.z.object({
     started_at: zod_1.z.string().datetime(),
     ended_at: zod_1.z.string().datetime().optional(),
     outcome: exports.SessionOutcome.optional(),
-    disturbed_seconds: zod_1.z.number().int().min(0).default(0),
-    dungeon_floor: zod_1.z.number().int().min(0).default(0),
-    boss_tier: exports.BossTier.default('none')
+    // disturbed_seconds, dungeon_floor, boss_tier removed as part of database cleanup
 });
 exports.InventorySchema = zod_1.z.object({
     id: zod_1.z.string().uuid(),
@@ -101,8 +99,8 @@ exports.StartSessionResponse = zod_1.z.object({
 exports.CompleteSessionRequest = zod_1.z.object({
     session_id: zod_1.z.string().uuid(),
     actual_duration_minutes: zod_1.z.number().int().min(0),
-    disturbed_seconds: zod_1.z.number().int().min(0),
     outcome: exports.SessionOutcome
+    // disturbed_seconds removed as part of database cleanup
 });
 exports.CompleteSessionResponse = zod_1.z.object({
     xp_gained: zod_1.z.number().int().min(0),

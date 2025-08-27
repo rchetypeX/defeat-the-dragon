@@ -79,17 +79,11 @@ export declare const SessionSchema: z.ZodObject<{
     started_at: z.ZodString;
     ended_at: z.ZodOptional<z.ZodString>;
     outcome: z.ZodOptional<z.ZodEnum<["success", "fail", "early_stop"]>>;
-    disturbed_seconds: z.ZodDefault<z.ZodNumber>;
-    dungeon_floor: z.ZodDefault<z.ZodNumber>;
-    boss_tier: z.ZodDefault<z.ZodEnum<["none", "mini", "big"]>>;
 }, "strip", z.ZodTypeAny, {
     user_id: string;
     id: string;
     action: "Train" | "Eat" | "Learn" | "Bathe" | "Sleep" | "Maintain" | "Fight" | "Adventure";
     started_at: string;
-    disturbed_seconds: number;
-    dungeon_floor: number;
-    boss_tier: "none" | "mini" | "big";
     ended_at?: string | undefined;
     outcome?: "success" | "fail" | "early_stop" | undefined;
 }, {
@@ -99,9 +93,6 @@ export declare const SessionSchema: z.ZodObject<{
     started_at: string;
     ended_at?: string | undefined;
     outcome?: "success" | "fail" | "early_stop" | undefined;
-    disturbed_seconds?: number | undefined;
-    dungeon_floor?: number | undefined;
-    boss_tier?: "none" | "mini" | "big" | undefined;
 }>;
 export declare const InventorySchema: z.ZodObject<{
     id: z.ZodString;
@@ -252,16 +243,13 @@ export declare const StartSessionResponse: z.ZodObject<{
 export declare const CompleteSessionRequest: z.ZodObject<{
     session_id: z.ZodString;
     actual_duration_minutes: z.ZodNumber;
-    disturbed_seconds: z.ZodNumber;
     outcome: z.ZodEnum<["success", "fail", "early_stop"]>;
 }, "strip", z.ZodTypeAny, {
     outcome: "success" | "fail" | "early_stop";
-    disturbed_seconds: number;
     session_id: string;
     actual_duration_minutes: number;
 }, {
     outcome: "success" | "fail" | "early_stop";
-    disturbed_seconds: number;
     session_id: string;
     actual_duration_minutes: number;
 }>;
