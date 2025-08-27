@@ -19,7 +19,8 @@
     "prepare": "husky install",
     "db:migrate": "cd apps/web && npm run db:migrate",
     "db:seed": "cd apps/web && npm run db:seed",
-    "setup:alpha-codes": "cd apps/web && npm run setup:alpha-codes"
+    "setup:alpha-codes": "cd apps/web && npm run setup:alpha-codes",
+    "setup:production-alpha-codes": "cd apps/web && npm run setup:production-alpha-codes"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
