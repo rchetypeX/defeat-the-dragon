@@ -138,20 +138,20 @@ export function GameDashboard() {
 
 
 
-  // Debug logging for focus button visibility
-  useEffect(() => {
-    console.log('GameDashboard: Focus button visibility debug:', {
-      showSessionTimer,
-      sessionResult: !!sessionResult,
-      sessionResultDetails: sessionResult,
-      showSettings,
-      showShop,
-      showInventory,
-      showAudioControls,
-      sessionProgressIsActive: sessionProgress.isActive,
-      shouldHideFocusButton: showSessionTimer || sessionResult || showSettings || showShop || showInventory || showAudioControls
-    });
-  }, [showSessionTimer, sessionResult, showSettings, showShop, showInventory, showAudioControls, sessionProgress.isActive]);
+  // Debug logging for focus button visibility (commented out for production)
+  // useEffect(() => {
+  //   console.log('GameDashboard: Focus button visibility debug:', {
+  //     showSessionTimer,
+  //     sessionResult: !!sessionResult,
+  //     sessionResultDetails: sessionResult,
+  //     showSettings,
+  //     showShop,
+  //     showInventory,
+  //     showAudioControls,
+  //     sessionProgressIsActive: sessionProgress.isActive,
+  //     shouldHideFocusButton: showSessionTimer || sessionResult || showSettings || showShop || showInventory || showAudioControls
+  //   });
+  // }, [showSessionTimer, sessionResult, showSettings, showShop, showInventory, showAudioControls, sessionProgress.isActive]);
 
   // Primary Button Configuration
   const getPrimaryButtonConfig = useCallback(() => {
@@ -223,21 +223,12 @@ export function GameDashboard() {
   };
 
   const handleSessionComplete = async () => {
-    console.log('GameDashboard: handleSessionComplete called');
     try {
-      console.log('GameDashboard: About to call completeSession...');
       const result = await completeSession('success');
-      console.log('GameDashboard: Session completed successfully, result:', result);
-      console.log('GameDashboard: Setting session result');
       setSessionResult(result);
       setShowSessionTimer(false);
       
-      // Note: Session completion already syncs data via the existing session system
-      // No additional sync needed to prevent redundant API calls
-      console.log('GameDashboard: Session completed - data already synced via session system');
-      
       // Show enhanced notification
-      console.log('GameDashboard: About to show session complete notification');
       await showSessionComplete(
         result.xp_gained, 
         result.coins_gained, 
@@ -248,11 +239,8 @@ export function GameDashboard() {
       
       // Show level up notification if applicable
       if (result.level_up && result.new_level) {
-        console.log('GameDashboard: About to show level up notification');
         await showLevelUp(result.new_level, ['New character class', 'Enhanced abilities']);
       }
-      
-      console.log('GameDashboard: handleSessionComplete finished successfully');
     } catch (error) {
       console.error('GameDashboard: Failed to complete session:', error);
     }
@@ -559,26 +547,16 @@ export function GameDashboard() {
 
          {/* Success Message - Full Screen Overlay */}
          {sessionResult && (
-           <>
-             {/* Debug overlay to confirm sessionResult is set */}
-             <div className="fixed inset-0 bg-red-500 bg-opacity-50 flex items-center justify-center z-40">
-               <div className="bg-white p-4 rounded">
-                 <h2>DEBUG: Session Result Set!</h2>
-                 <pre>{JSON.stringify(sessionResult, null, 2)}</pre>
-                 <button onClick={() => setSessionResult(null)}>Close Debug</button>
-               </div>
-             </div>
-             <SuccessMessage
-               xpGained={sessionResult.xp_gained}
-               coinsGained={sessionResult.coins_gained}
-               sparksGained={sessionResult.sparks_gained}
-               levelUp={sessionResult.level_up}
-               newLevel={sessionResult.new_level}
-               onDismiss={handleDismissSuccess}
-               onKeepFocusing={handleKeepFocusing}
-               onGoHome={handleGoHome}
-             />
-           </>
+           <SuccessMessage
+             xpGained={sessionResult.xp_gained}
+             coinsGained={sessionResult.coins_gained}
+             sparksGained={sessionResult.sparks_gained}
+             levelUp={sessionResult.level_up}
+             newLevel={sessionResult.new_level}
+             onDismiss={handleDismissSuccess}
+             onKeepFocusing={handleKeepFocusing}
+             onGoHome={handleGoHome}
+           />
          )}
       </div>
       

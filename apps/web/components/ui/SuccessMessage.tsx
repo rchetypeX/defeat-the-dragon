@@ -47,11 +47,23 @@ export function SuccessMessage({
     <>
       {/* Full Screen Overlay */}
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        {/* Large Character in Center */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 bottom-1/3 z-10">
+          <img 
+            src={getCharacterImage(equippedCharacter)} 
+            alt="Tiny Adventurer" 
+            className="w-32 h-40 sm:w-40 sm:h-48 pixel-art drop-shadow-lg"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+
         {/* Session Complete Popup */}
-        <div className="bg-white p-6 border-2 border-black max-w-md w-full mx-4">
+        <div className="pixel-card p-6 sm:p-8 border-2 border-[#8B4513] bg-[#f5f5dc] max-w-md w-full mx-4 relative z-20">
           {/* Title */}
           <div className="text-center mb-6">
-            <div className="text-black text-xl font-bold mb-2">
+            <div className="text-[#8B4513] text-xl sm:text-2xl font-bold mb-2">
               🎉 Session Complete! 🎉
             </div>
           </div>
@@ -59,37 +71,47 @@ export function SuccessMessage({
           {/* Rewards */}
           <div className="space-y-4">
             {levelUp && (
-              <div className="text-orange-500 font-bold text-center py-2">
+              <div className="text-[#f2751a] font-bold text-center py-2">
                 🚀 LEVEL UP! You are now Level {newLevel}!
               </div>
             )}
             
             <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="p-3 bg-gray-100 border-2 border-black flex flex-col items-center justify-center">
-                <div className="text-black text-sm mb-1 font-bold">XP</div>
-                <div className="text-black font-bold text-lg">+{xpGained}</div>
+              <div className="pixel-card p-3 bg-[#f5f5dc] border-2 border-[#8B4513] flex flex-col items-center justify-center">
+                <div className="text-[#8B4513] text-sm mb-1 font-bold">XP</div>
+                <div className="text-[#654321] font-bold text-lg">+{xpGained}</div>
               </div>
-              <div className="p-3 bg-gray-100 border-2 border-black flex flex-col items-center justify-center">
-                <div className="text-black text-sm mb-1 font-bold">Coins</div>
-                <div className="text-black font-bold text-lg">+{coinsGained}</div>
+              <div className="pixel-card p-3 bg-[#f5f5dc] border-2 border-[#8B4513] flex flex-col items-center justify-center">
+                <div className="text-[#8B4513] text-sm mb-1 font-bold">Coins</div>
+                <div className="text-[#654321] font-bold text-lg">+{coinsGained}</div>
               </div>
             </div>
             
+            {/* Sparks reward - only show if gained */}
+            {sparksGained > 0 && (
+              <div className="grid grid-cols-1 gap-3 text-center">
+                <div className="pixel-card p-3 bg-[#f5f5dc] border-2 border-[#8B4513] flex flex-col items-center justify-center">
+                  <div className="text-[#8B4513] text-sm mb-1 font-bold">✨ Sparks</div>
+                  <div className="text-[#654321] font-bold text-lg">+{sparksGained}</div>
+                </div>
+              </div>
+            )}
+            
             {/* Keep Focusing Prompt */}
             <div className="text-center mt-6">
-              <div className="text-black text-lg font-bold mb-4">
+              <div className="text-[#8B4513] text-lg font-bold mb-4">
                 Keep Focusing?
               </div>
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={onKeepFocusing}
-                  className="bg-blue-500 hover:bg-blue-700 text-white px-8 py-2 text-sm"
+                  className="pixel-button bg-[#8B4513] hover:bg-[#654321] text-white px-8 py-2 text-sm flex-1 max-w-[100px] flex items-center justify-center"
                 >
                   Yes
                 </button>
                 <button
                   onClick={onGoHome}
-                  className="bg-gray-500 hover:bg-gray-700 text-white px-8 py-2 text-sm"
+                  className="pixel-button bg-[#8B4513] hover:bg-[#654321] text-white px-8 py-2 text-sm flex-1 max-w-[100px] flex items-center justify-center"
                 >
                   No
                 </button>
