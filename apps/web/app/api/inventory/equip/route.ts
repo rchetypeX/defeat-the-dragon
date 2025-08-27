@@ -61,19 +61,47 @@ export async function POST(request: NextRequest) {
       if (!userId) {
         const authHeader = request.headers.get('authorization');
         if (authHeader) {
-          if (authHeader.startsWith('Bearer wallet:')) {
-            try {
-              const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
-              userId = walletData.id;
-            } catch (e) {
-              console.error('Error parsing wallet user from header:', e);
+          if (authHeader.startsWith('Bearer ')) {
+            const token = authHeader.substring(7); // Remove 'Bearer '
+            
+            // Check if it's a wallet token
+            if (token.startsWith('wallet:')) {
+              try {
+                const walletData = JSON.parse(token.substring(7)); // Remove 'wallet:'
+                userId = walletData.id;
+                console.log('Equip: Found wallet user from Bearer token:', userId);
+              } catch (e) {
+                console.error('Error parsing wallet user from Bearer token:', e);
+              }
+            } else {
+              // It's a Supabase token, verify it
+              try {
+                const { data: { user }, error } = await supabase.auth.getUser(token);
+                if (user && !error) {
+                  userId = user.id;
+                  console.log('Equip: Found Supabase user from Bearer token:', userId);
+                } else {
+                  console.error('Invalid Supabase token:', error);
+                }
+              } catch (e) {
+                console.error('Error verifying Supabase token:', e);
+              }
             }
           } else if (authHeader.startsWith('wallet:')) {
             try {
               const walletData = JSON.parse(authHeader.substring(7)); // Remove 'wallet:'
               userId = walletData.id;
+              console.log('Equip: Found wallet user from header:', userId);
             } catch (e) {
               console.error('Error parsing wallet user from header:', e);
+            }
+          } else if (authHeader.startsWith('Bearer wallet:')) {
+            try {
+              const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
+              userId = walletData.id;
+              console.log('Equip: Found wallet user from Bearer wallet header:', userId);
+            } catch (e) {
+              console.error('Error parsing wallet user from Bearer wallet header:', e);
             }
           } else if (authHeader.startsWith('Bearer baseapp:')) {
             try {
