@@ -9,9 +9,14 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
+    // Add timeout and better error handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
     const { address, displayName, message, signature } = await request.json();
 
     if (!address || !displayName || !message || !signature) {
+      clearTimeout(timeoutId);
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -152,6 +157,9 @@ export async function POST(request: NextRequest) {
       console.log('Player record created successfully');
     }
 
+    // Clear timeout since we're about to return
+    clearTimeout(timeoutId);
+
     // For wallet authentication, return the user data for localStorage approach
     // The session will be handled by the client-side auth context
     return NextResponse.json({
@@ -166,10 +174,28 @@ export async function POST(request: NextRequest) {
       walletAuth: true,
     });
 
-
-
   } catch (error) {
+    // Clear timeout in case of error
+    clearTimeout(timeoutId);
+    
     console.error('Wallet sign-up error:', error);
+    
+    // Check if it's a timeout error
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'Request timeout - please try again' },
+        { status: 408 }
+      );
+    }
+    
+    // Check if it's a network error
+    if (error instanceof Error && error.message.includes('ECONNRESET')) {
+      return NextResponse.json(
+        { error: 'Connection error - please check your internet and try again' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

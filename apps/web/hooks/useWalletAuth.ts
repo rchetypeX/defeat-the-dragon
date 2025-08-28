@@ -505,7 +505,7 @@ export function useWalletAuth() {
     }
   };
 
-  const signUpWithWallet = async () => {
+  const signUpWithWallet = async (retryCount = 0) => {
     if (!address) {
       setAuthError('Please connect your wallet first.');
       return;
@@ -513,6 +513,9 @@ export function useWalletAuth() {
 
     setIsConnecting(true);
     setAuthError(null);
+
+    // Maximum retry attempts
+    const maxRetries = 2;
 
     try {
       // Create a message to sign
@@ -541,12 +544,21 @@ export function useWalletAuth() {
           message,
           signature,
         }),
+        // Add timeout to prevent hanging requests
+        signal: AbortSignal.timeout(30000), // 30 second timeout
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Registration failed');
+        // Handle specific error types
+        if (response.status === 408) {
+          throw new Error('Request timed out - please try again');
+        } else if (response.status === 503) {
+          throw new Error('Connection error - please check your internet and try again');
+        } else {
+          throw new Error(result.error || 'Registration failed');
+        }
       }
 
       // For wallet authentication, the session is now created server-side
@@ -570,7 +582,38 @@ export function useWalletAuth() {
 
     } catch (error) {
       console.error('Wallet sign-up error:', error);
-      setAuthError(error instanceof Error ? error.message : 'Registration failed');
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.message.includes('timeout')) {
+          setAuthError('Request timed out - please try again');
+        } else if (error.message.includes('ECONNRESET') || error.message.includes('Connection error')) {
+          setAuthError('Connection error - please check your internet and try again');
+        } else if (error.message.includes('Failed to fetch')) {
+          setAuthError('Network error - please check your connection and try again');
+        } else {
+          setAuthError(error.message || 'Registration failed');
+        }
+      } else {
+        setAuthError('Registration failed');
+      }
+      
+      // Retry logic for network errors
+      if (retryCount < maxRetries && (
+        error instanceof Error && (
+          error.name === 'AbortError' || 
+          error.message.includes('timeout') ||
+          error.message.includes('ECONNRESET') ||
+          error.message.includes('Connection error') ||
+          error.message.includes('Failed to fetch')
+        )
+      )) {
+        console.log(`Retrying wallet signup (attempt ${retryCount + 1}/${maxRetries})...`);
+        setTimeout(() => {
+          signUpWithWallet(retryCount + 1);
+        }, 1000 * (retryCount + 1)); // Exponential backoff
+        return;
+      }
     } finally {
       setIsConnecting(false);
     }
