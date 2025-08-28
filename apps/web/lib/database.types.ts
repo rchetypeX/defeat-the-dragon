@@ -9,45 +9,6 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      alpha_codes: {
-        Row: {
-          id: string
-          code_hash: string
-          used: boolean
-          reserved_token: string | null
-          reserved_until: string | null
-          used_by: string | null
-          used_at: string | null
-          expires_at: string | null
-          notes: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          code_hash: string
-          used?: boolean
-          reserved_token?: string | null
-          reserved_until?: string | null
-          used_by?: string | null
-          used_at?: string | null
-          expires_at?: string | null
-          notes?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          code_hash?: string
-          used?: boolean
-          reserved_token?: string | null
-          reserved_until?: string | null
-          used_by?: string | null
-          used_at?: string | null
-          expires_at?: string | null
-          notes?: string | null
-          created_at?: string
-        }
-      }
-      // alpha_code_attempts table removed - unnecessary for alpha testing
       players: {
         Row: {
           id: string
@@ -423,34 +384,8 @@ export interface Database {
       // user_achievements table removed - can be re-added when achievement system is implemented
     }
     Views: {
-      // alpha_codes_summary view removed - can be replaced with direct queries
     }
     Functions: {
-      alpha_verify_and_reserve: {
-        Args: {
-          p_code: string
-        }
-        Returns: {
-          reserved_token: string
-          reserved_until: string
-        }[]
-      }
-      alpha_finalize_with_token: {
-        Args: {
-          p_token: string
-        }
-        Returns: boolean
-      }
-      alpha_add_codes: {
-        Args: {
-          p_codes: string[]
-        }
-        Returns: number
-      }
-      cleanup_old_alpha_attempts: {
-        Args: Record<string, never>
-        Returns: number
-      }
     }
     Enums: {
       [_ in never]: never

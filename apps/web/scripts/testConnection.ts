@@ -26,14 +26,14 @@ async function testConnection() {
     
     // Test a simple query
     const { data, error } = await supabase
-      .from('alpha_codes')
+      .from('players')
       .select('id', { count: 'exact', head: true });
     
     if (error) {
       console.error('❌ Connection failed:', error);
     } else {
       console.log('✅ Connection successful!');
-      console.log('Alpha codes count:', data || 0);
+      console.log('Players count:', data || 0);
     }
   } catch (error) {
     console.error('❌ Error:', error);

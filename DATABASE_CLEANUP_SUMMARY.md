@@ -15,10 +15,7 @@ This document outlines the cleanup of redundant tables, fields, and data in the 
 - **Impact**: Reduces database size
 - **Alternative**: Can be handled at the application level
 
-### 3. `alpha_codes_summary` (view)
-- **Reason**: Can be replaced with direct queries
-- **Impact**: Reduces maintenance overhead
-- **Alternative**: Direct SQL queries or application-level aggregation
+
 
 ### 4. `subscriptions`
 - **Reason**: Redundant with `user_subscriptions`
@@ -37,11 +34,7 @@ This document outlines the cleanup of redundant tables, fields, and data in the 
 - **Impact**: Eliminates confusion between two shop item tables
 - **Alternative**: Use `shop_items_master` for all shop functionality
 
-## Tables Kept (15 essential tables)
-
-### Core Authentication & Security
-1. **`alpha_codes`** - Alpha code system for secure access
-2. **`alpha_code_attempts`** - Security audit trail
+## Tables Kept (13 essential tables)
 
 ### Game Content & Mechanics
 3. **`character_dialogue_master`** - Character dialogue content

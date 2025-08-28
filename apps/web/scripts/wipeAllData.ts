@@ -55,17 +55,12 @@ async function wipeAllData() {
       .from('ops_seen')
       .select('id', { count: 'exact', head: true });
     
-    const { data: alphaCodesCount } = await supabase
-      .from('alpha_codes')
-      .select('id', { count: 'exact', head: true });
-
     console.log(`   Players: ${playerCount || 0}`);
     console.log(`   Sessions: ${sessionCount || 0}`);
     console.log(`   Inventory items: ${inventoryCount || 0}`);
     console.log(`   User settings: ${settingsCount || 0}`);
     console.log(`   User purchases: ${purchasesCount || 0}`);
-    console.log(`   Ops seen: ${opsCount || 0}`);
-    console.log(`   Alpha codes: ${alphaCodesCount || 0}\n`);
+    console.log(`   Ops seen: ${opsCount || 0}\n`);
 
     // 2. Confirm with user
     console.log('⚠️  WARNING: This will permanently delete ALL user data!');
@@ -76,7 +71,6 @@ async function wipeAllData() {
     console.log('   - All user settings');
     console.log('   - All user purchases');
     console.log('   - All operation tracking');
-    console.log('\n   Alpha codes will be preserved for admin testing.');
     console.log('\n   NOTE: Auth users will need to be cleared manually via Supabase Dashboard');
     console.log('   (Go to Authentication > Users and delete them manually)\n');
 
@@ -222,36 +216,15 @@ async function wipeAllData() {
       .from('ops_seen')
       .select('id', { count: 'exact', head: true });
     
-    const { data: finalAlphaCodesCount } = await supabase
-      .from('alpha_codes')
-      .select('id', { count: 'exact', head: true });
-
     console.log(`   Players: ${finalPlayerCount || 0}`);
     console.log(`   Sessions: ${finalSessionCount || 0}`);
     console.log(`   Inventory items: ${finalInventoryCount || 0}`);
     console.log(`   User settings: ${finalSettingsCount || 0}`);
     console.log(`   User purchases: ${finalPurchasesCount || 0}`);
     console.log(`   Ops seen: ${finalOpsCount || 0}`);
-    console.log(`   Alpha codes: ${finalAlphaCodesCount || 0}`);
-
-    // 7. Show alpha codes status
-    const { data: alphaCodes } = await supabase
-      .from('alpha_codes')
-      .select('used');
-
-    if (alphaCodes) {
-      const available = alphaCodes.filter(code => !code.used).length;
-      const used = alphaCodes.filter(code => code.used).length;
-      
-      console.log('\n🔑 Alpha codes status:');
-      console.log(`   Total: ${alphaCodes.length}`);
-      console.log(`   Available: ${available}`);
-      console.log(`   Used: ${used}`);
-    }
 
     console.log('\n✅ All application data has been wiped successfully!');
     console.log('📋 You can now start fresh with new player accounts.');
-    console.log('🔑 Alpha codes are preserved for admin testing.');
     console.log('\n⚠️  IMPORTANT: You still need to clear auth users manually:');
     console.log('   1. Go to Supabase Dashboard → Authentication → Users');
     console.log('   2. Select all users (except any admin accounts you want to keep)');

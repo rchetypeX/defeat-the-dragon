@@ -9,68 +9,13 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { address, displayName, message, signature, reservedToken } = await request.json();
+    const { address, displayName, message, signature } = await request.json();
 
     if (!address || !displayName || !message || !signature) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
-    }
-
-    // If reservedToken is provided, finalize the alpha code
-    if (reservedToken) {
-      try {
-        // We need to get the original alpha code that was verified
-        // For now, we'll use a direct database update since we don't have the original code
-        const { error: finalizeError } = await supabase
-          .from('alpha_codes')
-          .update({
-            used: true,
-            used_at: new Date().toISOString(),
-            reserved_token: null,
-            reserved_until: null
-          })
-          .eq('reserved_token', reservedToken)
-          .eq('used', false)
-          .gte('reserved_until', new Date().toISOString());
-
-        if (finalizeError) {
-          console.error('Alpha code finalization error:', finalizeError);
-          return NextResponse.json(
-            { error: 'Invalid or expired alpha code' },
-            { status: 400 }
-          );
-        }
-
-        // Check if any rows were actually updated by querying the count
-        const { count, error: countError } = await supabase
-          .from('alpha_codes')
-          .select('*', { count: 'exact', head: true })
-          .eq('reserved_token', reservedToken)
-          .eq('used', false)
-          .gte('reserved_until', new Date().toISOString());
-
-        if (countError) {
-          console.error('Error checking alpha code count:', countError);
-        }
-
-        if (count && count > 0) {
-          console.error('Alpha code was not properly finalized - still exists with token:', reservedToken);
-          return NextResponse.json(
-            { error: 'Invalid or expired alpha code' },
-            { status: 400 }
-          );
-        }
-
-        console.log('Alpha code finalized successfully');
-      } catch (finalizeError) {
-        console.error('Alpha code finalization error:', finalizeError);
-        return NextResponse.json(
-          { error: 'Invalid or expired alpha code' },
-          { status: 400 }
-        );
-      }
     }
 
     // For now, we'll skip signature verification to avoid viem dependency issues

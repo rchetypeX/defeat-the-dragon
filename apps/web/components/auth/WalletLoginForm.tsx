@@ -2,12 +2,8 @@
 
 import { useState } from 'react';
 import { useWalletAuth } from '../../hooks/useWalletAuth';
-import { AlphaCodeInput } from './AlphaCodeInput';
 
 export function WalletLoginForm() {
-  const [alphaCodeVerified, setAlphaCodeVerified] = useState(false);
-  const [reservedToken, setReservedToken] = useState<string | null>(null);
-  const [reservedUntil, setReservedUntil] = useState<string | null>(null);
   
   const {
     address,
@@ -50,42 +46,15 @@ export function WalletLoginForm() {
   };
 
   const handleSignUp = async () => {
-    // Require alpha code verification for new users
-    if (!alphaCodeVerified || !reservedToken) {
-      return;
-    }
-
-    // Check if reservation is still valid
-    if (reservedUntil && new Date(reservedUntil) < new Date()) {
-      setAlphaCodeVerified(false);
-      setReservedToken(null);
-      setReservedUntil(null);
-      return;
-    }
-    
-    await signUpWithWallet(reservedToken);
-  };
-
-  const handleAlphaCodeVerified = (token: string, until: string) => {
-    setReservedToken(token);
-    setReservedUntil(until);
-    setAlphaCodeVerified(true);
-  };
-
-  const handleAlphaCodeError = (message: string) => {
-    setAlphaCodeVerified(false);
-    setReservedToken(null);
-    setReservedUntil(null);
+    await signUpWithWallet();
   };
 
   // Auto-detect if user should sign up or sign in based on account existence
   const shouldShowSignUp = hasAccount === false;
   const shouldShowSignIn = hasAccount === true;
   
-  // Check if the form is valid for submission - no uniqueness requirement
-  const isFormValid = shouldShowSignUp ? 
-    (alphaCodeVerified) : 
-    true;
+  // Check if the form is valid for submission
+  const isFormValid = true;
 
   return (
     <div className="max-w-md mx-auto pixel-card p-1 sm:p-2 wallet-login-form">
@@ -230,26 +199,13 @@ export function WalletLoginForm() {
             {/* Show appropriate action based on account status */}
             {!isCheckingAccount && hasAccount !== null && (
               <>
-                {shouldShowSignUp && (
-                  <>
-                    {/* Alpha Code Input - Required for new users */}
-                    <AlphaCodeInput
-                      onCodeVerified={handleAlphaCodeVerified}
-                      onError={handleAlphaCodeError}
-                      disabled={isConnecting}
-                    />
-                  </>
-                )}
-                
                 <button
                   onClick={shouldShowSignUp ? handleSignUp : handleSignIn}
                   disabled={isConnecting || !isFormValid}
                   className="w-full pixel-button disabled:opacity-50"
                 >
                   {isConnecting ? 'Processing...' : 
-                   (shouldShowSignUp ? 
-                     (!alphaCodeVerified ? 'Verify Alpha Code First' : 'START ADVENTURE') : 
-                     'Sign In')}
+                   (shouldShowSignUp ? 'START ADVENTURE' : 'Sign In')}
                 </button>
               </>
             )}

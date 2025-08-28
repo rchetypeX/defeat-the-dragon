@@ -505,7 +505,7 @@ export function useWalletAuth() {
     }
   };
 
-  const signUpWithWallet = async (reservedToken?: string) => {
+  const signUpWithWallet = async () => {
     if (!address) {
       setAuthError('Please connect your wallet first.');
       return;
@@ -540,7 +540,6 @@ export function useWalletAuth() {
           displayName: `Player_${address.slice(2, 8)}`, // Generate a display name from wallet address
           message,
           signature,
-          reservedToken, // Include alpha code reservation token
         }),
       });
 
