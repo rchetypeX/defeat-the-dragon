@@ -8,15 +8,17 @@ const supabase = createClient(
 );
 
 export async function POST(request: NextRequest) {
+  let timeoutId: NodeJS.Timeout | undefined;
+  
   try {
     // Add timeout and better error handling
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     const { address, displayName, message, signature } = await request.json();
 
     if (!address || !displayName || !message || !signature) {
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -158,7 +160,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Clear timeout since we're about to return
-    clearTimeout(timeoutId);
+    if (timeoutId) clearTimeout(timeoutId);
 
     // For wallet authentication, return the user data for localStorage approach
     // The session will be handled by the client-side auth context
@@ -176,7 +178,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     // Clear timeout in case of error
-    clearTimeout(timeoutId);
+    if (timeoutId) clearTimeout(timeoutId);
     
     console.error('Wallet sign-up error:', error);
     
