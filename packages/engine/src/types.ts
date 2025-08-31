@@ -43,7 +43,8 @@ export const PlayerSchema = z.object({
   sparks: z.number().int().min(0),
   created_at: z.string().datetime(),
   display_name: z.string().min(1).max(50).optional(),
-  wallet_address: z.string().optional()
+  wallet_address: z.string().optional(),
+  needsAdventurerName: z.boolean().optional()
 });
 
 export const SessionSchema = z.object({

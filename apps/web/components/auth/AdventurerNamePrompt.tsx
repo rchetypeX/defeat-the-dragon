@@ -47,7 +47,10 @@ export function AdventurerNamePrompt({ onComplete }: AdventurerNamePromptProps) 
       }
 
       // Update local store
-      useGameStore.getState().updatePlayer({ display_name: displayName.trim() });
+      useGameStore.getState().updatePlayer({ 
+        display_name: displayName.trim(),
+        needsAdventurerName: false 
+      });
       
       // Call the completion callback
       onComplete(displayName.trim());

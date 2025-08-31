@@ -184,6 +184,9 @@ export async function GET(request: NextRequest) {
     // Check if this is a fresh database (no existing data)
     const isFreshDatabase = !player || player.level === 1 && player.xp === 0 && player.coins === 0;
     
+    // Check if user needs to set their adventurer name
+    const needsAdventurerName = !player?.display_name || player.display_name === 'Adventurer';
+    
     // Prepare response
     const response = {
       profile: profile || { id: userId, display_name: player?.display_name || 'Adventurer' },
@@ -193,7 +196,8 @@ export async function GET(request: NextRequest) {
         coins: player?.coins || 0,
         sparks: player?.sparks || 0,
         display_name: player?.display_name || 'Adventurer',
-        wallet_address: player?.wallet_address || null
+        wallet_address: player?.wallet_address || null,
+        needsAdventurerName: needsAdventurerName
       },
       equipped: {
         character_sku: settings?.equipped_character || 'fighter',

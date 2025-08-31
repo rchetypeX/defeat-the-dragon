@@ -61,8 +61,11 @@ export function GameDashboard() {
 
   // Check if new user needs to set adventurer name
   useEffect(() => {
-    if (player && !player.display_name) {
-      console.log('GameDashboard: New user detected, showing adventurer name prompt');
+    if (player && (player.needsAdventurerName || !player.display_name || player.display_name === 'Adventurer')) {
+      console.log('GameDashboard: New user detected, showing adventurer name prompt', {
+        needsAdventurerName: player.needsAdventurerName,
+        displayName: player.display_name
+      });
       setShowAdventurerNamePrompt(true);
     }
   }, [player]);
