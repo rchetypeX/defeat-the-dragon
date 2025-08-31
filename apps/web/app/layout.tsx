@@ -46,9 +46,9 @@ export function generateMetadata(): Metadata {
       siteName: 'Defeat the Dragon: Focus RPG',
       images: [
         {
-          url: '/og-image.webp',
-          width: 1200,
-          height: 630,
+          url: '/icon.png',
+          width: 192,
+          height: 192,
           alt: 'Defeat the Dragon: Focus RPG',
         },
       ],
@@ -59,7 +59,7 @@ export function generateMetadata(): Metadata {
       card: 'summary_large_image',
       title: 'Defeat the Dragon: Focus RPG',
       description: 'Pomodoro-style Focus RPG',
-      images: ['/og-image.webp'],
+      images: ['/icon.png'],
     },
     other: {
       ...Sentry.getTraceData()

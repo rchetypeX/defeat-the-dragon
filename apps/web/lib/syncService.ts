@@ -16,6 +16,15 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     if (walletUserStr) {
       try {
         const walletUser = JSON.parse(walletUserStr);
+        
+        // Check for old invalid UUID that causes loading issues
+        if (walletUser.id === '795246' || walletUser.id === 795246) {
+          console.log('SyncService: Found old invalid wallet user UUID (795246), clearing...');
+          localStorage.removeItem('walletUser');
+          localStorage.removeItem('defeat-the-dragon-storage');
+          throw new Error('Invalid user UUID detected, please refresh the app');
+        }
+        
         token = `wallet:${JSON.stringify(walletUser)}`;
         console.log('SyncService: Found wallet user token');
       } catch (e) {
@@ -30,6 +39,15 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
     if (baseAppUserStr) {
       try {
         const baseAppUser = JSON.parse(baseAppUserStr);
+        
+        // Check for old invalid UUID that causes loading issues
+        if (baseAppUser.id === '795246' || baseAppUser.id === 795246) {
+          console.log('SyncService: Found old invalid Base App user UUID (795246), clearing...');
+          localStorage.removeItem('baseAppUser');
+          localStorage.removeItem('defeat-the-dragon-storage');
+          throw new Error('Invalid user UUID detected, please refresh the app');
+        }
+        
         token = `baseapp:${JSON.stringify(baseAppUser)}`;
         console.log('SyncService: Found Base App user token');
       } catch (e) {

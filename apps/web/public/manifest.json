@@ -44,9 +44,9 @@
     ],
       "screenshots": [
       {
-        "src": "/og-image.webp",
-        "sizes": "1200x630",
-        "type": "image/webp",
+        "src": "/icon.png",
+        "sizes": "192x192",
+        "type": "image/png",
         "form_factor": "wide",
         "label": "Defeat the Dragon - Focus RPG"
       }

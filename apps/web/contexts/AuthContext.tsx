@@ -27,6 +27,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Database version check - force clear local storage if database was reset
   const checkDatabaseVersion = async () => {
     try {
+      // Clear any old invalid UUIDs that might be cached
+      const clearInvalidUUIDs = () => {
+        const walletUserStr = localStorage.getItem('walletUser');
+        const baseAppUserStr = localStorage.getItem('baseAppUser');
+        
+        if (walletUserStr) {
+          try {
+            const walletUser = JSON.parse(walletUserStr);
+            if (walletUser.id === '795246' || walletUser.id === 795246) {
+              console.log('AuthContext: Clearing old invalid wallet user UUID (795246)');
+              localStorage.removeItem('walletUser');
+            }
+          } catch (e) {
+            localStorage.removeItem('walletUser');
+          }
+        }
+        
+        if (baseAppUserStr) {
+          try {
+            const baseAppUser = JSON.parse(baseAppUserStr);
+            if (baseAppUser.id === '795246' || baseAppUser.id === 795246) {
+              console.log('AuthContext: Clearing old invalid Base App user UUID (795246)');
+              localStorage.removeItem('baseAppUser');
+            }
+          } catch (e) {
+            localStorage.removeItem('baseAppUser');
+          }
+        }
+        
+        // Clear any other potentially corrupted data
+        if (localStorage.getItem('defeat-the-dragon-storage')) {
+          try {
+            const storageData = JSON.parse(localStorage.getItem('defeat-the-dragon-storage') || '{}');
+            if (storageData.player?.id === '795246' || storageData.player?.id === 795246) {
+              console.log('AuthContext: Clearing corrupted game storage data');
+              localStorage.removeItem('defeat-the-dragon-storage');
+            }
+          } catch (e) {
+            localStorage.removeItem('defeat-the-dragon-storage');
+          }
+        }
+      };
+      
+      // Clear invalid UUIDs first
+      clearInvalidUUIDs();
+      
       // Only check if we have cached user data that might be stale
       const hasCachedData = localStorage.getItem('walletUser') || 
                            localStorage.getItem('baseAppUser') || 
@@ -88,6 +134,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (walletUserStr) {
       try {
         const walletUser = JSON.parse(walletUserStr);
+        
+        // Check if this is the old invalid UUID that's causing loading issues
+        if (walletUser.id === '795246' || walletUser.id === 795246) {
+          console.log('AuthContext: Found old invalid wallet user UUID (795246), clearing...');
+          localStorage.removeItem('walletUser');
+          localStorage.removeItem('defeat-the-dragon-storage');
+          return null;
+        }
+        
         console.log('AuthContext: Found wallet user in localStorage:', walletUser);
         return walletUser;
       } catch (error) {
@@ -105,6 +160,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (baseAppUserStr) {
       try {
         const baseAppUser = JSON.parse(baseAppUserStr);
+        
+        // Check if this is the old invalid UUID that's causing loading issues
+        if (baseAppUser.id === '795246' || baseAppUser.id === 795246) {
+          console.log('AuthContext: Found old invalid Base App user UUID (795246), clearing...');
+          localStorage.removeItem('baseAppUser');
+          localStorage.removeItem('defeat-the-dragon-storage');
+          return null;
+        }
+        
         console.log('AuthContext: Found Base App user in localStorage:', baseAppUser);
         return baseAppUser;
       } catch (error) {
