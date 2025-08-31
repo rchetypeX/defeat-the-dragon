@@ -1,6 +1,3 @@
-  base-app-integration[m
-* [32mbase-auth[m
-  main[m
 [33m3b1e8e1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mbase-auth[m[33m, [m[1;31morigin/base-auth[m[33m)[m d2
 [33m4b6ef5e[m d1
 [33m956bbef[m Remove all Alpha Code gating functionality from base-auth branch

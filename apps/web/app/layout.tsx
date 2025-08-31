@@ -5,8 +5,6 @@ import './mobile-first.css';
 import { AuthProvider } from '../contexts/AuthContext';
 import { AudioProvider } from '../contexts/AudioContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
-import { WagmiContextProvider } from '../providers/WagmiProvider';
-import { MiniAppDetector } from '../components/MiniAppDetector';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -176,15 +174,11 @@ export default function RootLayout({
         {/* Orientation warning for mobile landscape */}
         <div className="orientation-warning"></div>
         
-        <WagmiContextProvider>
-          <MiniKitContextProvider>
-            <AuthProvider>
-              <MiniAppDetector>
-                {children}
-              </MiniAppDetector>
-            </AuthProvider>
-          </MiniKitContextProvider>
-        </WagmiContextProvider>
+        <MiniKitContextProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </MiniKitContextProvider>
         <SpeedInsights />
         <Analytics />
       </body>
