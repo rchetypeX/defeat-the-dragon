@@ -28,6 +28,30 @@ export async function POST(request: NextRequest) {
       }
     );
 
+    // Test database connection first
+    console.log('Testing database connection...');
+    try {
+      const { data: testData, error: testError } = await supabase
+        .from('user_inventory')
+        .select('count')
+        .limit(1);
+      
+      if (testError) {
+        console.error('Database connection test failed:', testError);
+        return NextResponse.json(
+          { error: 'Database connection failed', details: testError.message },
+          { status: 500 }
+        );
+      }
+      console.log('Database connection successful');
+    } catch (dbError) {
+      console.error('Database connection error:', dbError);
+      return NextResponse.json(
+        { error: 'Database connection error', details: dbError instanceof Error ? dbError.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+
     // Try to get user from session first
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
@@ -280,8 +304,28 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Purchase API error:', error);
+    
+    // Enhanced error logging
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+    
+    // Log the request context
+    console.error('Request context:', {
+      url: request.url,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries())
+    });
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : 'Unknown error' : undefined
+      },
       { status: 500 }
     );
   }

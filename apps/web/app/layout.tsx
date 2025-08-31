@@ -50,7 +50,7 @@ export function generateMetadata(): Metadata {
       siteName: 'Defeat the Dragon',
       images: [
         {
-          url: '/og-image.png',
+          url: '/og-image.webp',
           width: 1200,
           height: 630,
           alt: 'Defeat the Dragon - Focus RPG',
@@ -63,7 +63,7 @@ export function generateMetadata(): Metadata {
       card: 'summary_large_image',
       title: 'Defeat the Dragon - Focus RPG',
       description: 'Pixel-art Pomodoro-style Focus RPG',
-      images: ['/og-image.png'],
+      images: ['/og-image.webp'],
     },
     other: {
       ...Sentry.getTraceData()
@@ -96,20 +96,9 @@ export default function RootLayout({
         <link rel="mask-icon" href="/favicon.svg" color="#7c2d12" />
         <link rel="shortcut icon" href="/favicon.ico" />
         
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:url" content="https://dtd.rchetype.xyz/" />
-        <meta name="twitter:title" content="Defeat the Dragon - Focus RPG" />
-        <meta name="twitter:description" content="Pixel-art Pomodoro-style Focus RPG" />
-        <meta name="twitter:image" content="/og-image.png" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:creator" content="@yourusername" />
         <meta name="twitter:site" content="@yourusername" />
-        
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Defeat the Dragon - Focus RPG" />
-        <meta property="og:description" content="Pixel-art Pomodoro-style Focus RPG" />
-        <meta property="og:site_name" content="Defeat the Dragon" />
-        <meta property="og:url" content="https://dtd.rchetype.xyz/" />
-        <meta property="og:image" content="/og-image.png" />
       </head>
       <body className={inter.className}>
         <AuthProvider>
