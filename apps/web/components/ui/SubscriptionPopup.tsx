@@ -388,20 +388,23 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         throw new Error('Pricing not available');
       }
 
+      // Use the actual subscription type from the pricing, not hardcoded
       const response = await fetch('/api/subscriptions/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          subscriptionType: 'inspiration_boon',
+          subscriptionType: subscriptionType, // Use the actual selected type: 'monthly' or 'annual'
           duration: currentPricing.duration_days,
           transactionHash,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update subscription status');
+        const errorData = await response.json();
+        console.error('Subscription API error:', errorData);
+        throw new Error(`Failed to update subscription status: ${errorData.error || 'Unknown error'}`);
       }
 
       console.log('Subscription updated successfully');

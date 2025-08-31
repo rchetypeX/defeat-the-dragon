@@ -45,10 +45,13 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
     
     let userId: string | null = null;
+    let authMethod: string = 'none';
     
     if (user) {
       // Standard Supabase auth user
       userId = user.id;
+      authMethod = 'supabase_session';
+      console.log('User authenticated via Supabase session:', userId);
     } else {
       // Check if this is a wallet user by looking for wallet address in headers or cookies
       const walletUser = cookieStore.get('wallet-user');
@@ -56,13 +59,18 @@ export async function POST(request: NextRequest) {
         try {
           const walletData = JSON.parse(walletUser.value);
           userId = walletData.id;
+          authMethod = 'wallet_cookie';
+          console.log('User authenticated via wallet cookie:', userId);
         } catch (e) {
           console.error('Error parsing wallet user data:', e);
         }
       }
     }
     
+    console.log('Subscription creation auth result:', { userId, authMethod, authError });
+    
     if (!userId) {
+      console.error('Subscription creation failed - no valid user ID found');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -70,14 +78,36 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('Subscription creation request body:', body);
+    
     const { subscriptionType, duration, transactionHash } = body;
 
-    if (!subscriptionType || !duration || !transactionHash) {
+    // Enhanced validation with detailed error messages
+    if (!subscriptionType) {
+      console.error('Missing subscriptionType in request body');
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required field: subscriptionType' },
         { status: 400 }
       );
     }
+    
+    if (!duration) {
+      console.error('Missing duration in request body');
+      return NextResponse.json(
+        { error: 'Missing required field: duration' },
+        { status: 400 }
+      );
+    }
+    
+    if (!transactionHash) {
+      console.error('Missing transactionHash in request body');
+      return NextResponse.json(
+        { error: 'Missing required field: transactionHash' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Subscription creation validation passed:', { subscriptionType, duration, transactionHash });
 
     // Calculate expiration date
     const expiresAt = new Date();
@@ -102,7 +132,7 @@ export async function POST(request: NextRequest) {
     if (subscriptionError) {
       console.error('Error creating subscription:', subscriptionError);
       return NextResponse.json(
-        { error: 'Failed to create subscription' },
+        { error: 'Failed to create subscription', details: subscriptionError.message },
         { status: 500 }
       );
     }
@@ -119,7 +149,7 @@ export async function POST(request: NextRequest) {
     if (playerError) {
       console.error('Error updating player inspired status:', playerError);
       return NextResponse.json(
-        { error: 'Failed to update player status' },
+        { error: 'Failed to update player status', details: playerError.message },
         { status: 500 }
       );
     }
@@ -129,7 +159,8 @@ export async function POST(request: NextRequest) {
       subscriptionType,
       duration,
       transactionHash,
-      expiresAt
+      expiresAt,
+      authMethod
     });
 
     return NextResponse.json({
@@ -142,8 +173,21 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Subscription creation error:', error);
+    
+    // Enhanced error logging
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : 'Unknown error' : undefined
+      },
       { status: 500 }
     );
   }

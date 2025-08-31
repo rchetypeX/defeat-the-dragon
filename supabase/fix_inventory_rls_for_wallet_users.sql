@@ -110,6 +110,41 @@ FOR UPDATE USING (
   )
 );
 
+-- Fix RLS policies for user_subscriptions table to allow wallet users
+DROP POLICY IF EXISTS "Users can view own subscriptions" ON user_subscriptions;
+DROP POLICY IF EXISTS "Users can insert own subscriptions" ON user_subscriptions;
+DROP POLICY IF EXISTS "Users can update own subscriptions" ON user_subscriptions;
+
+CREATE POLICY "Users can view own subscriptions" ON user_subscriptions 
+FOR SELECT USING (
+  auth.uid() = user_id OR 
+  EXISTS (
+    SELECT 1 FROM players p 
+    WHERE p.user_id = user_subscriptions.user_id 
+    AND p.wallet_address IS NOT NULL
+  )
+);
+
+CREATE POLICY "Users can insert own subscriptions" ON user_subscriptions 
+FOR INSERT WITH CHECK (
+  auth.uid() = user_id OR 
+  EXISTS (
+    SELECT 1 FROM players p 
+    WHERE p.user_id = user_subscriptions.user_id 
+    AND p.wallet_address IS NOT NULL
+  )
+);
+
+CREATE POLICY "Users can update own subscriptions" ON user_subscriptions 
+FOR UPDATE USING (
+  auth.uid() = user_id OR 
+  EXISTS (
+    SELECT 1 FROM players p 
+    WHERE p.user_id = user_subscriptions.user_id 
+    AND p.wallet_address IS NOT NULL
+  )
+);
+
 -- Ensure the unique constraint exists for user_inventory
 DO $$
 BEGIN
@@ -132,6 +167,7 @@ GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL ON public.user_inventory TO anon, authenticated;
 GRANT ALL ON public.user_purchases TO anon, authenticated;
 GRANT ALL ON public.user_settings TO anon, authenticated;
+GRANT ALL ON public.user_subscriptions TO anon, authenticated;
 
 -- Verify the fix
 DO $$
@@ -147,5 +183,13 @@ BEGIN
     
     -- Show the policies (simplified to avoid syntax issues)
     RAISE NOTICE 'Policies on user_inventory:';
+    RAISE NOTICE 'Check pg_policies view manually to see policy details';
+    
+    -- Count policies on user_subscriptions
+    SELECT COUNT(*) INTO policy_count 
+    FROM pg_policies 
+    WHERE tablename = 'user_subscriptions';
+    
+    RAISE NOTICE '✅ user_subscriptions table now has % policies', policy_count;
     RAISE NOTICE 'Check pg_policies view manually to see policy details';
 END $$;

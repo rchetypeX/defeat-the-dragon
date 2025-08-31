@@ -153,12 +153,12 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
     }
   };
 
-  // Load inventory when popup opens
+  // Load inventory when popup opens - only if we don't have inventory data
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && userInventory.length === 0) {
       loadUserInventory();
     }
-  }, [isOpen]);
+  }, [isOpen]); // Only depend on isOpen, not userInventory to prevent loops
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -433,9 +433,7 @@ class SyncService {
       if (typeof window !== 'undefined') {
         const keysToCheck = [
           'defeat-the-dragon-storage',
-          'defeat-the-dragon-store',
-          'defeat-the-dragon-character-storage',
-          'background-store'
+          'defeat-the-dragon-store'
         ];
         
         keysToCheck.forEach(key => {
@@ -444,6 +442,32 @@ class SyncService {
             try {
               const parsed = JSON.parse(data);
               // If the data contains removed fields, clear it
+              if (parsed.state && parsed.state.player) {
+                const player = parsed.state.player;
+                if (player.bond_score !== undefined || 
+                    player.mood_state !== undefined || 
+                    player.day_streak !== undefined ||
+                    player.current_streak !== undefined) {
+                  console.log('SyncService: Clearing old sync data with removed fields:', key);
+                  localStorage.removeItem(key);
+                }
+              }
+            } catch (e) {
+              console.warn('SyncService: Error parsing cached data:', e);
+            }
+          }
+        });
+        
+        // Only clear character and background stores if they contain removed player fields
+        const characterStoreKey = 'defeat-the-dragon-character-storage';
+        const backgroundStoreKey = 'background-store';
+        
+        [characterStoreKey, backgroundStoreKey].forEach(key => {
+          const data = localStorage.getItem(key);
+          if (data) {
+            try {
+              const parsed = JSON.parse(data);
+              // Only clear if the store contains removed player fields
               if (parsed.state && parsed.state.player) {
                 const player = parsed.state.player;
                 if (player.bond_score !== undefined || 
