@@ -168,7 +168,7 @@ function ResetPasswordContent() {
               <img 
                 src="/logo.png"
                 alt="Defeat the Dragon Logo" 
-                className="w-full h-full object-contain"
+                className="w-full h-full logo-image"
                 onLoad={() => {
                   console.log('Logo.png loaded successfully');
                 }}

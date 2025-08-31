@@ -158,7 +158,7 @@ function HomePageContent() {
                     <img 
                       src="/logo.png" 
                       alt="Defeat the Dragon Logo" 
-                      className="h-32 w-32"
+                      className="h-32 w-32 logo-image"
                     />
                   </div>
                   <p className="text-gray-300">A Pomodoro-style Focus RPG</p>
