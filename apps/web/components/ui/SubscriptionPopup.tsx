@@ -622,14 +622,14 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 pixel-button bg-[#6b7280] hover:bg-[#4b5563] text-white px-4 py-3 font-bold disabled:opacity-50"
+            className="flex-1 pixel-button bg-[#6b7280] hover:bg-[#4b5563] text-white px-4 py-3 font-bold disabled:opacity-50 flex items-center justify-center"
           >
             Cancel
           </button>
           <button
             onClick={handleSubscribe}
             disabled={isLoading}
-            className="flex-1 pixel-button bg-[#8B4513] hover:bg-[#654321] text-white px-4 py-3 font-bold disabled:opacity-50"
+            className="flex-1 pixel-button bg-[#8B4513] hover:bg-[#654321] text-white px-4 py-3 font-bold disabled:opacity-50 flex items-center justify-center"
           >
             {isLoading ? 'Processing...' : 'SUBSCRIBE'}
           </button>

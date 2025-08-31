@@ -52,7 +52,7 @@ export function SuccessMessage({
           <img 
             src={getCharacterImage(equippedCharacter)} 
             alt="Tiny Adventurer" 
-            className="w-32 h-40 sm:w-40 sm:h-48 pixel-art drop-shadow-lg"
+            className="w-40 h-48 sm:w-48 sm:h-56 pixel-art drop-shadow-lg"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}

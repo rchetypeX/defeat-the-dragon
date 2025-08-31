@@ -340,20 +340,24 @@ input:focus, textarea:focus, select:focus {
   touch-action: manipulation;
 }
 
-/* Character Dynamic Scaling */
+/* Character Dynamic Scaling - Made Bigger and Better Positioned */
 .character-dynamic {
-  max-width: min(32vw, 128px);
-  max-height: min(36vw, 144px);
+  max-width: min(48vw, 192px);  /* Increased from 32vw/128px to 48vw/192px */
+  max-height: min(54vw, 216px); /* Increased from 36vw/144px to 54vw/216px */
   width: auto;
   height: auto;
   object-fit: contain;
   object-position: center;
+  /* Ensure character maintains pixel-perfect scaling */
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
-/* Character Dialogue Positioning */
+/* Character Dialogue Positioning - Adjusted for bigger character */
 .character-dialogue {
   position: absolute;
-  bottom: 14rem;
+  bottom: 16rem;  /* Increased from 14rem to accommodate bigger character */
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -363,14 +367,14 @@ input:focus, textarea:focus, select:focus {
 
 @media (min-width: 640px) {
   .character-dialogue {
-    bottom: 16rem;
+    bottom: 18rem;  /* Increased from 16rem */
     max-width: 80vw;
   }
 }
 
 @media (min-width: 768px) {
   .character-dialogue {
-    bottom: 18rem;
+    bottom: 20rem;  /* Increased from 18rem */
     max-width: 70vw;
   }
 }

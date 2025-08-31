@@ -345,12 +345,12 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
         />
       </div>
 
-       {/* Character - Positioned in the center */}
+       {/* Character - Positioned in the center with bigger size */}
        <div className="fixed left-1/2 transform -translate-x-1/2 top-1/2 transform -translate-y-1/2 z-50 overflow-hidden" style={{ pointerEvents: 'none' }}>
          <img 
            src={getCharacterImage(equippedCharacter)} 
            alt="Tiny Adventurer" 
-           className="w-32 h-36 sm:w-36 sm:h-40 pixel-art drop-shadow-lg object-contain"
+           className="w-40 h-48 sm:w-48 sm:h-56 pixel-art drop-shadow-lg object-contain"
            style={{
              imageRendering: 'pixelated',
              objectPosition: 'center bottom',
