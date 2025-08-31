@@ -350,7 +350,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
          <img 
            src={getCharacterImage(equippedCharacter)} 
            alt="Tiny Adventurer" 
-           className="w-56 h-64 sm:w-64 sm:h-72 pixel-art drop-shadow-lg object-contain"
+           className="w-80 h-96 sm:w-96 sm:h-[28rem] pixel-art drop-shadow-lg object-contain"
            style={{
              imageRendering: 'pixelated',
              objectPosition: 'center bottom',

@@ -342,8 +342,8 @@ input:focus, textarea:focus, select:focus {
 
 /* Character Dynamic Scaling - Made Much Bigger and Better Positioned */
 .character-dynamic {
-  max-width: min(70vw, 320px);  /* Increased from 48vw/192px to 70vw/320px */
-  max-height: min(78vw, 360px); /* Increased from 54vw/216px to 78vw/360px */
+  max-width: min(85vw, 480px);  /* Increased from 70vw/320px to 85vw/480px - 3-5x bigger */
+  max-height: min(95vw, 540px); /* Increased from 78vw/360px to 95vw/540px - 3-5x bigger */
   width: auto;
   height: auto;
   object-fit: contain;
@@ -357,7 +357,7 @@ input:focus, textarea:focus, select:focus {
 /* Character Dialogue Positioning - Adjusted for much bigger character */
 .character-dialogue {
   position: absolute;
-  bottom: 20rem;  /* Increased from 16rem to accommodate much bigger character */
+  bottom: 20rem;  /* Reduced from 28rem to avoid covering UI elements */
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -367,26 +367,26 @@ input:focus, textarea:focus, select:focus {
 
 @media (min-width: 640px) {
   .character-dialogue {
-    bottom: 22rem;  /* Increased from 18rem */
+    bottom: 22rem;  /* Reduced from 30rem */
     max-width: 80vw;
   }
 }
 
 @media (min-width: 768px) {
   .character-dialogue {
-    bottom: 24rem;  /* Increased from 20rem */
+    bottom: 24rem;  /* Reduced from 32rem */
     max-width: 70vw;
   }
 }
 
 /* Focus Button Positioning */
 .focus-button-container {
-  padding-bottom: 2rem;
+  padding-bottom: 6rem;  /* Increased to accommodate much bigger character and dialogue */
 }
 
 @media (min-width: 640px) {
   .focus-button-container {
-    padding-bottom: 3rem;
+    padding-bottom: 7rem;  /* Increased to accommodate much bigger character and dialogue */
   }
 }
 
