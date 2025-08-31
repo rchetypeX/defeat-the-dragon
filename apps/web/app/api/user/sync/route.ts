@@ -107,8 +107,12 @@ export async function GET(request: NextRequest) {
     if (!userId) {
       console.error('User sync: No user ID found. Auth header:', request.headers.get('authorization'));
       console.error('User sync: Cookie wallet user:', cookieStore.get('wallet-user'));
+      console.error('User sync: Session user:', await supabaseAuth.auth.getUser());
+      
+      // For newly created users, give them a bit more time for the session to establish
+      // This is a common issue with Supabase where there's a delay between user creation and session availability
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please wait a moment and try again, or refresh the page' },
         { status: 401 }
       );
     }
@@ -335,8 +339,12 @@ export async function POST(request: NextRequest) {
     if (!userId) {
       console.error('User sync: No user ID found. Auth header:', request.headers.get('authorization'));
       console.error('User sync: Cookie wallet user:', cookieStore.get('wallet-user'));
+      console.error('User sync: Session user:', await supabaseAuth.auth.getUser());
+      
+      // For newly created users, give them a bit more time for the session to establish
+      // This is a common issue with Supabase where there's a delay between user creation and session availability
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please wait a moment and try again, or refresh the page' },
         { status: 401 }
       );
     }

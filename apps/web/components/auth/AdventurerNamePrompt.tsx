@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGameStore } from '../../lib/store';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 interface AdventurerNamePromptProps {
   onComplete: (displayName: string) => void;
@@ -12,6 +14,14 @@ export function AdventurerNamePrompt({ onComplete }: AdventurerNamePromptProps) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { player } = useGameStore();
+  const { user, session, loading } = useAuth();
+
+  // Wait for authentication to be ready
+  useEffect(() => {
+    if (!loading && !user && !session) {
+      setError('Authentication required. Please sign in to continue.');
+    }
+  }, [loading, user, session]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,15 +31,37 @@ export function AdventurerNamePrompt({ onComplete }: AdventurerNamePromptProps) 
       return;
     }
 
+    if (!user && !session) {
+      setError('Authentication required. Please sign in to continue.');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
     try {
+      // Get the current session token for authentication
+      let authToken = '';
+      if (session?.access_token) {
+        authToken = session.access_token;
+      } else if (user) {
+        // If we have a user but no session, try to get a fresh session
+        const { data: { session: freshSession } } = await supabase.auth.getSession();
+        if (freshSession?.access_token) {
+          authToken = freshSession.access_token;
+        }
+      }
+
+      if (!authToken) {
+        throw new Error('No authentication token available');
+      }
+
       // Update the player's display name in the database
       const response = await fetch('/api/user/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           player: {
@@ -43,7 +75,8 @@ export function AdventurerNamePrompt({ onComplete }: AdventurerNamePromptProps) 
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update adventurer name');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to update adventurer name');
       }
 
       // Update local store
@@ -62,6 +95,32 @@ export function AdventurerNamePrompt({ onComplete }: AdventurerNamePromptProps) 
       setIsSubmitting(false);
     }
   };
+
+  // Show loading state while authentication is being determined
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-6 max-w-md w-full text-center">
+          <div className="text-4xl mb-4">⚔️</div>
+          <h2 className="text-2xl font-bold text-[#f2751a] mb-2">Loading...</h2>
+          <p className="text-[#8B4513] text-sm">Preparing your adventure...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if no authentication
+  if (!user && !session) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-6 max-w-md w-full text-center">
+          <div className="text-4xl mb-4">⚔️</div>
+          <h2 className="text-2xl font-bold text-[#f2751a] mb-2">Authentication Required</h2>
+          <p className="text-[#8B4513] text-sm">Please sign in to continue your adventure.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
