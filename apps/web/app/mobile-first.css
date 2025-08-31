@@ -340,10 +340,10 @@ input:focus, textarea:focus, select:focus {
   touch-action: manipulation;
 }
 
-/* Character Dynamic Scaling - Made Bigger and Better Positioned */
+/* Character Dynamic Scaling - Made Much Bigger and Better Positioned */
 .character-dynamic {
-  max-width: min(48vw, 192px);  /* Increased from 32vw/128px to 48vw/192px */
-  max-height: min(54vw, 216px); /* Increased from 36vw/144px to 54vw/216px */
+  max-width: min(70vw, 320px);  /* Increased from 48vw/192px to 70vw/320px */
+  max-height: min(78vw, 360px); /* Increased from 54vw/216px to 78vw/360px */
   width: auto;
   height: auto;
   object-fit: contain;
@@ -354,10 +354,10 @@ input:focus, textarea:focus, select:focus {
   image-rendering: crisp-edges;
 }
 
-/* Character Dialogue Positioning - Adjusted for bigger character */
+/* Character Dialogue Positioning - Adjusted for much bigger character */
 .character-dialogue {
   position: absolute;
-  bottom: 16rem;  /* Increased from 14rem to accommodate bigger character */
+  bottom: 20rem;  /* Increased from 16rem to accommodate much bigger character */
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -367,14 +367,14 @@ input:focus, textarea:focus, select:focus {
 
 @media (min-width: 640px) {
   .character-dialogue {
-    bottom: 18rem;  /* Increased from 16rem */
+    bottom: 22rem;  /* Increased from 18rem */
     max-width: 80vw;
   }
 }
 
 @media (min-width: 768px) {
   .character-dialogue {
-    bottom: 20rem;  /* Increased from 18rem */
+    bottom: 24rem;  /* Increased from 20rem */
     max-width: 70vw;
   }
 }
