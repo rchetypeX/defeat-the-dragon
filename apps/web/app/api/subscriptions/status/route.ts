@@ -104,41 +104,53 @@ export async function GET(request: NextRequest) {
     if (subscriptions && subscriptions.length > 0) {
       hasActiveSubscription = true;
       
-      // Calculate total remaining time from all active subscriptions
-      subscriptions.forEach(sub => {
+      // For stacked subscriptions, we only care about the latest expiry date
+      // Find the subscription with the latest expiry date
+      const latestSubscription = subscriptions.reduce((latest, sub) => {
         if (sub.expires_at) {
           const expiryDate = new Date(sub.expires_at);
-          const timeRemaining = expiryDate.getTime() - now.getTime();
-          
-          if (timeRemaining > 0) {
-            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-            
-            totalRemainingDays += days;
-            totalRemainingHours += hours;
-            totalRemainingMinutes += minutes;
-            
-            subscriptionDetails.push({
-              type: sub.subscription_type,
-              expires_at: sub.expires_at,
-              started_at: sub.started_at,
-              provider: sub.provider
-            });
+          if (!latest.expires_at || expiryDate > new Date(latest.expires_at)) {
+            return sub;
           }
         }
+        return latest;
+      }, subscriptions[0]);
+      
+      // Calculate remaining time from the latest expiry date only
+      if (latestSubscription.expires_at) {
+        const expiryDate = new Date(latestSubscription.expires_at);
+        const timeRemaining = expiryDate.getTime() - now.getTime();
+        
+        if (timeRemaining > 0) {
+          totalRemainingDays = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+          totalRemainingHours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          totalRemainingMinutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        }
+      }
+      
+      // Log the stacking calculation for debugging
+      console.log('Subscription stacking calculation:', {
+        totalSubscriptions: subscriptions.length,
+        latestExpiryDate: latestSubscription.expires_at,
+        totalRemainingDays,
+        totalRemainingHours,
+        totalRemainingMinutes,
+        subscriptionDetails: subscriptions.map(sub => ({
+          type: sub.subscription_type,
+          expires_at: sub.expires_at,
+          started_at: sub.started_at
+        }))
       });
       
-      // Normalize hours and minutes
-      if (totalRemainingMinutes >= 60) {
-        totalRemainingHours += Math.floor(totalRemainingMinutes / 60);
-        totalRemainingMinutes = totalRemainingMinutes % 60;
-      }
-      
-      if (totalRemainingHours >= 24) {
-        totalRemainingDays += Math.floor(totalRemainingHours / 24);
-        totalRemainingHours = totalRemainingHours % 24;
-      }
+      // Collect all subscription details for display
+      subscriptions.forEach(sub => {
+        subscriptionDetails.push({
+          type: sub.subscription_type,
+          expires_at: sub.expires_at,
+          started_at: sub.started_at,
+          provider: sub.provider
+        });
+      });
     }
 
     // Get player's inspired status

@@ -195,11 +195,28 @@ export async function POST(request: NextRequest) {
         baseExpiryDate = latestExpiry;
         console.log('Stacking subscription on existing expiry date:', baseExpiryDate);
       }
+      
+      // Log all existing subscriptions for debugging
+      console.log('Existing subscriptions for stacking calculation:', existingSubscriptions.map(sub => ({
+        id: sub.id,
+        type: sub.subscription_type,
+        started_at: sub.started_at,
+        expires_at: sub.expires_at,
+        duration_days: sub.expires_at ? Math.ceil((new Date(sub.expires_at).getTime() - new Date(sub.started_at).getTime()) / (1000 * 60 * 60 * 24)) : 0
+      })));
     }
 
     // Calculate new expiration date by adding duration to the base date
     const expiresAt = new Date(baseExpiryDate);
     expiresAt.setDate(expiresAt.getDate() + duration);
+    
+    console.log('Subscription stacking calculation:', {
+      existingSubscriptionsCount: existingSubscriptions?.length || 0,
+      baseExpiryDate: baseExpiryDate.toISOString(),
+      newDuration: duration,
+      calculatedExpiryDate: expiresAt.toISOString(),
+      totalDaysFromBase: Math.ceil((expiresAt.getTime() - baseExpiryDate.getTime()) / (1000 * 60 * 60 * 24))
+    });
 
     // Create new subscription record (don't overwrite existing ones)
     const { data: subscription, error: subscriptionError } = await supabase
