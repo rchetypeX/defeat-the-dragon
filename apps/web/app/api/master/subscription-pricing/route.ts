@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
       acc[item.subscription_type] = {
         id: item.id,
         subscription_type: item.subscription_type,
-        price_eth: item.price_eth,
         price_usd: item.price_usd,
+        price_usdc: item.price_usdc,
         duration_days: item.duration_days,
         description: item.description,
         benefits: item.benefits || [],
@@ -58,12 +58,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { subscription_type, price_eth, price_usd, duration_days, description, benefits, is_active } = body;
+    const { subscription_type, price_usdc, price_usd, duration_days, description, benefits, is_active } = body;
 
     // Validate required fields
-    if (!subscription_type || price_eth === undefined || duration_days === undefined) {
+    if (!subscription_type || price_usdc === undefined || duration_days === undefined) {
       return NextResponse.json(
-        { error: 'Missing required fields: subscription_type, price_eth, duration_days' },
+        { error: 'Missing required fields: subscription_type, price_usdc, duration_days' },
         { status: 400 }
       );
     }
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       .from('subscription_pricing_master')
       .upsert({
         subscription_type,
-        price_eth,
+        price_usdc,
         price_usd: price_usd || 0,
         duration_days,
         description,

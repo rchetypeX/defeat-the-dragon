@@ -21,7 +21,6 @@ const MERCHANT_WALLET = process.env.NEXT_PUBLIC_MERCHANT_WALLET || '0x1a9Fce96e0
 interface SubscriptionPricing {
   id: string;
   subscription_type: string;
-  price_eth: number;
   price_usd: number;
   price_usdc: number;
   duration_days: number;
