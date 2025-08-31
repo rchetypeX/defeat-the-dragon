@@ -56,14 +56,18 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     let userId: string | null = null;
+    let authMethod: string = 'none';
     
     if (user) {
       // Standard Supabase auth user
       userId = user.id;
+      authMethod = 'supabase_session';
       console.log('User authenticated via Supabase session:', userId);
     } else {
       // Check for Bearer token in Authorization header
       const authHeader = request.headers.get('authorization');
+      console.log('Auth header received:', authHeader);
+      
       if (authHeader && authHeader.startsWith('Bearer ')) {
         const token = authHeader.substring(7); // Remove 'Bearer '
         
@@ -74,6 +78,7 @@ export async function POST(request: NextRequest) {
             const { data: { user: tokenUser }, error: tokenError } = await supabase.auth.getUser(token);
             if (tokenUser && !tokenError) {
               userId = tokenUser.id;
+              authMethod = 'bearer_token';
               console.log('User authenticated via Bearer token:', userId);
             } else {
               console.error('Token verification failed:', tokenError);
@@ -88,6 +93,7 @@ export async function POST(request: NextRequest) {
           try {
             const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
             userId = walletData.id;
+            authMethod = 'wallet';
             console.log('User authenticated via wallet:', userId);
           } catch (e) {
             console.error('Error parsing wallet user from header:', e);
@@ -99,6 +105,7 @@ export async function POST(request: NextRequest) {
           try {
             const baseAppData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer baseapp:'
             userId = baseAppData.id;
+            authMethod = 'baseapp';
             console.log('User authenticated via Base App:', userId);
           } catch (e) {
             console.error('Error parsing Base App user from header:', e);
@@ -113,6 +120,7 @@ export async function POST(request: NextRequest) {
           try {
             const walletData = JSON.parse(walletUser.value);
             userId = walletData.id;
+            authMethod = 'wallet_cookie';
             console.log('User authenticated via wallet cookie:', userId);
           } catch (e) {
             console.error('Error parsing wallet user data:', e);
@@ -120,6 +128,8 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+    
+    console.log('Final auth result:', { userId, authMethod, authError });
     
     if (!userId) {
       console.error('Authentication failed - no valid user ID found');
@@ -139,6 +149,7 @@ export async function POST(request: NextRequest) {
     // Debug logging
     console.log('Purchase request body:', { itemId, itemType, price, currency });
     console.log('User ID:', userId);
+    console.log('Auth method:', authMethod);
 
     if (!itemId || !itemType || price === undefined || price === null || !currency) {
       console.log('Validation failed:', { 
@@ -260,6 +271,15 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Add new item to inventory
+      console.log('Adding new item to inventory:', {
+        user_id: userId,
+        item_id: itemId,
+        item_type: itemType,
+        quantity: 1,
+        equipped: false,
+        acquired_at: new Date().toISOString()
+      });
+      
       const { error: inventoryInsertError } = await supabase
         .from('user_inventory')
         .insert({
@@ -273,11 +293,21 @@ export async function POST(request: NextRequest) {
 
       if (inventoryInsertError) {
         console.error('Error adding item to inventory:', inventoryInsertError);
+        console.error('Insert details:', {
+          user_id: userId,
+          item_id: itemId,
+          item_type: itemType,
+          quantity: 1,
+          equipped: false,
+          acquired_at: new Date().toISOString()
+        });
         return NextResponse.json(
-          { error: 'Failed to add item to inventory' },
+          { error: 'Failed to add item to inventory', details: inventoryInsertError.message },
           { status: 500 }
         );
       }
+      
+      console.log('Successfully added item to inventory');
     }
 
     // Record the purchase
