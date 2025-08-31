@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useGameStore } from '../lib/store';
 import { LoginForm } from '../components/auth/LoginForm';
@@ -16,8 +16,9 @@ import { useBaseAppAuth } from '../hooks/useBaseAppAuth';
 import { useContextAware } from '../hooks/useContextAware';
 import { AddMiniAppPrompt } from '../components/AddMiniAppPrompt';
 import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
-import { SocialAcknowledgment } from '../components/social/SocialAcknowledgment';
+
 import { EntryPointExperience } from '../components/context/EntryPointExperience';
+import { MonitoringDashboard } from '../components/debugging/MonitoringDashboard';
 
 // Loading component for Suspense fallback
 function HomePageLoading() {
@@ -232,7 +233,6 @@ function HomePageContent() {
   // User is authenticated - show game dashboard
   return (
     <ContextAwareLayout>
-      <SocialAcknowledgment />
       <EntryPointExperience>
         <AudioProvider>
           <BackgroundMusic 
@@ -252,6 +252,7 @@ function HomePageContent() {
             onError={(error) => console.error('Focus session music error:', error)}
           />
           <GameDashboard />
+          <MonitoringDashboard />
         </AudioProvider>
       </EntryPointExperience>
     </ContextAwareLayout>

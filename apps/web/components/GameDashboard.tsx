@@ -7,7 +7,7 @@ import { SessionProgress } from './game/SessionProgress';
 import { SuccessMessage } from './ui/SuccessMessage';
 import { requestNotificationPermission, showSessionCompleteNotification } from '../lib/notifications';
 import { Action } from '@defeat-the-dragon/engine';
-import { AssetTest } from './AssetTest';
+
 
 interface SessionResult {
   xp_gained: number;
@@ -95,7 +95,7 @@ export function GameDashboard() {
       <div className="fixed top-12 left-0 bg-blue-500 text-white p-2 z-50 font-bold text-lg">
         🔥 CACHE BUSTER - IF YOU SEE THIS, CHANGES ARE WORKING! 🔥
       </div>
-      <AssetTest />
+
       {/* Background Forest Scene */}
       <div className="absolute inset-0 z-0">
         <img 
