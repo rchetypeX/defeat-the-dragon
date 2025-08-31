@@ -384,6 +384,15 @@ export async function POST(request: NextRequest) {
       if (player.sparks !== undefined) playerUpdateData.sparks = player.sparks;
       if (player.is_inspired !== undefined) playerUpdateData.is_inspired = player.is_inspired;
       
+      // Update needsAdventurerName based on display_name
+      if (player.display_name !== undefined) {
+        const isRealName = player.display_name && 
+                          player.display_name !== 'Adventurer' && 
+                          !player.display_name.startsWith('Player_') &&
+                          player.display_name.length >= 2;
+        playerUpdateData.needsAdventurerName = !isRealName;
+      }
+      
       console.log('POST /user/sync - Filtered player update data:', playerUpdateData);
       
       // Update players table with only valid fields

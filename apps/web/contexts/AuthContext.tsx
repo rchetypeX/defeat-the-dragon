@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(walletUser);
           setGameUser({
             id: walletUser.id,
-            email: walletUser.email || `${walletUser.wallet_address}@wallet.local`,
+            email: walletUser.email || `${walletUser.wallet_address}@wallet`,
           });
           // Load player data for wallet user
           try {
@@ -221,7 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(walletUser);
           setGameUser({
             id: walletUser.id,
-            email: walletUser.email || `${walletUser.wallet_address}@wallet.local`,
+            email: walletUser.email || `${walletUser.wallet_address}@wallet`,
           });
           // Load player data for wallet user
           try {

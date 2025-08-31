@@ -185,7 +185,10 @@ export async function GET(request: NextRequest) {
     const isFreshDatabase = !player || player.level === 1 && player.xp === 0 && player.coins === 0;
     
     // Check if user needs to set their adventurer name
-    const needsAdventurerName = !player?.display_name || player.display_name === 'Adventurer';
+    const needsAdventurerName = !player?.display_name || 
+                                player.display_name === 'Adventurer' || 
+                                player.display_name.startsWith('Player_') ||
+                                player.display_name.length < 2;
     
     // Prepare response
     const response = {

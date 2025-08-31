@@ -149,11 +149,29 @@ class SyncService {
         console.log('SyncService: Received bootstrap data:', response);
         
         // Don't override local changes that haven't been synced yet
+        // BUT: If the user has set their name and it's in the database, use the database value
         const currentPlayer = useGameStore.getState().player;
         if (currentPlayer && currentPlayer.display_name && 
             response.player && response.player.display_name !== currentPlayer.display_name) {
-          console.log('SyncService: Preserving local display name change:', currentPlayer.display_name);
-          response.player.display_name = currentPlayer.display_name;
+          
+          // Check if this is a case where the user has already set their name
+          // If the database has a real name (not 'Adventurer' or 'Player_XXXXX'), use it
+          const databaseName = response.player.display_name;
+          const isDatabaseNameReal = databaseName && 
+            databaseName !== 'Adventurer' && 
+            !databaseName.startsWith('Player_') &&
+            databaseName.length > 2;
+          
+          if (isDatabaseNameReal) {
+            console.log('SyncService: Database has real name, using it:', databaseName);
+            // Use the database name and update local store
+            currentPlayer.display_name = databaseName;
+            currentPlayer.needsAdventurerName = false;
+            useGameStore.getState().setPlayer(currentPlayer);
+          } else {
+            console.log('SyncService: Preserving local display name change:', currentPlayer.display_name);
+            response.player.display_name = currentPlayer.display_name;
+          }
         }
         
         this.updateLocalStoresFromBootstrap(response);

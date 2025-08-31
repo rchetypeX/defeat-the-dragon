@@ -36,8 +36,8 @@ export function AdventurerNamePrompt({ onComplete }: AdventurerNamePromptProps) 
             display_name: displayName.trim(),
             level: player?.level || 1,
             xp: player?.xp || 0,
-            coins: player?.coins || 100,
-            sparks: player?.sparks || 50,
+            coins: player?.coins || 0,
+            sparks: player?.sparks || 0,
           }
         }),
       });
