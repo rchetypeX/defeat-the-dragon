@@ -166,11 +166,11 @@ function ResetPasswordContent() {
           <div className="text-center mb-8">
             <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 mx-auto mb-4">
               <img 
-                src="/logo.svg"
+                src="/logo.png"
                 alt="Defeat the Dragon Logo" 
                 className="w-full h-full object-contain"
                 onLoad={() => {
-                  console.log('Logo.svg loaded successfully');
+                  console.log('Logo.png loaded successfully');
                 }}
               />
             </div>

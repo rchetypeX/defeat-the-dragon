@@ -29,31 +29,31 @@ const inter = Inter({ subsets: ['latin'] });
 
 export function generateMetadata(): Metadata {
   return {
-    title: 'Defeat the Dragon - Focus RPG',
-    description: 'Transform focus sessions into an epic adventure with pixel art and gamification',
+    title: 'Defeat the Dragon: Focus RPG',
+    description: 'A Pomodoro-style Focus RPG that gamifies productivity',
     manifest: '/manifest.json',
     icons: {
       icon: '/favicon.png',
       apple: '/apple-touch-icon.png',
     },
     viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
-    themeColor: '#7c2d12',
+    themeColor: '#221afe',
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
-      title: 'Defeat the Dragon',
+      title: 'Defeat the Dragon: Focus RPG',
     },
     openGraph: {
-      title: 'Defeat the Dragon - Focus RPG',
-      description: 'Pixel-art Pomodoro-style Focus RPG',
+      title: 'Defeat the Dragon: Focus RPG',
+      description: 'Level up your productivity with this pixel-art Pomodoro RPG',
       url: 'https://dtd.rchetype.xyz/',
-      siteName: 'Defeat the Dragon',
+      siteName: 'Defeat the Dragon: Focus RPG',
       images: [
         {
           url: '/og-image.webp',
           width: 1200,
           height: 630,
-          alt: 'Defeat the Dragon - Focus RPG',
+          alt: 'Defeat the Dragon: Focus RPG',
         },
       ],
       locale: 'en_US',
@@ -61,8 +61,8 @@ export function generateMetadata(): Metadata {
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Defeat the Dragon - Focus RPG',
-      description: 'Pixel-art Pomodoro-style Focus RPG',
+      title: 'Defeat the Dragon: Focus RPG',
+      description: 'Pomodoro-style Focus RPG',
       images: ['/og-image.webp'],
     },
     other: {
@@ -79,21 +79,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="application-name" content="Defeat the Dragon" />
+        <meta name="application-name" content="Defeat the Dragon: Focus RPG" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Defeat the Dragon" />
+        <meta name="apple-mobile-web-app-title" content="Defeat the Dragon: Focus RPG" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        <meta name="msapplication-TileColor" content="#7c2d12" />
+        <meta name="msapplication-TileColor" content="#221afe" />
         <meta name="msapplication-tap-highlight" content="no" />
         
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="mask-icon" href="/favicon.svg" color="#7c2d12" />
+        <link rel="mask-icon" href="/favicon.png" color="#221afe" />
         <link rel="shortcut icon" href="/favicon.ico" />
         
         <meta name="twitter:card" content="summary_large_image" />

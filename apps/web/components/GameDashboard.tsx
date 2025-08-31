@@ -126,7 +126,7 @@ export function GameDashboard() {
             {/* Level and Name */}
             <div className="relative">
               <img 
-                src="/assets/ui/level-name-card.png" 
+                src="/assets/ui/level-card.png" 
                 alt="Level and Name" 
                 className="w-24 h-8 sm:w-28 sm:h-10 pixel-art"
                 onError={(e) => {
@@ -283,7 +283,7 @@ export function GameDashboard() {
           {/* Character */}
           <div className="relative z-10">
             <img 
-              src="/assets/sprites/character.png" 
+              src="/assets/sprites/fighter.png" 
               alt="Tiny Adventurer" 
               className="w-16 h-20 sm:w-20 sm:h-24 pixel-art"
               onError={(e) => {

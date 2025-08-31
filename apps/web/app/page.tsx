@@ -156,7 +156,7 @@ function HomePageContent() {
                 <div className="text-center">
                   <div className="mb-4 flex justify-center">
                     <img 
-                      src="/logo.svg" 
+                      src="/logo.png" 
                       alt="Defeat the Dragon Logo" 
                       className="h-32 w-32"
                     />
