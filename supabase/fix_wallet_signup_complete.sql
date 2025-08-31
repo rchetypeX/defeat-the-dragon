@@ -47,6 +47,11 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'players' AND column_name = 'updated_at') THEN
         ALTER TABLE players ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
     END IF;
+    
+    -- Add needsAdventurerName column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'players' AND column_name = 'needsAdventurerName') THEN
+        ALTER TABLE players ADD COLUMN "needsAdventurerName" BOOLEAN NOT NULL DEFAULT false;
+    END IF;
 END $$;
 
 -- 3. Create indexes for better performance
@@ -106,8 +111,15 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 -- Create the corrected handle_new_user function
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  wallet_address TEXT;
+  display_name TEXT;
 BEGIN
-  -- Insert into players table with all necessary fields
+  -- Extract wallet address and display name from metadata
+  wallet_address := NEW.raw_user_meta_data->>'wallet_address';
+  display_name := COALESCE(NEW.raw_user_meta_data->>'display_name', 'Adventurer');
+  
+  -- Insert into players table with correct starting values
   INSERT INTO public.players (
     user_id, 
     display_name, 
@@ -117,18 +129,20 @@ BEGIN
     coins,
     sparks,
     is_inspired,
+    needsAdventurerName,
     created_at,
     updated_at
   )
   VALUES (
     NEW.id, 
-    COALESCE(NEW.raw_user_meta_data->>'display_name', 'Adventurer'),
-    NEW.raw_user_meta_data->>'wallet_address',
+    display_name,
+    wallet_address,
     1,  -- Default level
     0,  -- Default XP
-    100, -- Default coins
-    50,  -- Default sparks
+    0,  -- Start with 0 coins (not 100)
+    0,  -- Start with 0 sparks (not 50)
     false, -- Default inspired status
+    true, -- Show name change popup for new users
     NOW(),
     NOW()
   );

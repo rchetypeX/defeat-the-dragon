@@ -70,6 +70,23 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
 
   // Check wallet connection
   const checkWalletConnection = async () => {
+    // First check if user is authenticated with a wallet address
+    if (user?.user_metadata?.wallet_address) {
+      setIsWalletConnected(true);
+      setWalletAddress(user.user_metadata.wallet_address);
+      
+      // Check USDC balance for the authenticated wallet
+      try {
+        const balanceCheck = await checkUSDCBalance(user.user_metadata.wallet_address, 0);
+        setUsdcBalance(balanceCheck.currentBalance);
+      } catch (error) {
+        console.error('Error checking USDC balance:', error);
+        setUsdcBalance(null);
+      }
+      return;
+    }
+    
+    // Fallback to checking window.ethereum for web wallet connections
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -105,6 +122,13 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
 
   // Connect wallet function
   const connectWallet = async () => {
+    // If user is already authenticated with a wallet, no need to connect
+    if (user?.user_metadata?.wallet_address) {
+      setIsWalletConnected(true);
+      setWalletAddress(user.user_metadata.wallet_address);
+      return;
+    }
+    
     if (!window.ethereum) {
       setError('MetaMask or another Web3 wallet is required. Please install MetaMask.');
       return;

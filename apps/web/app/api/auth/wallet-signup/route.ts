@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Display names no longer need to be unique - removed uniqueness check
 
     // Create a new Supabase user with a unique email
-    const uniqueEmail = `${address.toLowerCase()}@wallet.local`;
+    const uniqueEmail = `${address.toLowerCase()}@wallet`;
     
     console.log('Creating auth user with email:', uniqueEmail);
     
@@ -102,8 +102,9 @@ export async function POST(request: NextRequest) {
           display_name: displayName,
           level: 1,
           xp: 0,
-          coins: 100,
-          sparks: 50,
+          coins: 0, // Start with 0 coins
+          sparks: 0, // Start with 0 sparks
+          needsAdventurerName: true, // Flag to show name change popup
         })
         .eq('user_id', authUser.user.id)
         .select()
@@ -130,9 +131,10 @@ export async function POST(request: NextRequest) {
           display_name: displayName,
           level: 1,
           xp: 0,
-          coins: 100,
-          sparks: 50,
+          coins: 0, // Start with 0 coins
+          sparks: 0, // Start with 0 sparks
           is_inspired: false,
+          needsAdventurerName: true, // Flag to show name change popup
         })
         .select()
         .single();
