@@ -68,47 +68,71 @@ export async function POST(request: NextRequest) {
       const authHeader = request.headers.get('authorization');
       console.log('Auth header received:', authHeader);
       
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        const token = authHeader.substring(7); // Remove 'Bearer '
-        
-        // If it's a Supabase access token, verify it
-        if (token && !token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
-          try {
-            // Verify the token with Supabase
-            const { data: { user: tokenUser }, error: tokenError } = await supabase.auth.getUser(token);
-            if (tokenUser && !tokenError) {
-              userId = tokenUser.id;
-              authMethod = 'bearer_token';
-              console.log('User authenticated via Bearer token:', userId);
-            } else {
-              console.error('Token verification failed:', tokenError);
+      if (authHeader) {
+        // Handle different token formats
+        if (authHeader.startsWith('Bearer ')) {
+          const token = authHeader.substring(7); // Remove 'Bearer '
+          
+          // If it's a Supabase access token, verify it
+          if (token && !token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+            try {
+              // Verify the token with Supabase
+              const { data: { user: tokenUser }, error: tokenError } = await supabase.auth.getUser(token);
+              if (tokenUser && !tokenError) {
+                userId = tokenUser.id;
+                authMethod = 'bearer_token';
+                console.log('User authenticated via Bearer token:', userId);
+              } else {
+                console.error('Token verification failed:', tokenError);
+              }
+            } catch (e) {
+              console.error('Error verifying token:', e);
             }
-          } catch (e) {
-            console.error('Error verifying token:', e);
           }
-        }
-        
-        // Check if this is a wallet user
-        if (!userId && authHeader.startsWith('Bearer wallet:')) {
-          try {
-            const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
-            userId = walletData.id;
-            authMethod = 'wallet';
-            console.log('User authenticated via wallet:', userId);
-          } catch (e) {
-            console.error('Error parsing wallet user from header:', e);
+          
+          // Check if this is a wallet user
+          if (!userId && token.startsWith('wallet:')) {
+            try {
+              const walletData = JSON.parse(token.substring(7)); // Remove 'wallet:'
+              userId = walletData.id;
+              authMethod = 'wallet';
+              console.log('User authenticated via wallet:', userId);
+            } catch (e) {
+              console.error('Error parsing wallet user from header:', e);
+            }
           }
-        }
-        
-        // Check if this is a Base App user
-        if (!userId && authHeader.startsWith('Bearer baseapp:')) {
-          try {
-            const baseAppData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer baseapp:'
-            userId = baseAppData.id;
-            authMethod = 'baseapp';
-            console.log('User authenticated via Base App:', userId);
-          } catch (e) {
-            console.error('Error parsing Base App user from header:', e);
+          
+          // Check if this is a Base App user
+          if (!userId && token.startsWith('baseapp:')) {
+            try {
+              const baseAppData = JSON.parse(token.substring(8)); // Remove 'baseapp:'
+              userId = baseAppData.id;
+              authMethod = 'baseapp';
+              console.log('User authenticated via Base App:', userId);
+            } catch (e) {
+              console.error('Error parsing Base App user from header:', e);
+            }
+          }
+        } else if (authHeader.startsWith('wallet:') || authHeader.startsWith('baseapp:')) {
+          // Handle direct format without 'Bearer ' prefix
+          if (authHeader.startsWith('wallet:')) {
+            try {
+              const walletData = JSON.parse(authHeader.substring(7)); // Remove 'wallet:'
+              userId = walletData.id;
+              authMethod = 'wallet';
+              console.log('User authenticated via wallet (direct):', userId);
+            } catch (e) {
+              console.error('Error parsing wallet user from header:', e);
+            }
+          } else if (authHeader.startsWith('baseapp:')) {
+            try {
+              const baseAppData = JSON.parse(authHeader.substring(8)); // Remove 'baseapp:'
+              userId = baseAppData.id;
+              authMethod = 'baseapp';
+              console.log('User authenticated via Base App (direct):', userId);
+            } catch (e) {
+              console.error('Error parsing Base App user from header:', e);
+            }
           }
         }
       }

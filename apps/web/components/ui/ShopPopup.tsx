@@ -96,59 +96,57 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     };
   }, [isOpen, onClose, showSubscriptionPopup]);
 
+  // Helper function to generate auth headers
+  const generateAuthHeaders = async (): Promise<HeadersInit> => {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    // Check if we have a wallet user in localStorage
+    const walletUserStr = localStorage.getItem('walletUser');
+    if (walletUserStr) {
+      try {
+        const walletUser = JSON.parse(walletUserStr);
+        headers['Authorization'] = `wallet:${JSON.stringify(walletUser)}`;
+        return headers;
+      } catch (e) {
+        console.error('Error parsing wallet user:', e);
+      }
+    }
+    
+    // Check if we have a Base App user in localStorage
+    const baseAppUserStr = localStorage.getItem('baseAppUser');
+    if (baseAppUserStr) {
+      try {
+        const baseAppUser = JSON.parse(baseAppUserStr);
+        headers['Authorization'] = `baseapp:${JSON.stringify(baseAppUser)}`;
+        return headers;
+      } catch (e) {
+        console.error('Error parsing Base App user:', e);
+      }
+    }
+    
+    // If no wallet or Base App token, try to get Supabase session
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+    } catch (e) {
+      console.log('Could not get Supabase session token');
+    }
+
+    return headers;
+  };
+
   const loadShopItems = async () => {
     try {
       setIsLoading(true);
       
-      // Get auth token for the request
-      let token: string | null = null;
+      const headers = await generateAuthHeaders();
       
-      // Check if we have a wallet user in localStorage
-      const walletUserStr = localStorage.getItem('walletUser');
-      if (walletUserStr) {
-        try {
-          const walletUser = JSON.parse(walletUserStr);
-          token = `wallet:${JSON.stringify(walletUser)}`;
-        } catch (e) {
-          console.error('Error parsing wallet user:', e);
-        }
-      }
-      
-      // Check if we have a Base App user in localStorage
-      if (!token) {
-        const baseAppUserStr = localStorage.getItem('baseAppUser');
-        if (baseAppUserStr) {
-          try {
-            const baseAppUser = JSON.parse(baseAppUserStr);
-            token = `baseapp:${JSON.stringify(baseAppUser)}`;
-          } catch (e) {
-            console.error('Error parsing Base App user:', e);
-          }
-        }
-      }
-      
-      // If no wallet or Base App token, try to get Supabase session
-      if (!token) {
-        const { supabase } = await import('../../lib/supabase');
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          token = session.access_token;
-        }
-      }
 
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        // For Supabase tokens, use 'Bearer' prefix
-        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
-          headers['Authorization'] = `Bearer ${token}`;
-        } else {
-          // For wallet and Base App tokens, use the custom format
-          headers['Authorization'] = token;
-        }
-      }
       
       // Load both character and background items
       const [characterResponse, backgroundResponse] = await Promise.all([
@@ -192,55 +190,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
 
   const loadSubscriptionStatus = async () => {
     try {
-      // Get auth token for the request
-      let token: string | null = null;
-      
-      // Check if we have a wallet user in localStorage
-      const walletUserStr = localStorage.getItem('walletUser');
-      if (walletUserStr) {
-        try {
-          const walletUser = JSON.parse(walletUserStr);
-          token = `wallet:${JSON.stringify(walletUser)}`;
-        } catch (e) {
-          console.error('Error parsing wallet user:', e);
-        }
-      }
-      
-      // Check if we have a Base App user in localStorage
-      if (!token) {
-        const baseAppUserStr = localStorage.getItem('baseAppUser');
-        if (baseAppUserStr) {
-          try {
-            const baseAppUser = JSON.parse(baseAppUserStr);
-            token = `baseapp:${JSON.stringify(baseAppUser)}`;
-          } catch (e) {
-            console.error('Error parsing Base App user:', e);
-          }
-        }
-      }
-      
-      // If no wallet or Base App token, try to get Supabase session
-      if (!token) {
-        const { supabase } = await import('../../lib/supabase');
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          token = session.access_token;
-        }
-      }
-
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        // For Supabase tokens, use 'Bearer' prefix
-        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
-          headers['Authorization'] = `Bearer ${token}`;
-        } else {
-          // For wallet and Base App tokens, use the custom format
-          headers['Authorization'] = token;
-        }
-      }
+      const headers = await generateAuthHeaders();
       
       const response = await fetch('/api/subscriptions/status', { headers, credentials: 'include' });
       
@@ -262,55 +212,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     try {
       setIsLoading(true);
       
-      // Get auth token for the request
-      let token: string | null = null;
-      
-      // Check if we have a wallet user in localStorage
-      const walletUserStr = localStorage.getItem('walletUser');
-      if (walletUserStr) {
-        try {
-          const walletUser = JSON.parse(walletUserStr);
-          token = `wallet:${JSON.stringify(walletUser)}`;
-        } catch (e) {
-          console.error('Error parsing wallet user:', e);
-        }
-      }
-      
-      // Check if we have a Base App user in localStorage
-      if (!token) {
-        const baseAppUserStr = localStorage.getItem('baseAppUser');
-        if (baseAppUserStr) {
-          try {
-            const baseAppUser = JSON.parse(baseAppUserStr);
-            token = `baseapp:${JSON.stringify(baseAppUser)}`;
-          } catch (e) {
-            console.error('Error parsing Base App user:', e);
-          }
-        }
-      }
-      
-      // If no wallet or Base App token, try to get Supabase session
-      if (!token) {
-        const { supabase } = await import('../../lib/supabase');
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          token = session.access_token;
-        }
-      }
-
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        // For Supabase tokens, use 'Bearer' prefix
-        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
-          headers['Authorization'] = `Bearer ${token}`;
-        } else {
-          // For wallet and Base App tokens, use the custom format
-          headers['Authorization'] = token;
-        }
-      }
+      const headers = await generateAuthHeaders();
       
       const response = await fetch('/api/inventory', { headers, credentials: 'include' });
       
@@ -355,19 +257,24 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     try {
       // Get auth token
       let token = null;
+      let tokenType: 'wallet' | 'baseapp' | 'supabase' | null = null;
+      
       if (user?.id && user?.user_metadata?.wallet_address) {
         // For wallet users, create a custom token
-        token = `wallet:${JSON.stringify({ id: user.id, wallet_address: user.user_metadata.wallet_address })}`;
+        token = JSON.stringify({ id: user.id, wallet_address: user.user_metadata.wallet_address });
+        tokenType = 'wallet';
       } else if (user?.id && user?.user_metadata?.fid) {
         // For Base App users, create a custom token
-        token = `baseapp:${JSON.stringify({ id: user.id, fid: user.user_metadata.fid })}`;
+        token = JSON.stringify({ id: user.id, fid: user.user_metadata.fid });
+        tokenType = 'baseapp';
       } else if (user?.id) {
         // For Supabase users, try to get session token
         try {
           const { supabase } = await import('../../lib/supabase');
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.access_token) {
-            token = `Bearer ${session.access_token}`;
+            token = session.access_token;
+            tokenType = 'supabase';
           }
         } catch (e) {
           console.log('Could not get Supabase session token');
@@ -379,12 +286,12 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       };
       
       if (token) {
-        // For Supabase tokens, use 'Bearer' prefix
-        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+        if (tokenType === 'supabase') {
+          // For Supabase tokens, use 'Bearer' prefix
           headers['Authorization'] = `Bearer ${token}`;
         } else {
           // For wallet and Base App tokens, use the custom format
-          headers['Authorization'] = token;
+          headers['Authorization'] = `${tokenType}:${token}`;
         }
       }
 
@@ -396,7 +303,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       };
       
       console.log('🛒 Sending purchase request:', purchaseData);
-      console.log('🔑 Auth token type:', token ? (token.startsWith('wallet:') ? 'wallet' : token.startsWith('baseapp:') ? 'baseapp' : 'supabase') : 'none');
+      console.log('🔑 Auth token type:', tokenType || 'none');
       
       const response = await fetch('/api/shop/purchase', {
         method: 'POST',
