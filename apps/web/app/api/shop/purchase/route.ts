@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const cookieStore = cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
           getAll() {
@@ -36,35 +36,75 @@ export async function POST(request: NextRequest) {
     if (user) {
       // Standard Supabase auth user
       userId = user.id;
+      console.log('User authenticated via Supabase session:', userId);
     } else {
-      // Check if this is a wallet user by looking for wallet address in headers or cookies
-      const walletUser = cookieStore.get('wallet-user');
-      if (walletUser) {
-        try {
-          const walletData = JSON.parse(walletUser.value);
-          userId = walletData.id;
-        } catch (e) {
-          console.error('Error parsing wallet user data:', e);
+      // Check for Bearer token in Authorization header
+      const authHeader = request.headers.get('authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7); // Remove 'Bearer '
+        
+        // If it's a Supabase access token, verify it
+        if (token && !token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+          try {
+            // Verify the token with Supabase
+            const { data: { user: tokenUser }, error: tokenError } = await supabase.auth.getUser(token);
+            if (tokenUser && !tokenError) {
+              userId = tokenUser.id;
+              console.log('User authenticated via Bearer token:', userId);
+            } else {
+              console.error('Token verification failed:', tokenError);
+            }
+          } catch (e) {
+            console.error('Error verifying token:', e);
+          }
         }
-      }
-      
-      // Also check for wallet user in request headers (for API calls)
-      if (!userId) {
-        const authHeader = request.headers.get('authorization');
-        if (authHeader && authHeader.startsWith('Bearer wallet:')) {
+        
+        // Check if this is a wallet user
+        if (!userId && authHeader.startsWith('Bearer wallet:')) {
           try {
             const walletData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer wallet:'
             userId = walletData.id;
+            console.log('User authenticated via wallet:', userId);
           } catch (e) {
             console.error('Error parsing wallet user from header:', e);
+          }
+        }
+        
+        // Check if this is a Base App user
+        if (!userId && authHeader.startsWith('Bearer baseapp:')) {
+          try {
+            const baseAppData = JSON.parse(authHeader.substring(15)); // Remove 'Bearer baseapp:'
+            userId = baseAppData.id;
+            console.log('User authenticated via Base App:', userId);
+          } catch (e) {
+            console.error('Error parsing Base App user from header:', e);
+          }
+        }
+      }
+      
+      // Fallback: Check if this is a wallet user by looking for wallet address in cookies
+      if (!userId) {
+        const walletUser = cookieStore.get('wallet-user');
+        if (walletUser) {
+          try {
+            const walletData = JSON.parse(walletUser.value);
+            userId = walletData.id;
+            console.log('User authenticated via wallet cookie:', userId);
+          } catch (e) {
+            console.error('Error parsing wallet user data:', e);
           }
         }
       }
     }
     
     if (!userId) {
+      console.error('Authentication failed - no valid user ID found');
+      console.error('Auth header:', request.headers.get('authorization'));
+      console.error('Cookies:', cookieStore.getAll().map(c => ({ name: c.name, value: c.value })));
+      console.error('Supabase session error:', authError);
+      
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please sign in to make purchases' },
         { status: 401 }
       );
     }
