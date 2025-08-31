@@ -170,11 +170,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Note: We don't return an error if they already own the item
+    // Instead, we'll handle it in the inventory update logic below
     if (existingItem) {
-      return NextResponse.json(
-        { error: 'You already own this item' },
-        { status: 409 }
-      );
+      console.log('User already owns this item, will update quantity');
     }
 
     // Get user's current currency

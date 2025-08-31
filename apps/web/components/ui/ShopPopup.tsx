@@ -270,49 +270,20 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       return;
     }
 
-    if (isItemOwned(item.id, activeTab === 'character' ? 'character' : 'background')) {
-      setErrorMessage('You already own this item');
-      return;
-    }
-
     setPurchaseStatus(prev => ({ ...prev, [item.id]: 'loading' }));
     setErrorMessage(null);
 
     try {
-      // Get auth token for the request
-      let token: string | null = null;
-      
-      // Check if we have a wallet user in localStorage
-      const walletUserStr = localStorage.getItem('walletUser');
-      if (walletUserStr) {
-        try {
-          const walletUser = JSON.parse(walletUserStr);
-          token = `wallet:${JSON.stringify(walletUser)}`;
-        } catch (e) {
-          console.error('Error parsing wallet user:', e);
-        }
-      }
-      
-      // Check if we have a Base App user in localStorage
-      if (!token) {
-        const baseAppUserStr = localStorage.getItem('baseAppUser');
-        if (baseAppUserStr) {
-          try {
-            const baseAppUser = JSON.parse(baseAppUserStr);
-            token = `baseapp:${JSON.stringify(baseAppUser)}`;
-          } catch (e) {
-            console.error('Error parsing Base App user:', e);
-          }
-        }
-      }
-      
-      // If no wallet or Base App token, try to get Supabase session
-      if (!token) {
-        const { supabase } = await import('../../lib/supabase');
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          token = session.access_token;
-        }
+      // Get auth token
+      let token = null;
+      if (user?.access_token) {
+        token = `Bearer ${user.access_token}`;
+      } else if (user?.id && user?.user_metadata?.wallet_address) {
+        // For wallet users, create a custom token
+        token = `wallet:${JSON.stringify({ id: user.id, wallet_address: user.user_metadata.wallet_address })}`;
+      } else if (user?.id && user?.user_metadata?.fid) {
+        // For Base App users, create a custom token
+        token = `baseapp:${JSON.stringify({ id: user.id, fid: user.user_metadata.fid })}`;
       }
 
       const headers: HeadersInit = {
@@ -336,7 +307,8 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         currency: item.currency
       };
       
-      console.log('Sending purchase request:', purchaseData);
+      console.log('🛒 Sending purchase request:', purchaseData);
+      console.log('🔑 Auth token type:', token ? (token.startsWith('wallet:') ? 'wallet' : token.startsWith('baseapp:') ? 'baseapp' : 'supabase') : 'none');
       
       const response = await fetch('/api/shop/purchase', {
         method: 'POST',
@@ -345,9 +317,12 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         body: JSON.stringify(purchaseData),
       });
 
+      console.log('📡 Purchase response status:', response.status);
       const result = await response.json();
+      console.log('📡 Purchase response data:', result);
 
       if (response.ok) {
+        console.log('✅ Purchase successful for:', item.name);
         setPurchaseStatus(prev => ({ ...prev, [item.id]: 'success' }));
         // Reload inventory to reflect the new purchase
         await loadUserInventory();
@@ -356,6 +331,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
           setPurchaseStatus(prev => ({ ...prev, [item.id]: 'idle' }));
         }, 2000);
       } else {
+        console.error('❌ Purchase failed:', result.error);
         setPurchaseStatus(prev => ({ ...prev, [item.id]: 'error' }));
         setErrorMessage(result.error || 'Purchase failed');
         // Clear error status after 3 seconds
@@ -364,7 +340,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         }, 3000);
       }
     } catch (error) {
-      console.error('Purchase error:', error);
+      console.error('❌ Purchase error:', error);
       setPurchaseStatus(prev => ({ ...prev, [item.id]: 'error' }));
       setErrorMessage('Network error. Please try again.');
       // Clear error status after 3 seconds
