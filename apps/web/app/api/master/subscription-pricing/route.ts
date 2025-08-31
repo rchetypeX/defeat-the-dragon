@@ -40,10 +40,21 @@ export async function GET(request: NextRequest) {
       return acc;
     }, {} as Record<string, any>);
 
-    return NextResponse.json({
+    // Add cache-busting headers to prevent browser caching
+    const response = NextResponse.json({
       success: true,
-      data: pricingMap
+      data: pricingMap,
+      timestamp: new Date().toISOString(),
+      cache_bust: Math.random().toString(36).substring(7)
     });
+
+    // Set headers to prevent caching
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    response.headers.set('Last-Modified', new Date().toISOString());
+
+    return response;
 
   } catch (error) {
     console.error('Subscription pricing API error:', error);

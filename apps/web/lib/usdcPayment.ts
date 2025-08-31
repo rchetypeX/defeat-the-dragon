@@ -119,6 +119,11 @@ export async function checkUSDCBalance(
   }
 
   try {
+    // Validate user address
+    if (!userAddress || userAddress === '0x' || userAddress.length < 42) {
+      throw new Error('Invalid user address');
+    }
+
     // Create contract instance for balance check
     const balanceData = await window.ethereum.request({
       method: 'eth_call',
@@ -131,6 +136,26 @@ export async function checkUSDCBalance(
       ]
     });
 
+    // Validate balance data
+    if (!balanceData || balanceData === '0x' || typeof balanceData !== 'string') {
+      console.warn('Invalid balance data received:', balanceData);
+      return {
+        hasBalance: false,
+        currentBalance: 0,
+        requiredAmount
+      };
+    }
+
+    // Ensure the hex string is valid before converting to BigInt
+    if (!/^0x[a-fA-F0-9]+$/.test(balanceData)) {
+      console.warn('Invalid hex format for balance data:', balanceData);
+      return {
+        hasBalance: false,
+        currentBalance: 0,
+        requiredAmount
+      };
+    }
+
     const currentBalance = smallestUnitToUsdc(BigInt(balanceData));
     const hasBalance = currentBalance >= requiredAmount;
 
@@ -141,7 +166,13 @@ export async function checkUSDCBalance(
     };
   } catch (error) {
     console.error('Error checking USDC balance:', error);
-    throw new Error('Failed to check USDC balance');
+    
+    // Return safe default values instead of throwing
+    return {
+      hasBalance: false,
+      currentBalance: 0,
+      requiredAmount
+    };
   }
 }
 

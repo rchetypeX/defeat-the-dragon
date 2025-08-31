@@ -453,12 +453,27 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
                   {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
                 </span>
               </div>
-              {usdcBalance !== null && (
-                <div className="flex items-center justify-between">
-                  <span className="text-[#fbbf24] text-sm font-medium">USDC Balance:</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[#fbbf24] text-sm font-medium">USDC Balance:</span>
+                {usdcBalance !== null ? (
                   <span className="text-white text-xs font-mono">
                     {formatUSDC(usdcBalance)}
                   </span>
+                ) : (
+                  <span className="text-gray-400 text-xs">
+                    Checking...
+                  </span>
+                )}
+              </div>
+              {usdcBalance === null && (
+                <div className="mt-2 text-center">
+                  <button
+                    onClick={() => checkWalletConnection()}
+                    className="text-xs text-[#fbbf24] hover:text-white underline"
+                    title="Retry USDC balance check"
+                  >
+                    🔄 Retry Balance Check
+                  </button>
                 </div>
               )}
             </div>
@@ -533,6 +548,16 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
                   <li key={index}>• {benefit}</li>
                 ))}
               </ul>
+            </div>
+
+            {/* Last Updated Timestamp */}
+            <div className="mb-4 text-center">
+              <p className="text-xs text-[#654321] opacity-75">
+                Last updated: {pricing[subscriptionType].updated_at ? 
+                  new Date(pricing[subscriptionType].updated_at).toLocaleString() : 
+                  'Unknown'
+                }
+              </p>
             </div>
           </>
         )}
