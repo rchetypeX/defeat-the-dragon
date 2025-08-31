@@ -95,6 +95,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 3. Create a function to check if wallet user has valid email
+-- This function allows subscription-related updates while enforcing email requirements for account modifications
 CREATE OR REPLACE FUNCTION check_wallet_user_email_requirement()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -108,7 +109,24 @@ BEGIN
       AND email NOT LIKE '%@wallet%' 
       AND email NOT LIKE '%@wallet.local%'
     ) THEN
-      RAISE EXCEPTION 'Wallet users must have a linked email address';
+      -- Allow certain updates that don't require email linking
+      -- Specifically allow subscription-related updates (is_inspired, sparks, etc.)
+      IF TG_OP = 'UPDATE' AND (
+        -- Allow updates to subscription-related fields
+        (OLD.is_inspired IS DISTINCT FROM NEW.is_inspired) OR
+        (OLD.sparks IS DISTINCT FROM NEW.sparks) OR
+        (OLD.coins IS DISTINCT FROM NEW.coins) OR
+        (OLD.xp IS DISTINCT FROM NEW.xp) OR
+        (OLD.level IS DISTINCT FROM NEW.level) OR
+        (OLD.updated_at IS DISTINCT FROM NEW.updated_at)
+      ) THEN
+        -- Allow subscription-related updates even without email
+        -- This prevents subscription purchases from failing for wallet users
+        RETURN NEW;
+      END IF;
+      
+      -- For other operations (like display_name changes, account linking), require email linking
+      RAISE EXCEPTION 'Wallet users must have a linked email address for account modifications. Please link your email address in settings first.';
     END IF;
   END IF;
   
@@ -233,3 +251,7 @@ FROM wallet_users_email_status;
 -- Note: After running this migration, any existing wallet users without proper emails
 -- will need to link their email addresses through the settings interface.
 -- The system will now enforce this requirement for all new wallet signups.
+--
+-- IMPORTANT: The trigger allows subscription-related updates (is_inspired, sparks, coins, etc.)
+-- even for wallet users without linked emails. This prevents subscription purchases
+-- from failing while still enforcing email requirements for account modifications.
