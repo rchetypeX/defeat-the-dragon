@@ -276,14 +276,23 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     try {
       // Get auth token
       let token = null;
-      if (user?.access_token) {
-        token = `Bearer ${user.access_token}`;
-      } else if (user?.id && user?.user_metadata?.wallet_address) {
+      if (user?.id && user?.user_metadata?.wallet_address) {
         // For wallet users, create a custom token
         token = `wallet:${JSON.stringify({ id: user.id, wallet_address: user.user_metadata.wallet_address })}`;
       } else if (user?.id && user?.user_metadata?.fid) {
         // For Base App users, create a custom token
         token = `baseapp:${JSON.stringify({ id: user.id, fid: user.user_metadata.fid })}`;
+      } else if (user?.id) {
+        // For Supabase users, try to get session token
+        try {
+          const { supabase } = await import('../../lib/supabase');
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            token = `Bearer ${session.access_token}`;
+          }
+        } catch (e) {
+          console.log('Could not get Supabase session token');
+        }
       }
 
       const headers: HeadersInit = {
