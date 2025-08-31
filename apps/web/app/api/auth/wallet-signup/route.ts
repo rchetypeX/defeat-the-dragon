@@ -38,8 +38,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError && userError.code !== 'PGRST116') {
+      console.error('Error checking existing user:', userError);
       return NextResponse.json(
-        { error: 'Database error' },
+        { error: 'Database error checking existing user' },
         { status: 500 }
       );
     }
@@ -76,6 +77,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Auth user created successfully:', authUser.user.id);
+
+    // Wait a moment for the trigger to execute, then check if player record was created
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Check if player record was already created by the trigger
     const { data: existingPlayer, error: checkError } = await supabase
@@ -115,17 +119,9 @@ export async function POST(request: NextRequest) {
 
       console.log('Player record updated successfully');
     } else {
-      // Create player record in our database (profiles table was removed)
-      console.log('Creating player record with data:', {
-        user_id: authUser.user.id,
-        wallet_address: address.toLowerCase(),
-        display_name: displayName,
-        level: 1,
-        xp: 0,
-        coins: 100,
-        sparks: 50,
-      });
-
+      // Trigger failed or didn't execute, create player record manually
+      console.log('Player record not created by trigger, creating manually');
+      
       const playerResult = await supabase
         .from('players')
         .insert({
@@ -136,6 +132,7 @@ export async function POST(request: NextRequest) {
           xp: 0,
           coins: 100,
           sparks: 50,
+          is_inspired: false,
         })
         .select()
         .single();
@@ -157,6 +154,40 @@ export async function POST(request: NextRequest) {
       }
 
       console.log('Player record created successfully');
+    }
+
+    // Create default user settings if the table exists
+    try {
+      const { error: settingsError } = await supabase
+        .from('user_settings')
+        .insert({ user_id: authUser.user.id })
+        .single();
+      
+      if (settingsError && settingsError.code !== '23505') { // Ignore unique constraint violations
+        console.warn('Failed to create user settings:', settingsError);
+      } else {
+        console.log('User settings created successfully');
+      }
+    } catch (error) {
+      console.warn('User settings table might not exist:', error);
+    }
+
+    // Add default inventory items if the table exists
+    try {
+      const { error: inventoryError } = await supabase
+        .from('user_inventory')
+        .insert([
+          { user_id: authUser.user.id, item_id: 'fighter', item_type: 'character', equipped: true },
+          { user_id: authUser.user.id, item_id: 'forest', item_type: 'background', equipped: true }
+        ]);
+      
+      if (inventoryError) {
+        console.warn('Failed to create default inventory:', inventoryError);
+      } else {
+        console.log('Default inventory created successfully');
+      }
+    } catch (error) {
+      console.warn('User inventory table might not exist:', error);
     }
 
     // Clear timeout since we're about to return
@@ -182,6 +213,22 @@ export async function POST(request: NextRequest) {
     
     console.error('Wallet sign-up error:', error);
     
+    // Enhanced error logging
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+    
+    // Log the request context
+    console.error('Request context:', {
+      url: request.url,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries())
+    });
+    
     // Check if it's a timeout error
     if (error instanceof Error && error.name === 'AbortError') {
       return NextResponse.json(
@@ -199,7 +246,10 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? error instanceof Error ? error.message : 'Unknown error' : undefined
+      },
       { status: 500 }
     );
   }

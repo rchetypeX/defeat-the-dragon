@@ -1,7 +1,7 @@
 {
   "name": "Defeat the Dragon",
   "short_name": "DTD:FocusRPG",
-  "description": "A Pixel-art Pomodoro-style Focus RPG where you train to defeat the dragon through focused work sessions",
+  "description": "Level up your productivity with this pixel-art Pomodoro RPG",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e3a8a",

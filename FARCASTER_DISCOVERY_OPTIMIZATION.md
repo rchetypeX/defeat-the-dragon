@@ -92,7 +92,7 @@ Features that drive trending engagement:
     "version": "1",
     "name": "Defeat the Dragon",
     "subtitle": "Pomodoro-style Focus RPG",
-    "description": "A Pomodoro-style Focus RPG that gamifies productivity",
+    "description": "Level up your productivity with this pixel-art Pomodoro RPG",
     "homeUrl": "https://dtd.rchetype.xyz",
     "iconUrl": "https://dtd.rchetype.xyz/icon.png",
     "primaryCategory": "gaming",

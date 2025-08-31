@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         version: '1',
         name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
         subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE || 'Pomodoro-style Focus RPG',
-        description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pomodoro-style Focus RPG that gamifies productivity',
+        description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'Level up your productivity with this pixel-art Pomodoro RPG',
         screenshotUrls: [
           `${URL.replace(/\/$/, '')}/screenshots/gameplay-1.png`,
           `${URL.replace(/\/$/, '')}/screenshots/focus-session.png`,
