@@ -30,7 +30,7 @@
         "purpose": "any maskable"
       },
       {
-        "src": "/icon.png",
+        "src": "/icon-simple.png",
         "sizes": "192x192",
         "type": "image/png",
         "purpose": "any maskable"
@@ -44,7 +44,7 @@
     ],
       "screenshots": [
       {
-        "src": "/icon.png",
+        "src": "/icon-simple.png",
         "sizes": "192x192",
         "type": "image/png",
         "form_factor": "wide",
