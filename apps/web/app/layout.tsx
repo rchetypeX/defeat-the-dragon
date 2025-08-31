@@ -5,6 +5,7 @@ import './mobile-first.css';
 import { AudioProvider } from '../contexts/AudioContext';
 import { AuthProvider } from '../contexts/AuthContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
+import * as Sentry from '@sentry/nextjs';
 
 import { initWebVitals } from '../lib/web-vitals';
 import { appLogger } from '../lib/logger';
@@ -26,44 +27,49 @@ if (typeof window !== 'undefined') {
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'Defeat the Dragon - Focus RPG',
-  description: 'Transform focus sessions into an epic adventure with pixel art and gamification',
-  manifest: '/manifest.json',
-  icons: {
-    icon: '/favicon.png',
-    apple: '/apple-touch-icon.png',
-  },
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
-  themeColor: '#7c2d12',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Defeat the Dragon',
-  },
-  openGraph: {
+export function generateMetadata(): Metadata {
+  return {
     title: 'Defeat the Dragon - Focus RPG',
-    description: 'Pixel-art Pomodoro-style Focus RPG',
-    url: 'https://dtd.rchetype.xyz/',
-    siteName: 'Defeat the Dragon',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Defeat the Dragon - Focus RPG',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Defeat the Dragon - Focus RPG',
-    description: 'Pixel-art Pomodoro-style Focus RPG',
-    images: ['/og-image.png'],
-  },
-};
+    description: 'Transform focus sessions into an epic adventure with pixel art and gamification',
+    manifest: '/manifest.json',
+    icons: {
+      icon: '/favicon.png',
+      apple: '/apple-touch-icon.png',
+    },
+    viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
+    themeColor: '#7c2d12',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: 'Defeat the Dragon',
+    },
+    openGraph: {
+      title: 'Defeat the Dragon - Focus RPG',
+      description: 'Pixel-art Pomodoro-style Focus RPG',
+      url: 'https://dtd.rchetype.xyz/',
+      siteName: 'Defeat the Dragon',
+      images: [
+        {
+          url: '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: 'Defeat the Dragon - Focus RPG',
+        },
+      ],
+      locale: 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Defeat the Dragon - Focus RPG',
+      description: 'Pixel-art Pomodoro-style Focus RPG',
+      images: ['/og-image.png'],
+    },
+    other: {
+      ...Sentry.getTraceData()
+    },
+  };
+}
 
 export default function RootLayout({
   children,

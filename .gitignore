@@ -111,3 +111,6 @@ Thumbs.db
 # Alpha codes (security - never commit these!)
 alpha_codes*.txt
 alpha_codes*.csv
+
+# Sentry build plugin (contains auth tokens)
+.env.sentry-build-plugin
