@@ -43,7 +43,13 @@ export async function GET(request: NextRequest) {
             process.env.SUPABASE_SERVICE_ROLE_KEY!
           );
           
-          const { data: { user }, error: tokenError } = await supabaseAuth.auth.getUser(authHeader);
+          // Handle both direct token and Bearer token formats
+          let token = authHeader;
+          if (authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7); // Remove 'Bearer ' prefix
+          }
+          
+          const { data: { user }, error: tokenError } = await supabaseAuth.auth.getUser(token);
           if (user && !tokenError) {
             userId = user.id;
           } else {
