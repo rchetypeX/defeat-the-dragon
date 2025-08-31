@@ -7,6 +7,40 @@ const nextConfig = {
   experimental: {
     outputFileTracingRoot: undefined,
   },
+  
+  // Add cache busting for static assets
+  async headers() {
+    return [
+      {
+        // Apply cache busting headers to all static assets
+        source: '/assets/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+        ],
+      },
+      {
+        // Apply cache busting headers to specific image types
+        source: '/:path*.png',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 // Injected content via Sentry wizard below

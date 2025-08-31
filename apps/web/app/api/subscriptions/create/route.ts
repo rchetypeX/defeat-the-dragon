@@ -53,16 +53,68 @@ export async function POST(request: NextRequest) {
       authMethod = 'supabase_session';
       console.log('User authenticated via Supabase session:', userId);
     } else {
-      // Check if this is a wallet user by looking for wallet address in headers or cookies
-      const walletUser = cookieStore.get('wallet-user');
-      if (walletUser) {
-        try {
-          const walletData = JSON.parse(walletUser.value);
-          userId = walletData.id;
-          authMethod = 'wallet_cookie';
-          console.log('User authenticated via wallet cookie:', userId);
-        } catch (e) {
-          console.error('Error parsing wallet user data:', e);
+      // Check for Bearer token in Authorization header (like other APIs)
+      const authHeader = request.headers.get('authorization');
+      console.log('Auth header received:', authHeader);
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7); // Remove 'Bearer '
+        
+        // Check if this is a wallet user
+        if (token.startsWith('wallet:')) {
+          try {
+            const walletData = JSON.parse(token.substring(7)); // Remove 'wallet:'
+            userId = walletData.id;
+            authMethod = 'wallet_header';
+            console.log('User authenticated via wallet header:', userId);
+          } catch (e) {
+            console.error('Error parsing wallet user from header:', e);
+          }
+        }
+        
+        // Check if this is a Base App user
+        if (!userId && token.startsWith('baseapp:')) {
+          try {
+            const baseAppData = JSON.parse(token.substring(8)); // Remove 'baseapp:'
+            // Convert Base App numeric ID to a consistent UUID format
+            userId = `baseapp-${baseAppData.id}`;
+            authMethod = 'baseapp_header';
+            console.log('User authenticated via Base App header:', userId);
+          } catch (e) {
+            console.error('Error parsing Base App user from header:', e);
+          }
+        }
+        
+        // If it's a Supabase access token, verify it
+        if (!userId && !token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+          try {
+            // Verify the token with Supabase
+            const { data: { user: tokenUser }, error: tokenError } = await supabaseAuth.auth.getUser(token);
+            if (tokenUser && !tokenError) {
+              userId = tokenUser.id;
+              authMethod = 'bearer_token';
+              console.log('User authenticated via Bearer token:', userId);
+            } else {
+              console.error('Token verification failed:', tokenError);
+            }
+          } catch (e) {
+            console.error('Error verifying token:', e);
+          }
+        }
+      }
+      
+      // Fallback: Check if this is a wallet user by looking for wallet address in cookies
+      if (!userId) {
+        const walletUser = cookieStore.get('wallet-user');
+        if (walletUser) {
+          try {
+            const walletData = JSON.parse(walletUser.value);
+            userId = walletData.id;
+            authMethod = 'wallet_cookie';
+            console.log('User authenticated via wallet cookie:', userId);
+          } catch (e) {
+            console.error('Error parsing wallet user data:', e);
+          }
         }
       }
     }

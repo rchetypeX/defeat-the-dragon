@@ -21,10 +21,10 @@ export const useCharacterStore = create<CharacterState>()(
       
       getCharacterImage: (characterId: string) => {
         const characterImages = {
-          fighter: '/assets/sprites/fighter.png',
-          wizard: '/assets/sprites/wizard.png',
-          paladin: '/assets/sprites/paladin.png',
-          rogue: '/assets/sprites/rogue.png'
+          fighter: '/assets/sprites/fighter.png?v=2',
+          wizard: '/assets/sprites/wizard.png?v=2',
+          paladin: '/assets/sprites/paladin.png?v=2',
+          rogue: '/assets/sprites/rogue.png?v=2'
         };
         return characterImages[characterId as keyof typeof characterImages] || characterImages.fighter;
       }

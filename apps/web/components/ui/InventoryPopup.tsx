@@ -32,16 +32,16 @@ interface InventoryPopupProps {
 // Default inventory data - only fighter and forest should be owned by default
 const defaultInventoryItems = {
   character: [
-    { id: 'fighter', name: 'Fighter', description: 'Default warrior character', isOwned: true, isEquipped: true, category: 'character' as const, image: '/assets/sprites/fighter.png' },
-    { id: 'wizard', name: 'Wizard', description: 'Powerful magic user', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/wizard.png' },
-    { id: 'paladin', name: 'Paladin', description: 'Holy warrior with divine powers', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/paladin.png' },
-    { id: 'rogue', name: 'Rogue', description: 'Stealthy and agile fighter', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/rogue.png' }
+    { id: 'fighter', name: 'Fighter', description: 'Default warrior character', isOwned: true, isEquipped: true, category: 'character' as const, image: '/assets/sprites/fighter.png?v=2' },
+    { id: 'wizard', name: 'Wizard', description: 'Powerful magic user', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/wizard.png?v=2' },
+    { id: 'paladin', name: 'Paladin', description: 'Holy warrior with divine powers', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/paladin.png?v=2' },
+    { id: 'rogue', name: 'Rogue', description: 'Stealthy and agile fighter', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/rogue.png?v=2' }
   ],
   background: [
-    { id: 'forest', name: 'Forest', description: 'Default forest scene', isOwned: true, isEquipped: true, category: 'background' as const, image: '/assets/images/forest-background.png' },
-    { id: 'tundra', name: 'Tundra', description: 'Frozen wilderness', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/tundra-background.png' },
-    { id: 'underdark', name: 'Underdark', description: 'Dark underground realm', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/underdark-background.png' },
-    { id: 'dungeon', name: 'Dungeon', description: 'Ancient stone corridors', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/dungeon-background.png' }
+    { id: 'forest', name: 'Forest', description: 'Default forest scene', isOwned: true, isEquipped: true, category: 'background' as const, image: '/assets/images/forest-background.png?v=2' },
+    { id: 'tundra', name: 'Tundra', description: 'Frozen wilderness', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/tundra-background.png?v=2' },
+    { id: 'underdark', name: 'Underdark', description: 'Dark underground realm', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/underdark-background.png?v=2' },
+    { id: 'dungeon', name: 'Dungeon', description: 'Ancient stone corridors', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/dungeon-background.png?v=2' }
   ]
 };
 

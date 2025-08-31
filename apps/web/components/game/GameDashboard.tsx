@@ -352,7 +352,7 @@ export function GameDashboard() {
                     {/* Level Card */}
                     <div className="relative">
                       <img 
-                        src="/assets/ui/level-card.png" 
+                        src="/assets/ui/level-card.png?v=2" 
                         alt="Level" 
                         className="w-8 h-8 sm:w-10 sm:h-10 pixel-art"
                         onError={(e) => {
@@ -369,7 +369,7 @@ export function GameDashboard() {
                                                                                                         {/* Name Card */}
                      <div className="relative">
                        <img 
-                         src="/assets/ui/name-card.png" 
+                         src="/assets/ui/name-card.png?v=2" 
                          alt="Name" 
                          className="w-36 h-8 sm:w-40 sm:h-10 pixel-art"
                          onError={(e) => {
@@ -391,7 +391,7 @@ export function GameDashboard() {
                      {/* Gold Icon */}
                      <div className="relative">
                        <img 
-                         src="/assets/ui/gold-icon.png" 
+                         src="/assets/ui/gold-icon.png?v=2" 
                          alt="Gold Icon" 
                          className="w-8 h-8 sm:w-10 sm:h-10 pixel-art"
                          onError={(e) => {
@@ -528,7 +528,7 @@ export function GameDashboard() {
               {/* Main FOCUS Button - Smaller and positioned higher */}
               <div className="w-full focus-button-small mx-auto">
                  <img 
-                   src="/assets/ui/focus-button.png" 
+                   src="/assets/ui/focus-button.png?v=2" 
                    alt="FOCUS" 
                    className="w-full h-auto pixel-art cursor-pointer hover:opacity-90 transition-opacity drop-shadow-lg"
                    onClick={() => setShowSessionTimer(true)}

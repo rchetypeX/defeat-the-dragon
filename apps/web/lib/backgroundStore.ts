@@ -21,10 +21,10 @@ export const useBackgroundStore = create<BackgroundState>()(
       
       getBackgroundImage: (backgroundId: string) => {
         const backgroundImages = {
-          forest: '/assets/images/forest-background.png',
-          tundra: '/assets/images/tundra-background.png',
-          underdark: '/assets/images/underdark-background.png',
-          dungeon: '/assets/images/dungeon-background.png'
+          forest: '/assets/images/forest-background.png?v=2',
+          tundra: '/assets/images/tundra-background.png?v=2',
+          underdark: '/assets/images/underdark-background.png?v=2',
+          dungeon: '/assets/images/dungeon-background.png?v=2'
         };
         return backgroundImages[backgroundId as keyof typeof backgroundImages] || backgroundImages.forest;
       }
