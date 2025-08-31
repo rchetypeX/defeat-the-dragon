@@ -15,12 +15,22 @@ export async function POST(request: NextRequest) {
     const controller = new AbortController();
     timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    const { address, displayName, message, signature } = await request.json();
+    const { address, email, displayName, message, signature } = await request.json();
 
-    if (!address || !displayName || !message || !signature) {
+    if (!address || !email || !displayName || !message || !signature) {
       if (timeoutId) clearTimeout(timeoutId);
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      if (timeoutId) clearTimeout(timeoutId);
+      return NextResponse.json(
+        { error: 'Invalid email format' },
         { status: 400 }
       );
     }
@@ -30,37 +40,46 @@ export async function POST(request: NextRequest) {
     // This is a simplified approach for development
     console.log('Wallet sign-up attempt:', { address, displayName, message, signature });
 
-    // Check if user already exists
-    const { data: existingUser, error: userError } = await supabase
+    // Check if user already exists by wallet address
+    const { data: existingWalletUser, error: walletUserError } = await supabase
       .from('players')
       .select('*')
       .eq('wallet_address', address.toLowerCase())
       .single();
 
-    if (userError && userError.code !== 'PGRST116') {
-      console.error('Error checking existing user:', userError);
+    if (walletUserError && walletUserError.code !== 'PGRST116') {
+      console.error('Error checking existing wallet user:', walletUserError);
       return NextResponse.json(
         { error: 'Database error checking existing user' },
         { status: 500 }
       );
     }
 
-    if (existingUser) {
+    if (existingWalletUser) {
       return NextResponse.json(
         { error: 'An account with this wallet address already exists. Please sign in instead.' },
         { status: 409 }
       );
     }
 
+    // Check if email is already linked to another account
+    const { data: existingEmailUser, error: emailUserError } = await supabase.auth.admin.listUsers();
+    const emailAlreadyExists = existingEmailUser?.users?.some((u: any) => u.email === email);
+    
+    if (emailAlreadyExists) {
+      return NextResponse.json(
+        { error: 'An account with this email address already exists. Please use a different email or sign in instead.' },
+        { status: 409 }
+      );
+    }
+
     // Display names no longer need to be unique - removed uniqueness check
 
-    // Create a new Supabase user with a unique email
-    const uniqueEmail = `${address.toLowerCase()}@wallet`;
-    
-    console.log('Creating auth user with email:', uniqueEmail);
+    // Create a new Supabase user with the provided email
+    console.log('Creating auth user with email:', email);
     
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-      email: uniqueEmail,
+      email: email,
       email_confirm: true,
       user_metadata: {
         wallet_address: address.toLowerCase(),
@@ -204,7 +223,7 @@ export async function POST(request: NextRequest) {
         address: address.toLowerCase(), // Include address for client-side use
         wallet_address: address.toLowerCase(),
         display_name: displayName,
-        email: uniqueEmail,
+        email: email,
       },
       walletAuth: true,
     });

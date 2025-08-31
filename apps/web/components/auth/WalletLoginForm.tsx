@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useWalletAuth } from '../../hooks/useWalletAuth';
+import { WalletSignupForm } from './WalletSignupForm';
 
 export function WalletLoginForm() {
+  const [showSignupForm, setShowSignupForm] = useState(false);
   
   const {
     address,
@@ -46,7 +48,9 @@ export function WalletLoginForm() {
   };
 
   const handleSignUp = async () => {
-    await signUpWithWallet();
+    // This function is no longer used since we show the signup form modal
+    // The actual signup is handled by WalletSignupForm component
+    setShowSignupForm(true);
   };
 
   // Auto-detect if user should sign up or sign in based on account existence
@@ -199,19 +203,44 @@ export function WalletLoginForm() {
             {/* Show appropriate action based on account status */}
             {!isCheckingAccount && hasAccount !== null && (
               <>
-                <button
-                  onClick={shouldShowSignUp ? handleSignUp : handleSignIn}
-                  disabled={isConnecting || !isFormValid}
-                  className="w-full pixel-button disabled:opacity-50"
-                >
-                  {isConnecting ? 'Processing...' : 
-                   (shouldShowSignUp ? 'START ADVENTURE' : 'Sign In')}
-                </button>
+                {shouldShowSignUp ? (
+                  <button
+                    onClick={() => setShowSignupForm(true)}
+                    disabled={isConnecting}
+                    className="w-full pixel-button disabled:opacity-50"
+                  >
+                    START ADVENTURE
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleSignIn}
+                    disabled={isConnecting || !isFormValid}
+                    className="w-full pixel-button disabled:opacity-50"
+                  >
+                    Sign In
+                  </button>
+                )}
               </>
             )}
           </div>
         )}
       </div>
+
+      {/* Wallet Signup Modal */}
+      {showSignupForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <WalletSignupForm
+              onSuccess={() => {
+                setShowSignupForm(false);
+                // Refresh the account status
+                window.location.reload();
+              }}
+              onCancel={() => setShowSignupForm(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

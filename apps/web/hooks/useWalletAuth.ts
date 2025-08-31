@@ -505,9 +505,19 @@ export function useWalletAuth() {
     }
   };
 
-  const signUpWithWallet = async (retryCount = 0) => {
+  const signUpWithWallet = async (email: string, displayName: string, retryCount = 0) => {
     if (!address) {
       setAuthError('Please connect your wallet first.');
+      return;
+    }
+
+    if (!email || !email.includes('@')) {
+      setAuthError('Please provide a valid email address.');
+      return;
+    }
+
+    if (!displayName || displayName.trim().length < 2) {
+      setAuthError('Please provide a valid display name (at least 2 characters).');
       return;
     }
 
@@ -519,7 +529,7 @@ export function useWalletAuth() {
 
     try {
       // Create a message to sign
-      const message = `Sign up for Defeat the Dragon\n\nWallet: ${address}\nTimestamp: ${Date.now()}`;
+      const message = `Sign up for Defeat the Dragon\n\nWallet: ${address}\nEmail: ${email}\nDisplay Name: ${displayName}\nTimestamp: ${Date.now()}`;
       
       // Sign the message using the selected provider
       const provider = getProvider();
@@ -540,7 +550,8 @@ export function useWalletAuth() {
         },
         body: JSON.stringify({
           address,
-          displayName: `Player_${address.slice(2, 8)}`, // Generate a display name from wallet address
+          email,
+          displayName,
           message,
           signature,
         }),
@@ -610,7 +621,9 @@ export function useWalletAuth() {
       )) {
         console.log(`Retrying wallet signup (attempt ${retryCount + 1}/${maxRetries})...`);
         setTimeout(() => {
-          signUpWithWallet(retryCount + 1);
+          // Retry logic removed since email and displayName are now required
+          // This fallback is no longer needed
+          throw new Error('Signup failed - email and display name are required');
         }, 1000 * (retryCount + 1)); // Exponential backoff
         return;
       }

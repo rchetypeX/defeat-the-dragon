@@ -234,19 +234,42 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
 
           {isWalletUser && (
             <>
-              <button
-                onClick={() => setShowEmailLink(true)}
-                className="w-full px-4 py-3 bg-[#f2751a] hover:bg-[#e65a0a] transition-colors rounded text-white font-semibold mb-3"
-              >
-                📧 Link Email
-              </button>
-              <div className="p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded text-sm mb-3">
-                <div className="font-semibold mb-2">🔗 You're signed in with wallet. Link an email to access your account from other devices.</div>
-                <div className="flex items-center">
-                  <span className="text-blue-600 mr-2">🔗 Wallet:</span>
-                  <span className="font-mono">{player?.wallet_address}</span>
-                </div>
-              </div>
+              {!user?.email || user.email.includes('@wallet') ? (
+                <>
+                  <button
+                    onClick={() => setShowEmailLink(true)}
+                    className="w-full px-4 py-3 bg-[#ef4444] hover:bg-[#dc2626] transition-colors rounded text-white font-semibold mb-3"
+                  >
+                    ⚠️ REQUIRED: Link Email Address
+                  </button>
+                  <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm mb-3">
+                    <div className="font-semibold mb-2">⚠️ Email linking is REQUIRED for wallet accounts!</div>
+                    <div className="text-sm">
+                      <p>• Account recovery if you lose wallet access</p>
+                      <p>• Cross-device account access</p>
+                      <p>• Important game notifications</p>
+                      <p>• Customer support access</p>
+                    </div>
+                    <div className="mt-2 flex items-center">
+                      <span className="text-red-600 mr-2">🔗 Wallet:</span>
+                      <span className="font-mono">{player?.wallet_address}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded text-sm mb-3">
+                    <div className="font-semibold mb-2">✅ Email Successfully Linked</div>
+                    <div className="text-sm">
+                      <p>Your wallet account is properly linked to: <strong>{user.email}</strong></p>
+                    </div>
+                    <div className="mt-2 flex items-center">
+                      <span className="text-green-600 mr-2">🔗 Wallet:</span>
+                      <span className="font-mono">{player?.wallet_address}</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
 
