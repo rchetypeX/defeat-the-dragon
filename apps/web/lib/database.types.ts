@@ -322,6 +322,7 @@ export interface Database {
       }
       user_subscriptions: {
         Row: {
+          id: string
           user_id: string
           subscription_type: string
           status: string
@@ -332,6 +333,7 @@ export interface Database {
           updated_at: string
         }
         Insert: {
+          id?: string
           user_id: string
           subscription_type: string
           status?: string
@@ -342,6 +344,7 @@ export interface Database {
           updated_at?: string
         }
         Update: {
+          id?: string
           user_id?: string
           subscription_type?: string
           status?: string

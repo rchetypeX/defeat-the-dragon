@@ -18,7 +18,6 @@ import { AddMiniAppPrompt } from '../components/AddMiniAppPrompt';
 import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
 
 import { EntryPointExperience } from '../components/context/EntryPointExperience';
-import { MonitoringDashboard } from '../components/debugging/MonitoringDashboard';
 
 // Loading component for Suspense fallback
 function HomePageLoading() {
@@ -252,7 +251,6 @@ function HomePageContent() {
             onError={(error) => console.error('Focus session music error:', error)}
           />
           <GameDashboard />
-          <MonitoringDashboard />
         </AudioProvider>
       </EntryPointExperience>
     </ContextAwareLayout>

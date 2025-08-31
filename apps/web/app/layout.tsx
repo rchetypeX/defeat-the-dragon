@@ -7,14 +7,10 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
 import * as Sentry from '@sentry/nextjs';
 
-import { initWebVitals } from '../lib/web-vitals';
 import { appLogger } from '../lib/logger';
 
-// Initialize monitoring
+// Initialize logging
 if (typeof window !== 'undefined') {
-  // Initialize Web Vitals monitoring
-  initWebVitals();
-  
   // Log app initialization
   appLogger.info('App initialized in browser', {
     user_agent: navigator.userAgent,

@@ -161,14 +161,50 @@ export async function POST(request: NextRequest) {
 
     console.log('Subscription creation validation passed:', { subscriptionType, duration, transactionHash });
 
-    // Calculate expiration date
-    const expiresAt = new Date();
+    // Check for existing active subscriptions to calculate stacked duration
+    const { data: existingSubscriptions, error: existingError } = await supabase
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .gte('expires_at', new Date().toISOString());
+
+    if (existingError) {
+      console.error('Error checking existing subscriptions:', existingError);
+      return NextResponse.json(
+        { error: 'Failed to check existing subscriptions', details: existingError.message },
+        { status: 500 }
+      );
+    }
+
+    // Calculate total stacked duration
+    let totalDuration = duration;
+    let baseExpiryDate = new Date();
+    
+    if (existingSubscriptions && existingSubscriptions.length > 0) {
+      // Find the latest expiry date from existing subscriptions
+      const latestExpiry = existingSubscriptions.reduce((latest, sub) => {
+        if (sub.expires_at) {
+          const expiryDate = new Date(sub.expires_at);
+          return expiryDate > latest ? expiryDate : latest;
+        }
+        return latest;
+      }, new Date(0));
+      
+      if (latestExpiry > new Date(0)) {
+        baseExpiryDate = latestExpiry;
+        console.log('Stacking subscription on existing expiry date:', baseExpiryDate);
+      }
+    }
+
+    // Calculate new expiration date by adding duration to the base date
+    const expiresAt = new Date(baseExpiryDate);
     expiresAt.setDate(expiresAt.getDate() + duration);
 
-    // Create or update subscription record
+    // Create new subscription record (don't overwrite existing ones)
     const { data: subscription, error: subscriptionError } = await supabase
       .from('user_subscriptions')
-      .upsert({
+      .insert({
         user_id: userId,
         subscription_type: subscriptionType,
         status: 'active',

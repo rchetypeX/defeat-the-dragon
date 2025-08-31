@@ -28,6 +28,15 @@ interface ShopPopupProps {
   onClose: () => void;
 }
 
+interface SubscriptionStatus {
+  hasActiveSubscription: boolean;
+  isInspired: boolean;
+  totalRemainingDays: number;
+  totalRemainingHours: number;
+  totalRemainingMinutes: number;
+  subscriptionDetails: any[];
+}
+
 // Shop items are now loaded dynamically from the master table
 
 export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
@@ -41,6 +50,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   const [purchaseStatus, setPurchaseStatus] = useState<{ [key: string]: 'idle' | 'loading' | 'success' | 'error' }>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
@@ -49,6 +59,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     if (isOpen && userInventory.length === 0 && shopItems.character.length === 0) {
       loadUserInventory();
       loadShopItems();
+      loadSubscriptionStatus();
     }
   }, [isOpen]); // Only depend on isOpen
 
@@ -176,6 +187,74 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       setErrorMessage('Error loading shop items');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadSubscriptionStatus = async () => {
+    try {
+      // Get auth token for the request
+      let token: string | null = null;
+      
+      // Check if we have a wallet user in localStorage
+      const walletUserStr = localStorage.getItem('walletUser');
+      if (walletUserStr) {
+        try {
+          const walletUser = JSON.parse(walletUserStr);
+          token = `wallet:${JSON.stringify(walletUser)}`;
+        } catch (e) {
+          console.error('Error parsing wallet user:', e);
+        }
+      }
+      
+      // Check if we have a Base App user in localStorage
+      if (!token) {
+        const baseAppUserStr = localStorage.getItem('baseAppUser');
+        if (baseAppUserStr) {
+          try {
+            const baseAppUser = JSON.parse(baseAppUserStr);
+            token = `baseapp:${JSON.stringify(baseAppUser)}`;
+          } catch (e) {
+            console.error('Error parsing Base App user:', e);
+          }
+        }
+      }
+      
+      // If no wallet or Base App token, try to get Supabase session
+      if (!token) {
+        const { supabase } = await import('../../lib/supabase');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          token = session.access_token;
+        }
+      }
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+      
+      if (token) {
+        // For Supabase tokens, use 'Bearer' prefix
+        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
+          headers['Authorization'] = `Bearer ${token}`;
+        } else {
+          // For wallet and Base App tokens, use the custom format
+          headers['Authorization'] = token;
+        }
+      }
+      
+      const response = await fetch('/api/subscriptions/status', { headers, credentials: 'include' });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Subscription status loaded:', result.data);
+        if (result.data) {
+          setSubscriptionStatus(result.data);
+        }
+      } else {
+        console.error('Failed to load subscription status');
+      }
+    } catch (error) {
+      console.error('Error loading subscription status:', error);
     }
   };
 
@@ -364,8 +443,9 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   };
 
   const handleSubscriptionSuccess = () => {
-    // Refresh inventory to show updated subscription status
+    // Refresh inventory and subscription status to show updated subscription status
     loadUserInventory();
+    loadSubscriptionStatus();
     // Close the subscription popup but keep the shop open
     setShowSubscriptionPopup(false);
   };
@@ -439,7 +519,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
           </div>
         )}
 
-        {/* Inspiration Boon Button */}
+        {/* Inspiration Boon Button and Status */}
         <div className="mb-3 flex-shrink-0">
           <button
             onClick={handleSubscription}
@@ -447,6 +527,42 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
           >
             ✨ Inspiration Boon! Earn Sparks from Focus Sessions!
           </button>
+          
+          {/* Subscription Status Indicator */}
+          {subscriptionStatus && (
+            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-xs">
+              {subscriptionStatus.hasActiveSubscription ? (
+                <div className="text-green-700">
+                  <div className="font-bold mb-1">✨ Active Inspiration Boon</div>
+                  <div className="text-green-600">
+                    {subscriptionStatus.totalRemainingDays > 0 && (
+                      <span>{subscriptionStatus.totalRemainingDays} days </span>
+                    )}
+                    {subscriptionStatus.totalRemainingHours > 0 && (
+                      <span>{subscriptionStatus.totalRemainingHours} hours </span>
+                    )}
+                    {subscriptionStatus.totalRemainingMinutes > 0 && (
+                      <span>{subscriptionStatus.totalRemainingMinutes} minutes</span>
+                    )}
+                    remaining
+                  </div>
+                  {subscriptionStatus.subscriptionDetails.length > 1 && (
+                    <div className="text-green-500 mt-1">
+                      🎯 Stacked: {subscriptionStatus.subscriptionDetails.length} subscriptions
+                    </div>
+                  )}
+                  <div className="text-green-500 mt-1 text-xs">
+                    💡 You can buy more subscriptions to extend your time!
+                  </div>
+                </div>
+              ) : (
+                <div className="text-orange-600">
+                  <div className="font-bold">💡 No active subscription</div>
+                  <div>Subscribe to start earning Sparks!</div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
@@ -551,7 +667,10 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         {/* Footer */}
         <div className="mt-3 text-center flex-shrink-0">
           <p className="text-[#654321] text-xs">
-            💡 Tip: Get the Inspiration Boon to earn Sparks from your focus sessions!
+            {subscriptionStatus?.hasActiveSubscription 
+              ? '💡 Tip: Stack multiple subscriptions to extend your Inspiration Boon! (1 month + 1 month = 60 days total)'
+              : '💡 Tip: Get the Inspiration Boon to earn Sparks from your focus sessions!'
+            }
           </p>
         </div>
       </div>
