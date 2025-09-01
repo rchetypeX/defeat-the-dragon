@@ -86,15 +86,12 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="text-center">
         <h3 className="text-lg font-semibold text-[#fbbf24] mb-2">🔗 Wallet Signup</h3>
-        <p className="text-sm text-gray-300 mb-4">
-          Complete your account setup by providing an email address
-        </p>
         
         {/* Connected Wallet Display */}
-        <div className="bg-[#1a1a2e] p-3 border border-[#654321] rounded mb-4">
+        <div className="bg-[#1a1a2e] p-2 border border-[#654321] rounded mb-3">
           <p className="text-xs text-[#fbbf24] mb-1">Connected Wallet:</p>
           <p className="text-xs text-white font-mono break-all">{address}</p>
         </div>
@@ -102,7 +99,7 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
             Email Address <span className="text-red-400">*</span>
           </label>
           <input
@@ -110,7 +107,7 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={`w-full px-3 py-2 bg-[#1a1a2e] border rounded text-white placeholder-gray-400 focus:outline-none focus:border-[#f2751a] ${
+            className={`w-full px-3 py-2 bg-[#1a1a2e] border rounded text-white placeholder-gray-300 focus:outline-none focus:border-[#f2751a] ${
               email && !isEmailValid ? 'border-red-500' : 'border-[#8b4513]'
             }`}
             placeholder="Enter your email address"
@@ -120,13 +117,10 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
           {email && !isEmailValid && (
             <p className="text-xs text-red-400 mt-1">Please enter a valid email address</p>
           )}
-          <p className="text-xs text-gray-400 mt-1">
-            This email will be linked to your wallet for account recovery and notifications
-          </p>
         </div>
 
         <div>
-          <label htmlFor="displayName" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="displayName" className="block text-sm font-medium text-white mb-1">
             Display Name <span className="text-red-400">*</span>
           </label>
           <input
@@ -134,30 +128,27 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
             id="displayName"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#8b4513] rounded text-white placeholder-gray-400 focus:outline-none focus:border-[#f2751a]"
+            className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#8b4513] rounded text-white placeholder-gray-300 focus:outline-none focus:border-[#f2751a]"
             placeholder="Enter your display name"
             maxLength={20}
             required
             disabled={isLoading}
           />
-          <p className="text-xs text-gray-400 mt-1">
-            This will be your in-game character name (2-20 characters)
-          </p>
         </div>
 
         {error && (
-          <div className="bg-[#ef4444] text-white p-3 border border-[#654321] text-sm rounded">
+          <div className="bg-[#ef4444] text-white p-2 border border-[#654321] text-sm rounded">
             {error}
           </div>
         )}
 
         {walletAuthError && (
-          <div className="bg-[#ef4444] text-white p-3 border border-[#654321] text-sm rounded">
+          <div className="bg-[#ef4444] text-white p-2 border border-[#654321] text-sm rounded">
             {walletAuthError}
           </div>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-3 pt-1">
           <button
             type="button"
             onClick={handleCancel}
@@ -182,16 +173,6 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
           </button>
         </div>
       </form>
-
-      <div className="text-xs text-gray-400 text-center p-3 bg-[#1a1a2e] rounded border border-[#654321]">
-        <p className="mb-2">📧 <strong>Why do we need your email?</strong></p>
-        <ul className="text-left space-y-1">
-          <li>• Account recovery if you lose access to your wallet</li>
-          <li>• Important game notifications and updates</li>
-          <li>• Cross-device access to your account</li>
-          <li>• Support and customer service</li>
-        </ul>
-      </div>
     </div>
   );
 }
