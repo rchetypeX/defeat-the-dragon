@@ -16,6 +16,18 @@ export function AdventurerNamePrompt({ onComplete }: AdventurerNamePromptProps) 
   const { player } = useGameStore();
   const { user, session, loading } = useAuth();
 
+  // Debug logging for authentication state
+  useEffect(() => {
+    console.log('AdventurerNamePrompt: Authentication state:', {
+      user: !!user,
+      session: !!session,
+      loading,
+      hasWalletUser: !!localStorage.getItem('walletUser'),
+      hasBaseAppUser: !!localStorage.getItem('baseAppUser'),
+      player: !!player
+    });
+  }, [user, session, loading, player]);
+
   // Wait for authentication to be ready
   useEffect(() => {
     if (!loading && !user && !session) {
@@ -40,38 +52,79 @@ export function AdventurerNamePrompt({ onComplete }: AdventurerNamePromptProps) 
     setError(null);
 
     try {
-      // Get the current session token for authentication
+      // Get the current authentication token for API calls
       let authToken = '';
-      if (session?.access_token) {
+      
+      // Check if we have a wallet user in localStorage
+      const walletUserStr = localStorage.getItem('walletUser');
+      if (walletUserStr) {
+        try {
+          const walletUser = JSON.parse(walletUserStr);
+          authToken = `wallet:${JSON.stringify(walletUser)}`;
+          console.log('AdventurerNamePrompt: Using wallet authentication token');
+        } catch (e) {
+          console.error('Error parsing wallet user:', e);
+        }
+      }
+      
+      // Check if we have a Base App user in localStorage
+      if (!authToken) {
+        const baseAppUserStr = localStorage.getItem('baseAppUser');
+        if (baseAppUserStr) {
+          try {
+            const baseAppUser = JSON.parse(baseAppUserStr);
+            authToken = `baseapp:${JSON.stringify(baseAppUser)}`;
+            console.log('AdventurerNamePrompt: Using Base App authentication token');
+          } catch (e) {
+            console.error('Error parsing Base App user:', e);
+          }
+        }
+      }
+      
+      // Fallback to Supabase session if no wallet/Base App token
+      if (!authToken && session?.access_token) {
         authToken = session.access_token;
-      } else if (user) {
+        console.log('AdventurerNamePrompt: Using Supabase session token');
+      } else if (!authToken && user) {
         // If we have a user but no session, try to get a fresh session
         const { data: { session: freshSession } } = await supabase.auth.getSession();
         if (freshSession?.access_token) {
           authToken = freshSession.access_token;
+          console.log('AdventurerNamePrompt: Using fresh Supabase session token');
         }
       }
+
+      console.log('AdventurerNamePrompt: Final auth token type:', authToken ? (authToken.startsWith('wallet:') ? 'wallet' : authToken.startsWith('baseapp:') ? 'baseapp' : 'supabase') : 'none');
 
       if (!authToken) {
         throw new Error('No authentication token available');
       }
 
       // Update the player's display name in the database
+      const requestBody = {
+        player: {
+          display_name: displayName.trim(),
+          level: player?.level || 1,
+          xp: player?.xp || 0,
+          coins: player?.coins || 0,
+          sparks: player?.sparks || 0,
+        }
+      };
+      
+      const authHeader = authToken.startsWith('wallet:') || authToken.startsWith('baseapp:') 
+        ? authToken 
+        : `Bearer ${authToken}`;
+      
+      console.log('AdventurerNamePrompt: Making API request with auth header:', authHeader.substring(0, 50) + '...');
+      console.log('AdventurerNamePrompt: Request body:', requestBody);
+      
       const response = await fetch('/api/user/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
+          'Authorization': authHeader,
         },
-        body: JSON.stringify({
-          player: {
-            display_name: displayName.trim(),
-            level: player?.level || 1,
-            xp: player?.xp || 0,
-            coins: player?.coins || 0,
-            sparks: player?.sparks || 0,
-          }
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {

@@ -10,7 +10,6 @@ interface WalletSignupFormProps {
 
 export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps) {
   const [email, setEmail] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEmailValid, setIsEmailValid] = useState(false);
@@ -23,11 +22,7 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
   } = useWalletAuth();
 
   // Auto-generate display name from wallet address
-  useEffect(() => {
-    if (address && !displayName) {
-      setDisplayName(`Player_${address.slice(2, 8)}`);
-    }
-  }, [address, displayName]);
+  const displayName = `Player_${address?.slice(2, 8) || '000000'}`;
 
   // Validate email format
   useEffect(() => {
@@ -45,11 +40,6 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
 
     if (!email || !isEmailValid) {
       setError('Please enter a valid email address');
-      return;
-    }
-
-    if (!displayName || displayName.trim().length < 2) {
-      setError('Display name must be at least 2 characters long');
       return;
     }
 
@@ -94,6 +84,7 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
         <div className="bg-[#1a1a2e] p-2 border border-[#654321] rounded mb-3">
           <p className="text-xs text-[#fbbf24] mb-1">Connected Wallet:</p>
           <p className="text-xs text-white font-mono break-all">{address}</p>
+          <p className="text-xs text-gray-300 mt-1">Display Name: {displayName}</p>
         </div>
       </div>
 
@@ -119,23 +110,6 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
           )}
         </div>
 
-        <div>
-          <label htmlFor="displayName" className="block text-sm font-medium text-white mb-1">
-            Display Name <span className="text-red-400">*</span>
-          </label>
-          <input
-            type="text"
-            id="displayName"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            className="w-full px-3 py-2 bg-[#1a1a2e] border border-[#8b4513] rounded text-white placeholder-gray-300 focus:outline-none focus:border-[#f2751a]"
-            placeholder="Enter your display name"
-            maxLength={20}
-            required
-            disabled={isLoading}
-          />
-        </div>
-
         {error && (
           <div className="bg-[#ef4444] text-white p-2 border border-[#654321] text-sm rounded">
             {error}
@@ -159,7 +133,7 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
           </button>
           <button
             type="submit"
-            disabled={isLoading || !isEmailValid || !displayName.trim()}
+            disabled={isLoading || !isEmailValid}
             className="flex-1 px-4 py-2 bg-[#8B4513] text-white rounded hover:bg-[#654321] disabled:opacity-50 transition-colors"
           >
             {isLoading ? (

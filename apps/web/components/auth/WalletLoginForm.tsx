@@ -233,8 +233,8 @@ export function WalletLoginForm() {
             <WalletSignupForm
               onSuccess={() => {
                 setShowSignupForm(false);
-                // Refresh the account status
-                window.location.reload();
+                // The useWalletAuth hook will handle the page reload after setting localStorage
+                // No need to reload here as it can cause race conditions
               }}
               onCancel={() => setShowSignupForm(false)}
             />
