@@ -83,8 +83,8 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
         {/* Connected Wallet Display */}
         <div className="bg-[#1a1a2e] p-2 border border-[#654321] rounded mb-3">
           <p className="text-xs text-[#fbbf24] mb-1">Connected Wallet:</p>
-          <p className="text-xs text-white font-mono break-all">{address}</p>
-          <p className="text-xs text-gray-300 mt-1">Display Name: {displayName}</p>
+          <p className="text-xs text-white font-mono break-all font-medium">{address}</p>
+          <p className="text-xs text-white mt-1">Display Name: {displayName}</p>
         </div>
       </div>
 
@@ -98,7 +98,7 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={`w-full px-3 py-2 bg-[#1a1a2e] border rounded text-white placeholder-gray-300 focus:outline-none focus:border-[#f2751a] ${
+            className={`w-full px-3 py-2 bg-[#1a1a2e] border rounded text-white placeholder-gray-200 focus:outline-none focus:border-[#f2751a] ${
               email && !isEmailValid ? 'border-red-500' : 'border-[#8b4513]'
             }`}
             placeholder="Enter your email address"
@@ -111,13 +111,13 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
         </div>
 
         {error && (
-          <div className="bg-[#ef4444] text-white p-2 border border-[#654321] text-sm rounded">
+          <div className="bg-[#ef4444] text-white p-2 border-2 border-white text-sm rounded font-medium">
             {error}
           </div>
         )}
 
         {walletAuthError && (
-          <div className="bg-[#ef4444] text-white p-2 border border-[#654321] text-sm rounded">
+          <div className="bg-[#ef4444] text-white p-2 border-2 border-white text-sm rounded font-medium">
             {walletAuthError}
           </div>
         )}
@@ -127,14 +127,14 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
             type="button"
             onClick={handleCancel}
             disabled={isLoading}
-            className="flex-1 px-4 py-2 bg-[#6b7280] text-white rounded hover:bg-[#4b5563] disabled:opacity-50 transition-colors"
+            className="flex-1 px-4 py-2 bg-[#6b7280] text-white rounded hover:bg-[#4b5563] disabled:opacity-50 transition-colors font-medium"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isLoading || !isEmailValid}
-            className="flex-1 px-4 py-2 bg-[#8B4513] text-white rounded hover:bg-[#654321] disabled:opacity-50 transition-colors"
+            className="flex-1 px-4 py-2 bg-[#8B4513] text-white rounded hover:bg-[#654321] disabled:opacity-50 transition-colors font-medium"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">

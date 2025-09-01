@@ -108,6 +108,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       try {
         const walletUser = JSON.parse(walletUserStr);
         headers['Authorization'] = `wallet:${JSON.stringify(walletUser)}`;
+        console.log('🔑 Generated wallet auth headers:', { walletUser: walletUser.id });
         return headers;
       } catch (e) {
         console.error('Error parsing wallet user:', e);
@@ -120,6 +121,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       try {
         const baseAppUser = JSON.parse(baseAppUserStr);
         headers['Authorization'] = `baseapp:${JSON.stringify(baseAppUser)}`;
+        console.log('🔑 Generated Base App auth headers:', { baseAppUser: baseAppUser.id });
         return headers;
       } catch (e) {
         console.error('Error parsing Base App user:', e);
@@ -132,11 +134,13 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.access_token) {
         headers['Authorization'] = `Bearer ${session.access_token}`;
+        console.log('🔑 Generated Supabase auth headers');
       }
     } catch (e) {
       console.log('Could not get Supabase session token');
     }
 
+    console.log('🔑 Final auth headers:', headers);
     return headers;
   };
 
@@ -213,12 +217,14 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       setIsLoading(true);
       
       const headers = await generateAuthHeaders();
+      console.log('📦 Loading inventory with headers:', headers);
       
       const response = await fetch('/api/inventory', { headers, credentials: 'include' });
       
       if (response.ok) {
         const result = await response.json();
-        console.log('Inventory loaded:', result.data);
+        console.log('📦 Inventory loaded:', result.data);
+        console.log('📦 Inventory count:', result.data?.length || 0);
         if (result.data) {
           setUserInventory(result.data);
         } else {
@@ -238,10 +244,16 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
 
   // Memoize the ownership check to prevent unnecessary recalculations
   const isItemOwned = (itemId: string, itemType: string) => {
-    const owned = userInventory.some(item => 
-      item.item_id === itemId && item.item_type === itemType
-    );
-    console.log(`Ownership check for ${itemId} (${itemType}):`, owned, 'Inventory:', userInventory);
+    console.log(`🔍 Checking ownership for ${itemId} (${itemType})`);
+    console.log(`🔍 Current inventory:`, userInventory);
+    
+    const owned = userInventory.some(item => {
+      const matches = item.item_id === itemId && item.item_type === itemType;
+      console.log(`🔍 Item ${item.item_id} (${item.item_type}) matches ${itemId} (${itemType}): ${matches}`);
+      return matches;
+    });
+    
+    console.log(`🔍 Ownership result for ${itemId} (${itemType}):`, owned);
     return owned;
   };
 
@@ -255,43 +267,19 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     setErrorMessage(null);
 
     try {
-      // Get auth token
-      let token = null;
+      // Use the generateAuthHeaders helper function for consistent authentication
+      const headers = await generateAuthHeaders();
+      
+      // Determine token type for logging
       let tokenType: 'wallet' | 'baseapp' | 'supabase' | null = null;
-      
-      if (user?.id && user?.user_metadata?.wallet_address) {
-        // For wallet users, create a custom token
-        token = JSON.stringify({ id: user.id, wallet_address: user.user_metadata.wallet_address });
-        tokenType = 'wallet';
-      } else if (user?.id && user?.user_metadata?.fid) {
-        // For Base App users, create a custom token
-        token = JSON.stringify({ id: user.id, fid: user.user_metadata.fid });
-        tokenType = 'baseapp';
-      } else if (user?.id) {
-        // For Supabase users, try to get session token
-        try {
-          const { supabase } = await import('../../lib/supabase');
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.access_token) {
-            token = session.access_token;
-            tokenType = 'supabase';
-          }
-        } catch (e) {
-          console.log('Could not get Supabase session token');
-        }
-      }
-
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        if (tokenType === 'supabase') {
-          // For Supabase tokens, use 'Bearer' prefix
-          headers['Authorization'] = `Bearer ${token}`;
-        } else {
-          // For wallet and Base App tokens, use the custom format
-          headers['Authorization'] = `${tokenType}:${token}`;
+      const authHeader = (headers as Record<string, string>).Authorization;
+      if (authHeader) {
+        if (authHeader.startsWith('wallet:')) {
+          tokenType = 'wallet';
+        } else if (authHeader.startsWith('baseapp:')) {
+          tokenType = 'baseapp';
+        } else if (authHeader.startsWith('Bearer ')) {
+          tokenType = 'supabase';
         }
       }
 
@@ -304,6 +292,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       
       console.log('🛒 Sending purchase request:', purchaseData);
       console.log('🔑 Auth token type:', tokenType || 'none');
+      console.log('🔑 Auth header present:', !!authHeader);
       
       const response = await fetch('/api/shop/purchase', {
         method: 'POST',
@@ -319,8 +308,12 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       if (response.ok) {
         console.log('✅ Purchase successful for:', item.name);
         setPurchaseStatus(prev => ({ ...prev, [item.id]: 'success' }));
+        
         // Reload inventory to reflect the new purchase
+        console.log('🔄 Reloading inventory after purchase...');
         await loadUserInventory();
+        console.log('🔄 Inventory reloaded, checking ownership again...');
+        
         // Clear success status after 2 seconds
         setTimeout(() => {
           setPurchaseStatus(prev => ({ ...prev, [item.id]: 'idle' }));
