@@ -280,12 +280,12 @@ export function GameDashboard() {
             <div className="absolute top-1/4 right-1/4 w-4 h-6 sm:w-6 sm:h-8 bg-[#fbbf24] border-2 border-[#d97706] rounded-full"></div>
           </div>
           
-          {/* Character */}
+          {/* Character - Much bigger like reference image */}
           <div className="relative z-10">
             <img 
               src="/assets/sprites/fighter.png" 
               alt="Tiny Adventurer" 
-              className="w-16 h-20 sm:w-20 sm:h-24 pixel-art"
+              className="w-32 h-40 sm:w-40 sm:h-48 lg:w-48 lg:h-56 pixel-art"
               onError={(e) => {
                 // Fallback to CSS character if image fails to load
                 e.currentTarget.style.display = 'none';
@@ -293,22 +293,22 @@ export function GameDashboard() {
               }}
             />
             
-            {/* Fallback CSS Character */}
-            <div className="w-12 h-16 sm:w-16 sm:h-20 bg-[#f5f5dc] border-2 border-[#8B4513] flex items-center justify-center relative hidden">
+            {/* Fallback CSS Character - Much bigger like reference image */}
+            <div className="w-24 h-32 sm:w-32 sm:h-40 lg:w-40 lg:h-48 bg-[#f5f5dc] border-2 border-[#8B4513] flex items-center justify-center relative hidden">
               {/* Head */}
-              <div className="absolute -top-2 sm:-top-3 w-8 h-8 sm:w-10 sm:h-10 bg-[#f5f5dc] border-2 border-[#8B4513] rounded-full flex items-center justify-center">
+              <div className="absolute -top-4 sm:-top-6 w-16 h-16 sm:w-20 sm:h-20 bg-[#f5f5dc] border-2 border-[#8B4513] rounded-full flex items-center justify-center">
                 {/* Eyes */}
-                <div className="absolute top-2 sm:top-3 left-1 sm:left-2 w-1 h-1 sm:w-2 sm:h-2 bg-[#8B4513]"></div>
-                <div className="absolute top-2 sm:top-3 right-1 sm:right-2 w-1 h-1 sm:w-2 sm:h-2 bg-[#8B4513]"></div>
+                <div className="absolute top-4 sm:top-6 left-2 sm:left-4 w-2 h-2 sm:w-4 sm:h-4 bg-[#8B4513]"></div>
+                <div className="absolute top-4 sm:top-6 right-2 sm:right-4 w-2 h-2 sm:w-4 sm:h-4 bg-[#8B4513]"></div>
                 {/* Mouth */}
-                <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-0.5 sm:w-3 sm:h-1 bg-[#8B4513]"></div>
+                <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 w-4 h-1 sm:w-6 sm:h-2 bg-[#8B4513]"></div>
               </div>
               
               {/* Scarf */}
-              <div className="absolute top-4 sm:top-6 w-6 h-2 sm:w-8 sm:h-3 bg-[#4a5568] border border-[#2d3748]"></div>
+              <div className="absolute top-8 sm:top-12 w-12 h-4 sm:w-16 sm:h-6 bg-[#4a5568] border border-[#2d3748]"></div>
               
               {/* Belt */}
-              <div className="absolute bottom-4 sm:bottom-6 w-8 h-1 sm:w-10 sm:h-2 bg-[#8B4513] border border-[#654321]"></div>
+              <div className="absolute bottom-8 sm:bottom-12 w-16 h-2 sm:w-20 sm:h-4 bg-[#8B4513] border border-[#654321]"></div>
             </div>
           </div>
         </div>

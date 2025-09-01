@@ -47,12 +47,12 @@ export function SuccessMessage({
     <>
       {/* Full Screen Overlay */}
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        {/* Large Character in Center */}
+        {/* Large Character in Center - Much bigger like reference image */}
         <div className="absolute left-1/2 transform -translate-x-1/2 bottom-1/3 z-10">
           <img 
             src={getCharacterImage(equippedCharacter)} 
             alt="Tiny Adventurer" 
-            className="w-80 h-96 sm:w-96 sm:h-[28rem] pixel-art drop-shadow-lg"
+            className="w-96 h-[28rem] sm:w-[32rem] sm:h-[36rem] lg:w-[40rem] lg:h-[44rem] pixel-art drop-shadow-lg"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}

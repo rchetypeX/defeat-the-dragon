@@ -342,8 +342,8 @@ input:focus, textarea:focus, select:focus {
 
 /* Character Dynamic Scaling - Made Much Bigger and Better Positioned */
 .character-dynamic {
-  max-width: min(95vw, 720px);  /* Increased from 85vw/480px to 95vw/720px - Much bigger! */
-  max-height: min(100vw, 800px); /* Increased from 95vw/540px to 100vw/800px - Much bigger! */
+  max-width: min(98vw, 1200px);  /* Increased to 98vw/1200px - Much bigger like reference! */
+  max-height: min(98vw, 1200px); /* Increased to 98vw/1200px - Much bigger like reference! */
   width: auto;
   height: auto;
   object-fit: contain;
