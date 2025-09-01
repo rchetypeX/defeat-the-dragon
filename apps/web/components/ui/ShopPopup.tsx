@@ -56,8 +56,10 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
 
   // Separate useEffect for data loading to prevent unnecessary re-fetches
   useEffect(() => {
-    if (isOpen && userInventory.length === 0 && shopItems.character.length === 0) {
-      loadUserInventory();
+    if (isOpen) {
+      // Always reload inventory when shop opens to ensure fresh data
+      console.log('🏪 Shop opened, loading fresh data...');
+      loadUserInventory(true); // Force refresh
       loadShopItems();
       loadSubscriptionStatus();
     }
@@ -212,31 +214,42 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     }
   };
 
-  const loadUserInventory = async () => {
+  const loadUserInventory = async (forceRefresh = false) => {
     try {
       setIsLoading(true);
       
       const headers = await generateAuthHeaders();
       console.log('📦 Loading inventory with headers:', headers);
       
-      const response = await fetch('/api/inventory', { headers, credentials: 'include' });
+      // Add cache-busting parameter if force refresh is requested
+      const url = forceRefresh ? `/api/inventory?t=${Date.now()}` : '/api/inventory';
+      const response = await fetch(url, { 
+        headers, 
+        credentials: 'include',
+        cache: forceRefresh ? 'no-cache' : 'default'
+      });
       
       if (response.ok) {
         const result = await response.json();
         console.log('📦 Inventory loaded:', result.data);
         console.log('📦 Inventory count:', result.data?.length || 0);
-        if (result.data) {
+        
+        if (result.data && Array.isArray(result.data)) {
           setUserInventory(result.data);
+          console.log('📦 Inventory state updated successfully');
         } else {
+          console.warn('📦 No inventory data or invalid format, setting empty array');
           setUserInventory([]);
         }
       } else {
-        console.error('Failed to load inventory');
+        console.error('❌ Failed to load inventory:', response.status, response.statusText);
         setErrorMessage('Failed to load inventory');
+        // Don't clear existing inventory on error
       }
     } catch (error) {
-      console.error('Error loading inventory:', error);
+      console.error('❌ Error loading inventory:', error);
       setErrorMessage('Error loading inventory');
+      // Don't clear existing inventory on error
     } finally {
       setIsLoading(false);
     }
@@ -245,7 +258,13 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   // Memoize the ownership check to prevent unnecessary recalculations
   const isItemOwned = (itemId: string, itemType: string) => {
     console.log(`🔍 Checking ownership for ${itemId} (${itemType})`);
-    console.log(`🔍 Current inventory:`, userInventory);
+    console.log(`🔍 Current inventory count:`, userInventory.length);
+    console.log(`🔍 Current inventory items:`, userInventory.map(item => ({ item_id: item.item_id, item_type: item.item_type, quantity: item.quantity })));
+    
+    if (!userInventory || userInventory.length === 0) {
+      console.log(`🔍 No inventory data available, item not owned`);
+      return false;
+    }
     
     const owned = userInventory.some(item => {
       const matches = item.item_id === itemId && item.item_type === itemType;
@@ -309,10 +328,38 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         console.log('✅ Purchase successful for:', item.name);
         setPurchaseStatus(prev => ({ ...prev, [item.id]: 'success' }));
         
-        // Reload inventory to reflect the new purchase
+        // Force immediate inventory reload to reflect the new purchase
         console.log('🔄 Reloading inventory after purchase...');
-        await loadUserInventory();
+        await loadUserInventory(true); // Force refresh
         console.log('🔄 Inventory reloaded, checking ownership again...');
+        
+        // Force a re-render by updating the inventory state
+        setUserInventory(prevInventory => {
+          const newInventory = [...prevInventory];
+          const existingItemIndex = newInventory.findIndex(
+            invItem => invItem.item_id === item.id && invItem.item_type === (activeTab === 'character' ? 'character' : 'background')
+          );
+          
+          if (existingItemIndex === -1) {
+            // Add the new item to inventory
+            newInventory.push({
+              id: `temp-${Date.now()}`, // Temporary ID
+              user_id: user.id || 'unknown',
+              item_id: item.id,
+              item_type: activeTab === 'character' ? 'character' : 'background' as any,
+              quantity: 1,
+              equipped: false,
+              acquired_at: new Date().toISOString()
+            });
+            console.log('➕ Added item to local inventory state:', item.id);
+          } else {
+            // Update quantity if item already exists
+            newInventory[existingItemIndex].quantity += 1;
+            console.log('🔄 Updated quantity for existing item:', item.id);
+          }
+          
+          return newInventory;
+        });
         
         // Clear success status after 2 seconds
         setTimeout(() => {
@@ -344,7 +391,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
 
   const handleSubscriptionSuccess = () => {
     // Refresh inventory and subscription status to show updated subscription status
-    loadUserInventory();
+    loadUserInventory(true); // Force refresh
     loadSubscriptionStatus();
     // Close the subscription popup but keep the shop open
     setShowSubscriptionPopup(false);
@@ -402,12 +449,22 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         {/* Header */}
         <div className="flex justify-between items-center mb-3 flex-shrink-0">
           <h2 className="text-lg font-bold text-[#8B4513]">🏪 Shop</h2>
-          <button
-            onClick={onClose}
-            className="text-[#8B4513] hover:text-[#654321] text-xl font-bold"
-          >
-            ×
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => loadUserInventory(true)}
+              disabled={isLoading}
+              className="text-[#8B4513] hover:text-[#654321] text-sm font-bold px-2 py-1 border border-[#8B4513] rounded hover:bg-[#8B4513] hover:text-[#f5f5dc] transition-colors"
+              title="Refresh inventory"
+            >
+              🔄
+            </button>
+            <button
+              onClick={onClose}
+              className="text-[#8B4513] hover:text-[#654321] text-xl font-bold"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Error Message */}
@@ -416,6 +473,24 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
             <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-xs">
               {errorMessage}
             </div>
+          </div>
+        )}
+
+        {/* Debug Info - Only show in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mb-3 flex-shrink-0">
+            <details className="bg-gray-100 border border-gray-300 rounded text-xs p-2">
+              <summary className="cursor-pointer text-gray-600 font-bold">🐛 Debug Info</summary>
+              <div className="mt-2 text-gray-600 space-y-1">
+                <div>Inventory Count: {userInventory.length}</div>
+                <div>Shop Items: {shopItems[activeTab].length}</div>
+                <div>Active Tab: {activeTab}</div>
+                <div>User: {user?.id || 'Not logged in'}</div>
+                <div className="text-xs">
+                  Inventory: {userInventory.map(item => `${item.item_id}(${item.item_type})`).join(', ')}
+                </div>
+              </div>
+            </details>
           </div>
         )}
 

@@ -202,9 +202,10 @@ export async function GET(request: NextRequest) {
       data: inventory,
     });
 
-    // Add caching headers to reduce Edge Requests
-    response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=300'); // 5 minutes
-    response.headers.set('ETag', `"inventory-${userId}-${Date.now()}"`);
+    // Ensure no caching for inventory to get fresh data
+    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
 
     return response;
 
