@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { syncService } from './syncService';
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase client for SIWF users
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface CharacterState {
   equippedCharacter: string;
@@ -13,10 +20,30 @@ export const useCharacterStore = create<CharacterState>()(
     (set, get) => ({
       equippedCharacter: 'fighter',
       
-      setEquippedCharacter: (characterId: string) => {
+      setEquippedCharacter: async (characterId: string) => {
         set({ equippedCharacter: characterId });
-        // Removed auto-sync to prevent excessive API calls
-        // Sync will be handled explicitly when needed
+        
+        // Try to sync with database for SIWF users
+        try {
+          // Check if we have a SIWF user session
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            // Update user settings in database
+            await supabase
+              .from('user_settings')
+              .upsert({
+                user_id: user.id,
+                equipped_character: characterId,
+                updated_at: new Date().toISOString()
+              }, {
+                onConflict: 'user_id'
+              });
+            
+            console.log('✅ Character equipped and synced to database:', characterId);
+          }
+        } catch (error) {
+          console.warn('⚠️ Could not sync character to database (may be wallet user):', error);
+        }
       },
       
       getCharacterImage: (characterId: string) => {

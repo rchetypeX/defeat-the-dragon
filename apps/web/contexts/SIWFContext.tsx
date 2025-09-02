@@ -215,17 +215,54 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
 
       console.log('✅ New user created:', newUser);
       
-      // Create initial inventory
-      await supabase
-        .from('user_inventory')
-        .insert({
+      // Create initial inventory with only characters and backgrounds
+      const defaultInventory = [
+        {
           user_id: newUser.id,
-          item_id: 'fighter', // Default character
+          item_id: 'fighter',
           item_type: 'character',
           quantity: 1,
           equipped: true,
           acquired_at: new Date().toISOString()
+        },
+        {
+          user_id: newUser.id,
+          item_id: 'forest',
+          item_type: 'background',
+          quantity: 1,
+          equipped: true,
+          acquired_at: new Date().toISOString()
+        }
+      ];
+
+      const { error: inventoryError } = await supabase
+        .from('user_inventory')
+        .insert(defaultInventory);
+
+      if (inventoryError) {
+        console.error('❌ Failed to create default inventory:', inventoryError);
+        throw inventoryError;
+      }
+
+      // Create user settings
+      const { error: settingsError } = await supabase
+        .from('user_settings')
+        .insert({
+          user_id: newUser.id,
+          sound_enabled: true,
+          notifications_enabled: true,
+          accessibility: 'default',
+          equipped_character: 'fighter',
+          equipped_background: 'forest',
+          updated_at: new Date().toISOString()
         });
+
+      if (settingsError) {
+        console.error('❌ Failed to create user settings:', settingsError);
+        throw settingsError;
+      }
+
+      console.log('✅ Complete user profile created with inventory and settings');
 
     } catch (err) {
       console.error('❌ Failed to link Supabase account:', err);

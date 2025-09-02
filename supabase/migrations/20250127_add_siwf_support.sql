@@ -81,6 +81,7 @@ FOR SELECT USING (
 );
 
 -- Add specific policy for Farcaster user lookups
+DROP POLICY IF EXISTS "Users can view players by Farcaster ID" ON players;
 CREATE POLICY "Users can view players by Farcaster ID" ON players 
 FOR SELECT USING (
   farcaster_fid IS NOT NULL

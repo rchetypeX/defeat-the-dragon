@@ -110,25 +110,44 @@ export async function GET(request: NextRequest) {
             } catch (e) {
               console.error('Error parsing wallet user from Bearer wallet header:', e);
             }
-          } else if (authHeader.startsWith('Bearer baseapp:')) {
-            try {
-              const baseAppData = JSON.parse(authHeader.substring(14)); // Remove 'Bearer baseapp:'
-              // Convert Base App numeric ID to a consistent UUID format
-              userId = `baseapp-${baseAppData.id}`;
-              console.log('Inventory: Found Base App user from header:', userId);
-            } catch (e) {
-              console.error('Error parsing Base App user from header:', e);
-            }
-          } else if (authHeader.startsWith('baseapp:')) {
-            try {
-              const baseAppData = JSON.parse(authHeader.substring(8)); // Remove 'baseapp:'
-              // Convert Base App numeric ID to a consistent UUID format
-              userId = `baseapp-${baseAppData.id}`;
-              console.log('Inventory: Found Base App user from header:', userId);
-            } catch (e) {
-              console.error('Error parsing Base App user from header:', e);
-            }
+                  } else if (authHeader.startsWith('Bearer baseapp:')) {
+          try {
+            const baseAppData = JSON.parse(authHeader.substring(14)); // Remove 'Bearer baseapp:'
+            // Convert Base App numeric ID to a consistent UUID format
+            userId = `baseapp-${baseAppData.id}`;
+            console.log('Inventory: Found Base App user from header:', userId);
+          } catch (e) {
+            console.error('Error parsing Base App user from header:', e);
           }
+        } else if (authHeader.startsWith('baseapp:')) {
+          try {
+            const baseAppData = JSON.parse(authHeader.substring(8)); // Remove 'baseapp:'
+            // Convert Base App numeric ID to a consistent UUID format
+            userId = `baseapp-${baseAppData.id}`;
+            console.log('Inventory: Found Base App user from header:', userId);
+          } catch (e) {
+            console.error('Error parsing Base App user from header:', e);
+          }
+        } else if (authHeader.startsWith('Bearer siwf:') || authHeader.startsWith('siwf:')) {
+          try {
+            const siwfData = JSON.parse(authHeader.substring(authHeader.startsWith('Bearer ') ? 11 : 5));
+            // Look up SIWF user by Farcaster FID
+            const { data: siwfUser, error: siwfError } = await supabase
+              .from('players')
+              .select('id')
+              .eq('farcaster_fid', siwfData.fid)
+              .single();
+            
+            if (siwfUser && !siwfError) {
+              userId = siwfUser.id;
+              console.log('Inventory: Found SIWF user from header:', userId, 'FID:', siwfData.fid);
+            } else {
+              console.error('SIWF user not found in database:', siwfError);
+            }
+          } catch (e) {
+            console.error('Error parsing SIWF user from header:', e);
+          }
+        }
         }
       }
     }

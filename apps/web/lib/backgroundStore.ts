@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { syncService } from './syncService';
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase client for SIWF users
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface BackgroundState {
   equippedBackground: string;
@@ -13,10 +20,30 @@ export const useBackgroundStore = create<BackgroundState>()(
     (set, get) => ({
       equippedBackground: 'forest',
       
-      setEquippedBackground: (backgroundId: string) => {
+      setEquippedBackground: async (backgroundId: string) => {
         set({ equippedBackground: backgroundId });
-        // Removed auto-sync to prevent excessive API calls
-        // Sync will be handled explicitly when needed
+        
+        // Try to sync with database for SIWF users
+        try {
+          // Check if we have a SIWF user session
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            // Update user settings in database
+            await supabase
+              .from('user_settings')
+              .upsert({
+                user_id: user.id,
+                equipped_background: backgroundId,
+                updated_at: new Date().toISOString()
+              }, {
+                onConflict: 'user_id'
+              });
+            
+            console.log('✅ Background equipped and synced to database:', backgroundId);
+          }
+        } catch (error) {
+          console.warn('⚠️ Could not sync background to database (may be wallet user):', error);
+        }
       },
       
       getBackgroundImage: (backgroundId: string) => {
