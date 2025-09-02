@@ -34,8 +34,6 @@ export function generateMetadata(): Metadata {
       icon: '/favicon.png',
       apple: '/apple-touch-icon.png',
     },
-    viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
-    themeColor: '#060945',
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
@@ -79,6 +77,17 @@ export function generateMetadata(): Metadata {
         }
       })
     }
+  };
+}
+
+// Add separate viewport export to fix metadata warnings
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: 'no',
+    themeColor: '#060945',
   };
 }
 

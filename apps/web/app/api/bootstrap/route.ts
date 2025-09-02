@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+// Force dynamic rendering to prevent static generation errors
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = cookies();
