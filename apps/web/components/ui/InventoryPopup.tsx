@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCharacterStore } from '../../lib/characterStore';
 import { useBackgroundStore } from '../../lib/backgroundStore';
+import { useInventory } from '../../contexts/InventoryContext';
 
 interface InventoryItem {
   id: string;
@@ -51,114 +52,19 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
     character: 'fighter',
     background: 'forest'
   });
-  const [userInventory, setUserInventory] = useState<DatabaseInventoryItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const { equippedCharacter, setEquippedCharacter } = useCharacterStore();
   const { equippedBackground, setEquippedBackground } = useBackgroundStore();
+  const { inventory: userInventory, isLoading, error, refreshInventory } = useInventory();
 
-  // Load user inventory from API
-  const loadUserInventory = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Get auth token for the request
-      let token: string | null = null;
-      
-      // Check if we have a wallet user in localStorage
-      const walletUserStr = localStorage.getItem('walletUser');
-      if (walletUserStr) {
-        try {
-          const walletUser = JSON.parse(walletUserStr);
-          token = `wallet:${JSON.stringify(walletUser)}`;
-        } catch (e) {
-          console.error('Error parsing wallet user:', e);
-        }
-      }
-      
-      // Check if we have a Base App user in localStorage
-      if (!token) {
-        const baseAppUserStr = localStorage.getItem('baseAppUser');
-        if (baseAppUserStr) {
-          try {
-            const baseAppUser = JSON.parse(baseAppUserStr);
-            token = `baseapp:${JSON.stringify(baseAppUser)}`;
-          } catch (e) {
-            console.error('Error parsing Base App user:', e);
-          }
-        }
-      }
-      
-      // If no wallet or Base App token, try to get Supabase session
-      if (!token) {
-        const { supabase } = await import('../../lib/supabase');
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          token = session.access_token;
-        }
-      }
 
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (token) {
-        // For Supabase tokens, use 'Bearer' prefix
-        if (!token.startsWith('wallet:') && !token.startsWith('baseapp:')) {
-          headers['Authorization'] = `Bearer ${token}`;
-        } else {
-          // For wallet and Base App tokens, use the custom format
-          headers['Authorization'] = token;
-        }
-      }
-      
-      const response = await fetch('/api/inventory', { headers, credentials: 'include' });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Inventory loaded:', result.data);
-        if (result.data) {
-          setUserInventory(result.data);
-          
-          // Update character and background stores based on equipped items in database
-          const equippedCharacter = result.data.find((item: DatabaseInventoryItem) => 
-            item.item_type === 'character' && item.equipped
-          );
-          const equippedBackground = result.data.find((item: DatabaseInventoryItem) => 
-            item.item_type === 'background' && item.equipped
-          );
-          
-          if (equippedCharacter) {
-            setEquippedCharacter(equippedCharacter.item_id);
-            console.log('InventoryPopup: Updated equipped character to:', equippedCharacter.item_id);
-          }
-          if (equippedBackground) {
-            setEquippedBackground(equippedBackground.item_id);
-            console.log('InventoryPopup: Updated equipped background to:', equippedBackground.item_id);
-          }
-        } else {
-          setUserInventory([]);
-        }
-      } else {
-        console.error('Failed to load inventory');
-        setError('Failed to load inventory');
-      }
-    } catch (error) {
-      console.error('Error loading inventory:', error);
-      setError('Error loading inventory');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Load inventory when popup opens - only if we don't have inventory data
   useEffect(() => {
     if (isOpen && userInventory.length === 0) {
-      loadUserInventory();
+      refreshInventory();
     }
-  }, [isOpen]); // Only depend on isOpen, not userInventory to prevent loops
+  }, [isOpen, userInventory.length, refreshInventory]); // Include refreshInventory in dependencies
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -294,27 +200,19 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
           [item.category]: item.id
         }));
         
-        // Update the local inventory state to reflect the equip change
-        setUserInventory(prev => {
-          const updated = prev.map(invItem => ({
-            ...invItem,
-            equipped: (invItem.item_type === item.category && invItem.item_id === item.id) || 
-                     (invItem.item_type === item.category && invItem.item_id !== item.id ? false : invItem.equipped)
-          }));
-          console.log('InventoryPopup: Updated local inventory state:', updated);
-          return updated;
-        });
+        // Refresh inventory to get the updated equipped status from database
+        await refreshInventory();
         
         console.log(`Equipped ${item.name} for ${item.category}`);
       } else {
         const errorData = await response.json();
         console.error('InventoryPopup: Failed to equip item:', errorData);
         console.error('InventoryPopup: Response status:', response.status);
-        setError('Failed to equip item');
+        console.error('Failed to equip item');
       }
     } catch (error) {
       console.error('Error equipping item:', error);
-      setError('Error equipping item');
+      console.error('Error equipping item');
     }
   };
 

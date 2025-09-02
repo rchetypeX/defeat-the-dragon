@@ -4,6 +4,7 @@ import './globals.css';
 import './mobile-first.css';
 import { AudioProvider } from '../contexts/AudioContext';
 import { AuthProvider } from '../contexts/AuthContext';
+import { InventoryProvider } from '../contexts/InventoryContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
 import * as Sentry from '@sentry/nextjs';
 
@@ -98,11 +99,13 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AuthProvider>
-          <MiniKitContextProvider>
-            <AudioProvider>
-              {children}
-            </AudioProvider>
-          </MiniKitContextProvider>
+          <InventoryProvider>
+            <MiniKitContextProvider>
+              <AudioProvider>
+                {children}
+              </AudioProvider>
+            </MiniKitContextProvider>
+          </InventoryProvider>
         </AuthProvider>
       </body>
     </html>

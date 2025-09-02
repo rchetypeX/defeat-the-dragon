@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useInventory } from '../../contexts/InventoryContext';
 import { SubscriptionPopup } from './SubscriptionPopup';
 
 interface ShopItem {
@@ -41,7 +42,6 @@ interface SubscriptionStatus {
 
 export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   const [activeTab, setActiveTab] = useState<'character' | 'background'>('character');
-  const [userInventory, setUserInventory] = useState<InventoryItem[]>([]);
   const [shopItems, setShopItems] = useState<Record<'character' | 'background', ShopItem[]>>({
     character: [],
     background: []
@@ -53,17 +53,18 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const { inventory: userInventory, refreshInventory } = useInventory();
 
   // Separate useEffect for data loading to prevent unnecessary re-fetches
   useEffect(() => {
     if (isOpen) {
       // Always reload inventory when shop opens to ensure fresh data
       console.log('🏪 Shop opened, loading fresh data...');
-      loadUserInventory(true); // Force refresh
+      refreshInventory(); // Use inventory context refresh
       loadShopItems();
       loadSubscriptionStatus();
     }
-  }, [isOpen]); // Only depend on isOpen
+  }, [isOpen, refreshInventory]); // Include refreshInventory in dependencies
 
   // Separate useEffect for event listeners
   useEffect(() => {
@@ -214,46 +215,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
     }
   };
 
-  const loadUserInventory = async (forceRefresh = false) => {
-    try {
-      setIsLoading(true);
-      
-      const headers = await generateAuthHeaders();
-      console.log('📦 Loading inventory with headers:', headers);
-      
-      // Add cache-busting parameter if force refresh is requested
-      const url = forceRefresh ? `/api/inventory?t=${Date.now()}` : '/api/inventory';
-      const response = await fetch(url, { 
-        headers, 
-        credentials: 'include',
-        cache: forceRefresh ? 'no-cache' : 'default'
-      });
-      
-      if (response.ok) {
-        const result = await response.json();
-        console.log('📦 Inventory loaded:', result.data);
-        console.log('📦 Inventory count:', result.data?.length || 0);
-        
-        if (result.data && Array.isArray(result.data)) {
-          setUserInventory(result.data);
-          console.log('📦 Inventory state updated successfully');
-        } else {
-          console.warn('📦 No inventory data or invalid format, setting empty array');
-          setUserInventory([]);
-        }
-      } else {
-        console.error('❌ Failed to load inventory:', response.status, response.statusText);
-        setErrorMessage('Failed to load inventory');
-        // Don't clear existing inventory on error
-      }
-    } catch (error) {
-      console.error('❌ Error loading inventory:', error);
-      setErrorMessage('Error loading inventory');
-      // Don't clear existing inventory on error
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   // Memoize the ownership check to prevent unnecessary recalculations
   const isItemOwned = (itemId: string, itemType: string) => {
@@ -330,7 +292,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         
         // Force immediate inventory reload to reflect the new purchase
         console.log('🔄 Reloading inventory after purchase...');
-        await loadUserInventory(true); // Force refresh
+        await refreshInventory(); // Use inventory context refresh
         console.log('🔄 Inventory reloaded, checking ownership again...');
         
         // Force a re-render by updating the inventory state
@@ -391,7 +353,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
 
   const handleSubscriptionSuccess = () => {
     // Refresh inventory and subscription status to show updated subscription status
-    loadUserInventory(true); // Force refresh
+            refreshInventory(); // Use inventory context refresh
     loadSubscriptionStatus();
     // Close the subscription popup but keep the shop open
     setShowSubscriptionPopup(false);
@@ -451,7 +413,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
           <h2 className="text-lg font-bold text-[#8B4513]">🏪 Shop</h2>
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => loadUserInventory(true)}
+                              onClick={() => refreshInventory()}
               disabled={isLoading}
               className="text-[#8B4513] hover:text-[#654321] text-sm font-bold px-2 py-1 border border-[#8B4513] rounded hover:bg-[#8B4513] hover:text-[#f5f5dc] transition-colors"
               title="Refresh inventory"
