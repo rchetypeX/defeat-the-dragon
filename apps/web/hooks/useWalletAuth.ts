@@ -3,6 +3,21 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
+// Base App integration
+let useAuthenticate: any = null;
+let useMiniKit: any = null;
+
+// Dynamically import MiniKit hooks to prevent build errors
+if (typeof window !== 'undefined') {
+  try {
+    const minikit = require('@coinbase/onchainkit/minikit');
+    useAuthenticate = minikit.useAuthenticate;
+    useMiniKit = minikit.useMiniKit;
+  } catch (error) {
+    console.warn('MiniKit not available:', error);
+  }
+}
+
 export function useWalletAuth() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -16,6 +31,61 @@ export function useWalletAuth() {
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [showProviderSelection, setShowProviderSelection] = useState(false);
+  
+  // Base App integration
+  const [isBaseApp, setIsBaseApp] = useState(false);
+  const [baseAppUser, setBaseAppUser] = useState<any>(null);
+  const [baseAppContext, setBaseAppContext] = useState<any>(null);
+
+  // Check if we're in Base App environment
+  const detectBaseApp = () => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      // Check if MiniKit hooks are available
+      if (useMiniKit && useAuthenticate) {
+        // We're in Base App environment
+        setIsBaseApp(true);
+        console.log('🔍 Base App environment detected');
+        
+        // Initialize MiniKit context
+        if (useMiniKit) {
+          const { context } = useMiniKit();
+          setBaseAppContext(context);
+          
+          if (context?.user) {
+            setBaseAppUser(context.user);
+            console.log('🔐 Base App user detected:', context.user);
+          }
+        }
+      } else {
+        // Regular browser environment
+        setIsBaseApp(false);
+        console.log('🌐 Browser environment detected');
+      }
+    } catch (error) {
+      console.warn('Error detecting Base App:', error);
+      setIsBaseApp(false);
+    }
+  };
+
+  // Initialize Base App detection on mount
+  useEffect(() => {
+    detectBaseApp();
+  }, []);
+
+  // Watch for Base App context changes
+  useEffect(() => {
+    if (baseAppContext?.user && !baseAppUser) {
+      setBaseAppUser(baseAppContext.user);
+      console.log('🔐 Base App user updated:', baseAppContext.user);
+      
+      // If we have a Base App user, check if they have an account
+      if (baseAppContext.user.fid) {
+        checkAccountExistsForBaseApp(baseAppContext.user.fid);
+      }
+    }
+  }, [baseAppContext?.user, baseAppUser]);
 
   // Check if MetaMask is available
   const checkIfWalletIsConnected = async () => {
@@ -92,6 +162,73 @@ export function useWalletAuth() {
     
     console.log(`getProvider returning ${selectedProvider}:`, provider);
     return provider;
+  };
+
+  // Base App authentication
+  const authenticateWithBaseApp = async () => {
+    if (!useAuthenticate) {
+      throw new Error('Base App authentication not available');
+    }
+    
+    try {
+      setIsConnecting(true);
+      setAuthError(null);
+      
+      console.log('🔐 Starting Base App authentication...');
+      
+      // Use MiniKit's authenticate method
+      const { signIn } = useAuthenticate();
+      await signIn();
+      
+      console.log('✅ Base App authentication successful');
+      
+      // The context will be updated automatically by MiniKit
+      // We'll handle the user data in the useEffect that watches baseAppContext
+      
+    } catch (error) {
+      console.error('❌ Base App authentication failed:', error);
+      setAuthError(error instanceof Error ? error.message : 'Base App authentication failed');
+      throw error;
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  // Check if a Base App user has an existing account
+  const checkAccountExistsForBaseApp = async (fid: string) => {
+    try {
+      setIsCheckingAccount(true);
+      
+      console.log('🔍 Checking if Base App user has account, FID:', fid);
+      
+      // Check if there's a player record with this Farcaster ID
+      const { data: player, error } = await supabase
+        .from('players')
+        .select('id, user_id, display_name')
+        .eq('farcaster_fid', fid)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error checking Base App account:', error);
+        return;
+      }
+      
+      if (player) {
+        console.log('✅ Base App user has existing account:', player);
+        setHasAccount(true);
+        // Set the address to the user_id for consistency
+        setAddress(player.user_id);
+        setIsConnected(true);
+      } else {
+        console.log('❌ Base App user has no existing account, FID:', fid);
+        setHasAccount(false);
+        setIsConnected(false);
+      }
+    } catch (error) {
+      console.error('Error checking Base App account:', error);
+    } finally {
+      setIsCheckingAccount(false);
+    }
   };
 
   // Check if a wallet address has an existing account
@@ -749,5 +886,11 @@ export function useWalletAuth() {
     signUpWithWallet,
     selectProvider,
     cancelProviderSelection,
+    
+    // Base App integration
+    isBaseApp,
+    baseAppUser,
+    baseAppContext,
+    authenticateWithBaseApp,
   };
 }
