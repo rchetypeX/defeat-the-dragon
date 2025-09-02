@@ -1,15 +1,15 @@
 {
-  "name": "Defeat the Dragon",
+  "name": "Defeat the Dragon: Focus RPG",
   "short_name": "DTD:FocusRPG",
-  "description": "Level up your productivity with this pixel-art Pomodoro RPG",
+  "description": "A Pomodoro-style Focus RPG that gamifies productivity",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1e3a8a",
-  "theme_color": "#7c2d12",
+  "background_color": "#060945",
+  "theme_color": "#060945",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
-  "categories": ["productivity", "games", "education"],
+  "categories": ["games", "productivity", "education"],
       "icons": [
       {
         "src": "/favicon.png",
@@ -38,11 +38,11 @@
     ],
       "screenshots": [
       {
-        "src": "/icon-simple.png",
-        "sizes": "172x172",
+        "src": "https://dtd.rchetype.xyz/screenshots/gameplay-1.png",
+        "sizes": "1200x630",
         "type": "image/png",
         "form_factor": "wide",
-        "label": "Defeat the Dragon - Focus RPG"
+        "label": "Defeat the Dragon: Focus RPG - Gameplay"
       }
     ],
       "shortcuts": [

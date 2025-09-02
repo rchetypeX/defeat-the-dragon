@@ -34,34 +34,34 @@ export function generateMetadata(): Metadata {
       apple: '/apple-touch-icon.png',
     },
     viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
-    themeColor: '#221afe',
+    themeColor: '#060945',
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
       title: 'Defeat the Dragon: Focus RPG',
     },
-    openGraph: {
-      title: 'Defeat the Dragon: Focus RPG',
-      description: 'Level up your productivity with this pixel-art Pomodoro RPG',
-      url: 'https://dtd.rchetype.xyz/',
-      siteName: 'Defeat the Dragon: Focus RPG',
-      images: [
-        {
-          url: '/icon-simple.png',
-          width: 172,
-          height: 172,
-          alt: 'Defeat the Dragon: Focus RPG',
-        },
-      ],
-      locale: 'en_US',
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: 'Defeat the Dragon: Focus RPG',
-      description: 'Pomodoro-style Focus RPG',
-      images: ['/icon-simple.png'],
-    },
+          openGraph: {
+        title: 'Defeat the Dragon: Focus RPG',
+        description: 'A Pomodoro-style Focus RPG that gamifies productivity',
+        url: 'https://dtd.rchetype.xyz/',
+        siteName: 'Defeat the Dragon: Focus RPG',
+        images: [
+          {
+            url: 'https://dtd.rchetype.xyz/og-image.webp',
+            width: 1200,
+            height: 630,
+            alt: 'Defeat the Dragon: Focus RPG',
+          },
+        ],
+        locale: 'en_US',
+        type: 'website',
+      },
+          twitter: {
+        card: 'summary_large_image',
+        title: 'Defeat the Dragon: Focus RPG',
+        description: 'A Pomodoro-style Focus RPG that gamifies productivity',
+        images: ['https://dtd.rchetype.xyz/og-image.webp'],
+      },
 
   };
 }
@@ -81,14 +81,14 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
-        <meta name="msapplication-TileColor" content="#221afe" />
+        <meta name="msapplication-TileColor" content="#060945" />
         <meta name="msapplication-tap-highlight" content="no" />
         
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="mask-icon" href="/favicon.png" color="#221afe" />
+        <link rel="mask-icon" href="/favicon.png" color="#060945" />
         <link rel="shortcut icon" href="/favicon.ico" />
         
         <meta name="twitter:card" content="summary_large_image" />
