@@ -6,7 +6,7 @@ import { AudioProvider } from '../contexts/AudioContext';
 import { AuthProvider } from '../contexts/AuthContext';
 import { InventoryProvider } from '../contexts/InventoryContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
-import * as Sentry from '@sentry/nextjs';
+
 
 import { appLogger } from '../lib/logger';
 
@@ -62,9 +62,7 @@ export function generateMetadata(): Metadata {
       description: 'Pomodoro-style Focus RPG',
       images: ['/icon-simple.png'],
     },
-    other: {
-      ...Sentry.getTraceData()
-    },
+
   };
 }
 

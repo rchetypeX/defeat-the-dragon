@@ -1,5 +1,4 @@
 import pino from 'pino';
-import * as Sentry from '@sentry/nextjs';
 
 // Create logger instance
 const logger = pino({
@@ -27,7 +26,7 @@ const logger = pino({
   },
 });
 
-// Enhanced logger with Sentry integration
+// Enhanced logger
 export class EnhancedLogger {
   private logger: pino.Logger;
 
@@ -43,38 +42,11 @@ export class EnhancedLogger {
   // Warning logging
   warn(message: string, context?: Record<string, any>) {
     this.logger.warn({ message, ...context });
-    
-    // Send warnings to Sentry in production
-    if (process.env.NODE_ENV === 'production') {
-      Sentry.captureMessage(message, {
-        level: 'warning',
-        tags: context,
-      });
-    }
   }
 
   // Error logging
   error(message: string, error?: Error, context?: Record<string, any>) {
     this.logger.error({ message, error: error?.stack, ...context });
-    
-    // Send errors to Sentry
-    if (error) {
-      Sentry.captureException(error, {
-        tags: context,
-        contexts: {
-          error: {
-            message: error.message,
-            stack: error.stack,
-            ...context,
-          },
-        },
-      });
-    } else {
-      Sentry.captureMessage(message, {
-        level: 'error',
-        tags: context,
-      });
-    }
   }
 
   // Debug logging (only in development)
