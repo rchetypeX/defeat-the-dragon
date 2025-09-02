@@ -4,7 +4,6 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { AuthKitProvider, useProfile, useSignIn, useSignInMessage } from '@farcaster/auth-kit';
 import '@farcaster/auth-kit/styles.css';
 import { createClient } from '@supabase/supabase-js';
-import { useAuthenticate } from '@coinbase/onchainkit/minikit';
 
 // Supabase client
 const supabase = createClient(
@@ -69,15 +68,32 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
   // Farcaster Auth hooks (primary authentication)
   const { isAuthenticated, profile } = useProfile();
   
-  // Base App hooks (for additional context and analytics)
-  const { context: baseAppContext, setFrameReady, isFrameReady } = useAuthenticate();
+  // Base App hooks (for additional context and analytics) - only on client side
+  const [baseAppContext, setBaseAppContext] = useState<any>(null);
+  const [setFrameReady, setSetFrameReady] = useState<(() => void) | null>(null);
+  const [isFrameReady, setIsFrameReady] = useState(false);
   
-  // Initialize Base App frame when component mounts
+  // Initialize Base App frame when component mounts - only on client side
   useEffect(() => {
-    if (!isFrameReady) {
-      setFrameReady();
+    // Only run MiniKit hooks on client side to prevent build errors
+    if (typeof window !== 'undefined') {
+      try {
+        const { useMiniKit } = require('@coinbase/onchainkit/minikit');
+        const { context, setFrameReady: miniKitSetFrameReady, isFrameReady: miniKitIsFrameReady } = useMiniKit();
+        setBaseAppContext(context);
+        setSetFrameReady(() => miniKitSetFrameReady);
+        setIsFrameReady(miniKitIsFrameReady);
+        
+        // Initialize frame when ready
+        if (miniKitSetFrameReady && !miniKitIsFrameReady) {
+          miniKitSetFrameReady();
+        }
+      } catch (error) {
+        console.warn('MiniKit not available during build:', error);
+      }
     }
-  }, [setFrameReady, isFrameReady]);
+  }, []);
+
   const { signIn: farcasterSignIn, signOut: farcasterSignOut, isConnected, connect } = useSignIn({
     onSuccess: async ({ fid, username, signature }) => {
       console.log('✅ SIWF Success:', { fid, username });
