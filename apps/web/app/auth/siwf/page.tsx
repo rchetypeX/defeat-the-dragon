@@ -1,3 +1,6 @@
+// Force dynamic rendering to prevent static generation errors
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -5,7 +8,7 @@ import { useSIWF } from '../../../contexts/SIWFContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-export default function SIWFAuthPage() {
+export default function SIWFPage() {
   const router = useRouter();
   const { 
     isAuthenticated, 

@@ -1,3 +1,6 @@
+// Force dynamic rendering to prevent static generation errors
+export const dynamic = 'force-dynamic';
+
 'use client';
 
 import { Suspense, useState, useEffect } from 'react';

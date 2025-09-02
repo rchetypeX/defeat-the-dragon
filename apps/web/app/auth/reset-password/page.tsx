@@ -1,4 +1,5 @@
-'use client';
+// Force dynamic rendering to prevent static generation errors
+export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
