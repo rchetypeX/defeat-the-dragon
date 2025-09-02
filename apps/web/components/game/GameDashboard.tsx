@@ -16,11 +16,11 @@ import { useAudio } from '../../contexts/AudioContext';
 import { useCharacterStore } from '../../lib/characterStore';
 import { useBackgroundStore } from '../../lib/backgroundStore';
 import { CharacterDialogue } from './CharacterDialogue';
-import { CharacterSizeSettings } from '../ui/CharacterSizeSettings';
+
 import { useDataSync } from '../../hooks/useDataSync';
 import { AdventurerNamePrompt } from '../auth/AdventurerNamePrompt';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCharacterSize } from '../../hooks/useCharacterSize';
+
 
 interface SessionResult {
   xp_gained: number;
@@ -136,10 +136,7 @@ export function GameDashboard() {
   const [sessionResult, setSessionResult] = useState<SessionResult | null>(null);
   const [quoteTriggerCount, setQuoteTriggerCount] = useState(0);
   const [showAdventurerNamePrompt, setShowAdventurerNamePrompt] = useState(false);
-  const [showCharacterSizeSettings, setShowCharacterSizeSettings] = useState(false);
-  
   const { equippedCharacter, getCharacterImage, setEquippedCharacter } = useCharacterStore();
-  const { characterSize } = useCharacterSize();
   const { equippedBackground, getBackgroundImage, setEquippedBackground } = useBackgroundStore();
 
 
@@ -467,19 +464,10 @@ export function GameDashboard() {
           <div className="flex-1 flex items-end justify-center relative px-4 pb-8">
             {/* Character positioned lower with consistent scaling and positioning */}
             <div className="relative z-5 transform translate-y-6">
-              {/* Character Size Settings Button */}
-              <button
-                onClick={() => setShowCharacterSizeSettings(true)}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-[#8B4513] hover:bg-[#654321] text-white rounded-full flex items-center justify-center text-xs z-10 transition-colors"
-                title="Adjust Character Size"
-              >
-                ⚙️
-              </button>
-              
               <img 
                 src={getCharacterImage(equippedCharacter)} 
                 alt="Tiny Adventurer" 
-                className={`character-dynamic size-${characterSize} pixel-art drop-shadow-lg cursor-pointer hover:opacity-90 transition-opacity`}
+                className="character-dynamic size-small pixel-art drop-shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={handleCharacterClick}
                 onError={(e) => {
                   // Fallback to CSS character if image fails to load
@@ -544,13 +532,7 @@ export function GameDashboard() {
          )}
       </div>
       
-      {/* Character Size Settings Modal */}
-      {showCharacterSizeSettings && (
-        <CharacterSizeSettings
-          isOpen={showCharacterSizeSettings}
-          onClose={() => setShowCharacterSizeSettings(false)}
-        />
-      )}
+
       
       {/* Session Timer Modal */}
       {showSessionTimer && (

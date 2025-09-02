@@ -9,7 +9,7 @@ import { SoftShieldWarning } from '../ui/SoftShieldWarning';
 import { useBaseAppNotifications } from '../../hooks/useBaseAppNotifications';
 import { useAudio } from '../../contexts/AudioContext';
 import { useCharacterStore } from '../../lib/characterStore';
-import { useCharacterSize } from '../../hooks/useCharacterSize';
+
 import FocusSessionAudioControls from '../audio/FocusSessionAudioControls';
 
 interface SessionProgressProps {
@@ -21,7 +21,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
   const { currentSession, sessionProgress, updateSessionProgress, player } = useGameStore();
   const { isBackgroundPlaying, toggleBackgroundPlayPause } = useAudio();
   const { equippedCharacter, getCharacterImage } = useCharacterStore();
-  const { characterSize } = useCharacterSize();
+
   
   // Enhanced notification system
   const { showSoftShieldWarning, showSoftShieldBroken, showSessionFailed } = useBaseAppNotifications();
@@ -380,7 +380,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
          <img 
            src={getCharacterImage(equippedCharacter)} 
            alt="Tiny Adventurer" 
-           className={`character-dynamic size-${characterSize} pixel-art drop-shadow-lg object-contain`}
+                           className="character-dynamic size-medium pixel-art drop-shadow-lg object-contain"
            style={{
              imageRendering: 'pixelated',
              objectPosition: 'center bottom',
