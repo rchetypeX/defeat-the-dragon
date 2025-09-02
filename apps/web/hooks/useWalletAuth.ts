@@ -53,16 +53,26 @@ export function useWalletAuth() {
           const { context } = useMiniKit();
           setBaseAppContext(context);
           
-          if (context?.user) {
-            setBaseAppUser(context.user);
-            console.log('🔐 Base App user detected:', context.user);
+          // Use proper clientFid detection as per documentation
+          const isBaseAppClient = context?.client?.clientFid === '309857';
+          if (isBaseAppClient) {
+            console.log('✅ Confirmed Base App via clientFid:', context.client.clientFid);
             
-            // For Base App users, set the wallet address from the Base App wallet
-            if (context.wallet?.address) {
-              setAddress(context.wallet.address);
-              setIsConnected(true);
-              console.log('🔐 Base App wallet connected:', context.wallet.address);
+            if (context?.user) {
+              setBaseAppUser(context.user);
+              console.log('🔐 Base App user detected:', context.user);
+              
+              // For Base App users, set the wallet address from the Base App wallet
+              if (context.wallet?.address) {
+                setAddress(context.wallet.address);
+                setIsConnected(true);
+                console.log('🔐 Base App wallet connected:', context.wallet.address);
+              }
             }
+          } else {
+            // Not actually Base App despite having MiniKit
+            setIsBaseApp(false);
+            console.log('⚠️ MiniKit available but not Base App, clientFid:', context?.client?.clientFid);
           }
         }
       } else {
@@ -1017,3 +1027,4 @@ export function useWalletAuth() {
     shouldShowExternalWallets,
   };
 }
+
