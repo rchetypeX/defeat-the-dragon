@@ -1,6 +1,5 @@
 'use client';
 
-import { useMiniKit, useIsInMiniApp, useComposeCast, useViewProfile, useViewCast } from '@coinbase/onchainkit/minikit';
 import { useEffect, useState, useCallback } from 'react';
 
 interface ContextAwareState {
@@ -44,20 +43,54 @@ interface ContextAwareState {
 }
 
 export function useContextAware(): ContextAwareState {
-  const { context, isFrameReady, setFrameReady } = useMiniKit();
-  const { isInMiniApp } = useIsInMiniApp();
-  const { composeCast: miniKitComposeCast } = useComposeCast();
-  const viewProfile = useViewProfile();
-  const viewCast = useViewCast();
+  // Initialize state with default values to prevent build-time errors
+  const [context, setContext] = useState<any>(null);
+  const [isFrameReady, setIsFrameReady] = useState(false);
+  const [setFrameReady, setSetFrameReady] = useState<(() => void) | null>(null);
+  const [isInMiniApp, setIsInMiniApp] = useState(false);
+  const [composeCastFn, setComposeCastFn] = useState<any>(null);
+  const [viewProfileFn, setViewProfileFn] = useState<any>(null);
+  const [viewCastFn, setViewCastFn] = useState<any>(null);
   
   const [isLoading, setIsLoading] = useState(true);
 
-  // Set frame ready
+  // Initialize MiniKit hooks only on client side to prevent build errors
   useEffect(() => {
-    if (!isFrameReady) {
-      setFrameReady();
+    if (typeof window !== 'undefined') {
+      try {
+        const { 
+          useMiniKit, 
+          useIsInMiniApp, 
+          useComposeCast, 
+          useViewProfile, 
+          useViewCast 
+        } = require('@coinbase/onchainkit/minikit');
+        
+        // Get the hook results
+        const miniKitResult = useMiniKit();
+        const isInMiniAppResult = useIsInMiniApp();
+        const composeCastResult = useComposeCast();
+        const viewProfileResult = useViewProfile();
+        const viewCastResult = useViewCast();
+        
+        // Update state with hook results
+        setContext(miniKitResult.context);
+        setIsFrameReady(miniKitResult.isFrameReady);
+        setSetFrameReady(() => miniKitResult.setFrameReady);
+        setIsInMiniApp(isInMiniAppResult.isInMiniApp);
+        setComposeCastFn(composeCastResult);
+        setViewProfileFn(viewProfileResult);
+        setViewCastFn(viewCastResult);
+        
+        // Set frame ready
+        if (!miniKitResult.isFrameReady) {
+          miniKitResult.setFrameReady();
+        }
+      } catch (error) {
+        console.warn('MiniKit hooks not available during build:', error);
+      }
     }
-  }, [isFrameReady, setFrameReady]);
+  }, []);
 
   // Extract context data
   const user = context?.user || null;
@@ -92,7 +125,7 @@ export function useContextAware(): ContextAwareState {
     if (!castAuthor || !castHash) return;
     
     try {
-      await miniKitComposeCast({
+      await composeCastFn({
         text: `Thanks @${castAuthor.username} for sharing this awesome focus game! 🐉⚡ #DefeatTheDragon`,
         parent: {
           type: 'cast',
@@ -103,17 +136,17 @@ export function useContextAware(): ContextAwareState {
     } catch (error) {
       console.error('❌ Failed to thank sharer:', error);
     }
-  }, [castAuthor, castHash, miniKitComposeCast]);
+  }, [castAuthor, castHash, composeCastFn]);
 
   const viewSharerProfile = useCallback(() => {
     if (!castAuthor?.fid) return;
-    viewProfile(castAuthor.fid);
-  }, [castAuthor, viewProfile]);
+    viewProfileFn(castAuthor.fid);
+  }, [castAuthor, viewProfileFn]);
 
   const viewCastHandler = useCallback((castHash: string) => {
     if (!castHash) return;
-    viewCast.viewCast({ hash: castHash });
-  }, [viewCast]);
+    viewCastFn.viewCast({ hash: castHash });
+  }, [viewCastFn]);
 
   const composeCast = useCallback(async (text: string, parentHash?: string) => {
     try {
@@ -124,12 +157,12 @@ export function useContextAware(): ContextAwareState {
           hash: parentHash
         };
       }
-      await miniKitComposeCast(castOptions);
+      await composeCastFn(castOptions);
       console.log('✅ Cast composed successfully');
     } catch (error) {
       console.error('❌ Failed to compose cast:', error);
     }
-  }, [miniKitComposeCast]);
+  }, [composeCastFn]);
 
   // Analytics tracking
   const trackDiscovery = useCallback(() => {

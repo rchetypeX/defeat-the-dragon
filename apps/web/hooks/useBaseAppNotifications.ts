@@ -67,6 +67,19 @@ export function useBaseAppNotifications(options: UseBaseAppNotificationsOptions 
 
   // Initialize Base App notifications
   useEffect(() => {
+    // Initialize MiniKit hooks only on client side to prevent build errors
+    let isFrameReady = false;
+    
+    if (typeof window !== 'undefined') {
+      try {
+        const { useMiniKit } = require('@coinbase/onchainkit/minikit');
+        const { isFrameReady: miniKitIsFrameReady } = useMiniKit();
+        isFrameReady = miniKitIsFrameReady;
+      } catch (error) {
+        console.warn('MiniKit not available during build:', error);
+      }
+    }
+    
     initializeBaseAppNotifications();
     
     // Check if we're in Base App environment

@@ -23,10 +23,24 @@ interface BaseAppAuthState {
 
 export function useBaseAppAuth(): BaseAppAuthState {
   const { signIn: miniKitSignIn } = useAuthenticate();
-  const { context } = useMiniKit();
   
+  // Initialize state with default values to prevent build-time errors
+  const [context, setContext] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isBaseApp, setIsBaseApp] = useState(false);
+
+  // Initialize MiniKit hooks only on client side to prevent build errors
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const { useMiniKit } = require('@coinbase/onchainkit/minikit');
+        const { context: miniKitContext } = useMiniKit();
+        setContext(miniKitContext);
+      } catch (error) {
+        console.warn('MiniKit not available during build:', error);
+      }
+    }
+  }, []);
 
   // Detect if we're in Base App environment
   useEffect(() => {

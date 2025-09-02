@@ -5,7 +5,8 @@
  * Following the official "Base App Compatibility" documentation
  */
 
-import { useMiniKit } from '@coinbase/onchainkit/minikit';
+import { Chain } from 'wagmi';
+import { useState, useEffect } from 'react';
 
 // Base App Client FID (official identifier)
 export const BASE_APP_CLIENT_FID = 309857;
@@ -63,10 +64,32 @@ export interface BaseAppCompatibilityInfo {
  * Following official Base App detection guidelines
  */
 export function useBaseAppCompatibility(): BaseAppCompatibilityInfo {
-  const { context } = useMiniKit();
-  
+  const [context, setContext] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const loadMiniKit = async () => {
+      try {
+        setLoading(true);
+        const { MiniKit } = await import('@coinbase/onchainkit/minikit');
+        const { useContext } = await import('@coinbase/onchainkit/context');
+        const { Chain } = await import('wagmi');
+
+        const { client } = useContext();
+        setContext(client);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMiniKit();
+  }, []);
+
   // Official Base App detection
-  const clientFid = context?.client?.clientFid || null;
+  const clientFid = context?.clientFid || null;
   const isBaseApp = clientFid === BASE_APP_CLIENT_FID;
   
   // Environment detection

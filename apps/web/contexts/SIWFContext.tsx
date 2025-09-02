@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { AuthKitProvider, useProfile, useSignIn, useSignInMessage } from '@farcaster/auth-kit';
 import '@farcaster/auth-kit/styles.css';
 import { createClient } from '@supabase/supabase-js';
-import { useAuthenticate, useMiniKit } from '@coinbase/onchainkit/minikit';
+import { useAuthenticate } from '@coinbase/onchainkit/minikit';
 
 // Supabase client
 const supabase = createClient(
@@ -70,7 +70,7 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, profile } = useProfile();
   
   // Base App hooks (for additional context and analytics)
-  const { context: baseAppContext, setFrameReady, isFrameReady } = useMiniKit();
+  const { context: baseAppContext, setFrameReady, isFrameReady } = useAuthenticate();
   
   // Initialize Base App frame when component mounts
   useEffect(() => {
