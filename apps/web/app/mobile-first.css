@@ -340,10 +340,14 @@ input:focus, textarea:focus, select:focus {
   touch-action: manipulation;
 }
 
-/* Character Dynamic Scaling - Made Much Bigger and Better Positioned */
+/* Character Dynamic Scaling - Dynamic sizing based on user preferences */
 .character-dynamic {
-  max-width: min(98vw, 1200px);  /* Increased to 98vw/1200px - Much bigger like reference! */
-  max-height: min(98vw, 1200px); /* Increased to 98vw/1200px - Much bigger like reference! */
+  /* Default to small size (new default) */
+  --character-max-width: min(60vw, 400px);
+  --character-max-height: min(60vw, 400px);
+  
+  max-width: var(--character-max-width);
+  max-height: var(--character-max-height);
   width: auto;
   height: auto;
   object-fit: contain;
@@ -357,14 +361,30 @@ input:focus, textarea:focus, select:focus {
   margin: 0 auto;
 }
 
+/* Character size variants based on user preferences */
+.character-dynamic.size-small {
+  --character-max-width: min(60vw, 400px);
+  --character-max-height: min(60vw, 400px);
+}
+
+.character-dynamic.size-medium {
+  --character-max-width: min(80vw, 800px);
+  --character-max-height: min(80vw, 800px);
+}
+
+.character-dynamic.size-large {
+  --character-max-width: min(98vw, 1200px);
+  --character-max-height: min(98vw, 1200px);
+}
+
 /* Ensure all character sprites have consistent scaling */
 .character-dynamic[src*="fighter"],
 .character-dynamic[src*="wizard"],
 .character-dynamic[src*="paladin"],
 .character-dynamic[src*="rogue"] {
   /* All character sprites should scale identically */
-  max-width: min(98vw, 1200px);
-  max-height: min(98vw, 1200px);
+  max-width: var(--character-max-width);
+  max-height: var(--character-max-height);
   width: auto;
   height: auto;
   object-fit: contain;

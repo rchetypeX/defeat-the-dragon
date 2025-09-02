@@ -270,6 +270,7 @@ export interface Database {
           accessibility: Json
           equipped_character: string
           equipped_background: string
+          character_size: string
           updated_at: string
         }
         Insert: {
@@ -279,6 +280,7 @@ export interface Database {
           accessibility?: Json
           equipped_character?: string
           equipped_background?: string
+          character_size?: string
           updated_at?: string
         }
         Update: {
@@ -288,6 +290,7 @@ export interface Database {
           accessibility?: Json
           equipped_character?: string
           equipped_background?: string
+          character_size?: string
           updated_at?: string
         }
       }
