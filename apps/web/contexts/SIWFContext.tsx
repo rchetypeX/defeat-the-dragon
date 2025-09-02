@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { AuthKitProvider, useProfile, useSignIn, useSignInMessage } from '@farcaster/auth-kit';
 import '@farcaster/auth-kit/styles.css';
 import { createClient } from '@supabase/supabase-js';
+import { useAuthenticate, useMiniKit } from '@coinbase/onchainkit/minikit';
 
 // Supabase client
 const supabase = createClient(
@@ -39,6 +40,9 @@ interface SIWFContextType {
   // Platform detection
   isBaseApp: boolean;
   isFarcaster: boolean;
+  
+  // Base App context (for analytics/UX only - NOT for authentication)
+  baseAppContext: any;
 }
 
 const SIWFContext = createContext<SIWFContextType | undefined>(undefined);
@@ -62,8 +66,18 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
   const [isBaseApp, setIsBaseApp] = useState(false);
   const [isFarcaster, setIsFarcaster] = useState(false);
 
-  // Farcaster Auth hooks
+  // Farcaster Auth hooks (primary authentication)
   const { isAuthenticated, profile } = useProfile();
+  
+  // Base App hooks (for additional context and analytics)
+  const { context: baseAppContext, setFrameReady, isFrameReady } = useMiniKit();
+  
+  // Initialize Base App frame when component mounts
+  useEffect(() => {
+    if (!isFrameReady) {
+      setFrameReady();
+    }
+  }, [setFrameReady, isFrameReady]);
   const { signIn: farcasterSignIn, signOut: farcasterSignOut, isConnected, connect } = useSignIn({
     onSuccess: async ({ fid, username, signature }) => {
       console.log('✅ SIWF Success:', { fid, username });
@@ -288,7 +302,8 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
     supabaseUser,
     linkSupabaseAccount,
     isBaseApp,
-    isFarcaster
+    isFarcaster,
+    baseAppContext
   };
 
   return (
