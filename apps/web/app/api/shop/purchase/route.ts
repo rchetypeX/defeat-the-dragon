@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = cookies();
+    
+    // Create client for authentication (uses anon key)
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,11 +30,17 @@ export async function POST(request: NextRequest) {
         },
       }
     );
+    
+    // Create service role client for database operations (bypasses RLS)
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     // Test database connection first
     console.log('Testing database connection...');
     try {
-      const { data: testData, error: testError } = await supabase
+      const { data: testData, error: testError } = await supabaseAdmin
         .from('user_inventory')
         .select('count')
         .limit(1);
@@ -154,6 +163,8 @@ export async function POST(request: NextRequest) {
     }
     
     console.log('Final auth result:', { userId, authMethod, authError });
+    console.log('User ID type:', typeof userId);
+    console.log('User ID length:', userId ? userId.length : 'N/A');
     
     if (!userId) {
       console.error('Authentication failed - no valid user ID found');
@@ -189,7 +200,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already owns this item
-    const { data: existingItem, error: inventoryError } = await supabase
+    const { data: existingItem, error: inventoryError } = await supabaseAdmin
       .from('user_inventory')
       .select('*')
       .eq('user_id', userId)
@@ -212,7 +223,45 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's current currency
-    const { data: player, error: playerError } = await supabase
+    console.log('Attempting to fetch player data for user ID:', userId);
+    
+    // Debug: Check if there are any players in the database at all
+    const { data: allPlayers, error: allPlayersError } = await supabaseAdmin
+      .from('players')
+      .select('id, user_id, display_name, wallet_address')
+      .limit(5);
+    
+    if (allPlayersError) {
+      console.error('Error checking all players:', allPlayersError);
+    } else {
+      console.log('All players in database (first 5):', allPlayers);
+    }
+    
+    // First check if the player record exists at all
+    const { data: playerExists, error: existsError } = await supabaseAdmin
+      .from('players')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    if (existsError) {
+      console.error('Error checking if player exists:', existsError);
+      return NextResponse.json(
+        { error: 'Failed to check player existence' },
+        { status: 500 }
+      );
+    }
+    
+    if (!playerExists) {
+      console.error('Player record does not exist for user ID:', userId);
+      return NextResponse.json(
+        { error: 'Player record not found. Please ensure your account is properly set up.' },
+        { status: 404 }
+      );
+    }
+    
+    console.log('Player record found, fetching currency data...');
+    const { data: player, error: playerError } = await supabaseAdmin
       .from('players')
       .select('coins, sparks')
       .eq('user_id', userId)
@@ -220,6 +269,12 @@ export async function POST(request: NextRequest) {
 
     if (playerError) {
       console.error('Error fetching player data:', playerError);
+      console.error('Player error details:', {
+        code: playerError.code,
+        message: playerError.message,
+        details: playerError.details,
+        hint: playerError.hint
+      });
       return NextResponse.json(
         { error: 'Failed to fetch player data' },
         { status: 500 }
@@ -246,7 +301,7 @@ export async function POST(request: NextRequest) {
         updateData.sparks = player.sparks - price;
       }
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseAdmin
         .from('players')
         .update(updateData)
         .eq('user_id', userId);
@@ -263,7 +318,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already owns this item (second check after currency update)
-    const { data: existingInventoryItem, error: checkError } = await supabase
+    const { data: existingInventoryItem, error: checkError } = await supabaseAdmin
       .from('user_inventory')
       .select('id, quantity')
       .eq('user_id', userId)
@@ -281,7 +336,7 @@ export async function POST(request: NextRequest) {
     if (existingInventoryItem) {
       console.log('User already owns this item, updating quantity');
       // Update quantity if user already owns the item
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseAdmin
         .from('user_inventory')
         .update({ quantity: existingInventoryItem.quantity + 1 })
         .eq('id', existingInventoryItem.id);
@@ -304,7 +359,7 @@ export async function POST(request: NextRequest) {
         acquired_at: new Date().toISOString()
       });
       
-      const { error: inventoryInsertError } = await supabase
+      const { error: inventoryInsertError } = await supabaseAdmin
         .from('user_inventory')
         .insert({
           user_id: userId,
@@ -335,7 +390,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Record the purchase
-    const { error: purchaseError } = await supabase
+    const { error: purchaseError } = await supabaseAdmin
       .from('user_purchases')
       .insert({
         user_id: userId,
