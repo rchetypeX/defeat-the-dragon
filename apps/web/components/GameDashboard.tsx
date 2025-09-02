@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../lib/store';
+import { useCharacterStore } from '../lib/characterStore';
 import { SessionTimer } from './game/SessionTimer';
 import { SessionProgress } from './game/SessionProgress';
 import { SuccessMessage } from './ui/SuccessMessage';
@@ -28,6 +29,8 @@ export function GameDashboard() {
     completeSession,
     loadPlayerData
   } = useGameStore();
+  
+  const { equippedCharacter, getCharacterImage } = useCharacterStore();
 
   const [showSessionTimer, setShowSessionTimer] = useState(false);
   const [sessionResult, setSessionResult] = useState<SessionResult | null>(null);
@@ -283,7 +286,7 @@ export function GameDashboard() {
           {/* Character - Much bigger like reference image */}
           <div className="relative z-10">
             <img 
-              src="/assets/sprites/fighter.png" 
+              src={getCharacterImage(equippedCharacter)} 
               alt="Tiny Adventurer" 
               className="w-32 h-40 sm:w-40 sm:h-48 lg:w-48 lg:h-56 pixel-art"
               onError={(e) => {

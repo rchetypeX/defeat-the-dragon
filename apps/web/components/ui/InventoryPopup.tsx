@@ -33,10 +33,10 @@ interface InventoryPopupProps {
 // Default inventory data - only fighter and forest should be owned by default
 const defaultInventoryItems = {
   character: [
-    { id: 'fighter', name: 'Fighter', description: 'Default warrior character', isOwned: true, isEquipped: true, category: 'character' as const, image: '/assets/sprites/fighter.png?v=2' },
-    { id: 'wizard', name: 'Wizard', description: 'Powerful magic user', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/wizard.png?v=2' },
-    { id: 'paladin', name: 'Paladin', description: 'Holy warrior with divine powers', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/paladin.png?v=2' },
-    { id: 'rogue', name: 'Rogue', description: 'Stealthy and agile fighter', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/rogue.png?v=2' }
+    { id: 'fighter', name: 'Fighter', description: 'Default warrior character', isOwned: true, isEquipped: true, category: 'character' as const, image: '/assets/sprites/fighter.png' },
+    { id: 'wizard', name: 'Wizard', description: 'Powerful magic user', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/wizard.png' },
+    { id: 'paladin', name: 'Paladin', description: 'Holy warrior with divine powers', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/paladin.png' },
+    { id: 'rogue', name: 'Rogue', description: 'Stealthy and agile fighter', isOwned: false, isEquipped: false, category: 'character' as const, image: '/assets/sprites/rogue.png' }
   ],
   background: [
     { id: 'forest', name: 'Forest', description: 'Default forest scene', isOwned: true, isEquipped: true, category: 'background' as const, image: '/assets/images/forest-background.png?v=2' },
