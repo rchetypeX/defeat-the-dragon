@@ -13,7 +13,7 @@ const nextConfig = {
     return [
       {
         source: '/.well-known/farcaster.json',
-        destination: 'https://api.farcaster.xyz/miniapps/hosted-manifest/019909b5-42c7-b640-de5b-7f959976e7ea',
+        destination: process.env.FARCASTER_HOSTED_MANIFEST_URL || 'https://api.farcaster.xyz/miniapps/hosted-manifest/019909b5-42c7-b640-de5b-7f959976e7ea',
         permanent: false,
       },
     ];
