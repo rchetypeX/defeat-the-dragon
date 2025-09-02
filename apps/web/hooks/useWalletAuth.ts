@@ -43,7 +43,6 @@ export function useWalletAuth() {
         if (providers.length === 1) {
           setSelectedProvider(providers[0]);
         }
-        // Remove automatic modal display - only show when user clicks connect
 
         // Use the selected provider or default to ethereum
         const provider = getProvider();
@@ -499,6 +498,138 @@ export function useWalletAuth() {
       }
 
       // Send to our API for verification and Supabase auth
+      console.log('Sending signin request to API...');
+      const response = await fetch('/api/auth/wallet-signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address,
+          message,
+          signature,
+        }),
+        // Add timeout to prevent hanging requests
+        signal: AbortSignal.timeout(30000), // 30 second timeout
+      });
+
+      console.log('API response status:', response.status);
+      console.log('API response headers:', Object.fromEntries(response.headers.entries()));
+
+      const result = await response.json();
+      console.log('API response body:', result);
+
+      if (!response.ok) {
+        // Handle specific error types
+        if (response.status === 408) {
+          throw new Error('Request timed out - please try again');
+        } else if (response.status === 503) {
+          throw new Error('Connection error - please check your internet and try again');
+        } else {
+          throw new Error(result.error || 'Authentication failed');
+        }
+      }
+
+      // For wallet authentication, the session is now created server-side
+      if (result.walletAuth) {
+        // Store wallet user data in localStorage for client-side access
+        localStorage.setItem('walletUser', JSON.stringify(result.user));
+        
+        // Set a cookie for server-side access
+        document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
+        
+        console.log('Wallet sign-in successful, reloading page in 500ms...');
+        
+        // Add a longer delay to ensure localStorage is set before reload
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      }
+
+    } catch (error) {
+      console.error('Wallet sign-in error:', error);
+      setAuthError(error instanceof Error ? error.message : 'Authentication failed');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const signUpWithWallet = async (email: string, displayName: string, retryCount = 0) => {
+    if (!address) {
+      setAuthError('Please connect your wallet first.');
+      return;
+    }
+
+    if (!email || !email.includes('@')) {
+      setAuthError('Please provide a valid email address.');
+      return;
+    }
+
+    if (!displayName || displayName.trim().length < 2) {
+      setAuthError('Please provide a valid display name (at least 2 characters).');
+      return;
+    }
+
+    setIsConnecting(true);
+    setAuthError(null);
+
+    // Maximum retry attempts
+    const maxRetries = 2;
+
+    try {
+      console.log('Starting wallet signup process...', { address, email, displayName });
+      
+      // Create a message to sign
+      const message = `Sign up for Defeat the Dragon\n\nWallet: ${address}\nEmail: ${email}\nDisplay Name: ${displayName}\nTimestamp: ${Date.now()}`;
+      
+      // Sign the message using the selected provider
+      const provider = getProvider();
+      if (!provider) {
+        throw new Error('No wallet provider available');
+      }
+      
+      console.log('Requesting signature from wallet...');
+      
+      let signature;
+      try {
+        // Try the standard personal_sign method first
+        signature = await provider.request({
+          method: 'personal_sign',
+          params: [message, address],
+        });
+        console.log('Signature received using personal_sign:', signature);
+      } catch (signError) {
+        console.log('personal_sign failed, trying alternative methods...', signError);
+        
+        try {
+          // Fallback to eth_sign for some wallets
+          signature = await provider.request({
+            method: 'eth_sign',
+            params: [address, message],
+          });
+          console.log('Signature received using eth_sign:', signature);
+        } catch (ethSignError) {
+          console.log('eth_sign also failed, trying eth_personalSign...', ethSignError);
+          
+          try {
+            // Another fallback method
+            signature = await provider.request({
+              method: 'eth_personalSign',
+              params: [message, address],
+            });
+            console.log('Signature received using eth_personalSign:', signature);
+          } catch (finalError) {
+            console.error('All signature methods failed:', finalError);
+            throw new Error('Wallet signature failed. Please try a different wallet or contact support.');
+          }
+        }
+      }
+      
+      if (!signature) {
+        throw new Error('Failed to get wallet signature');
+      }
+
+      // Send to our API for verification and Supabase auth
       console.log('Sending signup request to API...');
       const response = await fetch('/api/auth/wallet-signup', {
         method: 'POST',
@@ -555,133 +686,6 @@ export function useWalletAuth() {
       } else {
         console.error('API returned success but no walletAuth flag');
         throw new Error('Invalid response from server');
-      }
-
-    } catch (error) {
-      console.error('Wallet sign-up error:', error);
-      
-      // Handle specific error types
-      if (error instanceof Error) {
-        if (error.name === 'AbortError' || error.message.includes('timeout')) {
-          setAuthError('Request timed out - please try again');
-        } else if (error.message.includes('ECONNRESET') || error.message.includes('Connection error')) {
-          setAuthError('Connection error - please check your internet and try again');
-        } else if (error.message.includes('Failed to fetch')) {
-          setAuthError('Network error - please check your connection and try again');
-        } else {
-          setAuthError(error.message || 'Registration failed');
-        }
-      } else {
-        setAuthError('Registration failed');
-      }
-      
-      // Retry logic for network errors
-      if (retryCount < maxRetries && (
-        error instanceof Error && (
-          error.name === 'AbortError' || 
-          error.message.includes('timeout') ||
-          error.message.includes('ECONNRESET') ||
-          error.message.includes('Connection error') ||
-          error.message.includes('Failed to fetch')
-        )
-      )) {
-        console.log(`Retrying wallet signup (attempt ${retryCount + 1}/${maxRetries})...`);
-        setTimeout(() => {
-          // Retry logic removed since email and displayName are now required
-          // This fallback is no longer needed
-          throw new Error('Signup failed - email and display name are required');
-        }, 1000 * (retryCount + 1)); // Exponential backoff
-        return;
-      }
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const signUpWithWallet = async (email: string, displayName: string, retryCount = 0) => {
-    if (!address) {
-      setAuthError('Please connect your wallet first.');
-      return;
-    }
-
-    if (!email || !email.includes('@')) {
-      setAuthError('Please provide a valid email address.');
-      return;
-    }
-
-    if (!displayName || displayName.trim().length < 2) {
-      setAuthError('Please provide a valid display name (at least 2 characters).');
-      return;
-    }
-
-    setIsConnecting(true);
-    setAuthError(null);
-
-    // Maximum retry attempts
-    const maxRetries = 2;
-
-    try {
-      // Create a message to sign
-      const message = `Sign up for Defeat the Dragon\n\nWallet: ${address}\nEmail: ${email}\nDisplay Name: ${displayName}\nTimestamp: ${Date.now()}`;
-      
-      // Sign the message using the selected provider
-      const provider = getProvider();
-      if (!provider) {
-        throw new Error('No wallet provider available');
-      }
-      
-      const signature = await provider.request({
-        method: 'personal_sign',
-        params: [message, address],
-      });
-
-      // Send to our API for verification and Supabase auth
-      const response = await fetch('/api/auth/wallet-signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          address,
-          email,
-          displayName,
-          message,
-          signature,
-        }),
-        // Add timeout to prevent hanging requests
-        signal: AbortSignal.timeout(30000), // 30 second timeout
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        // Handle specific error types
-        if (response.status === 408) {
-          throw new Error('Request timed out - please try again');
-        } else if (response.status === 503) {
-          throw new Error('Connection error - please check your internet and try again');
-        } else {
-          throw new Error(result.error || 'Registration failed');
-        }
-      }
-
-      // For wallet authentication, the session is now created server-side
-      if (result.walletAuth) {
-        // Store wallet user data in localStorage for client-side access
-        localStorage.setItem('walletUser', JSON.stringify(result.user));
-        
-        // Set a cookie for server-side access
-        document.cookie = `wallet-user=${JSON.stringify(result.user)}; path=/; max-age=86400; SameSite=Lax`;
-        
-        // Update account status
-        setHasAccount(true);
-        
-        console.log('Wallet sign-up successful, reloading page in 500ms...');
-        
-        // Add a longer delay to ensure localStorage is set before reload
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
       }
 
     } catch (error) {
