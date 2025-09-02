@@ -51,7 +51,7 @@ export const useBackgroundStore = create<BackgroundState>()(
           forest: '/assets/images/forest-background.png?v=2',
           tundra: '/assets/images/tundra-background.png?v=2',
           underdark: '/assets/images/underdark-background.png?v=2',
-          dungeon: '/assets/images/dungeon-background.png?v=2'
+          dungeon: '/assets/images/dungeon-background.png?v=3'
         };
         return backgroundImages[backgroundId as keyof typeof backgroundImages] || backgroundImages.forest;
       }

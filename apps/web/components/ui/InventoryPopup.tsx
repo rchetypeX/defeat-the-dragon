@@ -42,7 +42,7 @@ const defaultInventoryItems = {
     { id: 'forest', name: 'Forest', description: 'Default forest scene', isOwned: true, isEquipped: true, category: 'background' as const, image: '/assets/images/forest-background.png?v=2' },
     { id: 'tundra', name: 'Tundra', description: 'Frozen wilderness', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/tundra-background.png?v=2' },
     { id: 'underdark', name: 'Underdark', description: 'Dark underground realm', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/underdark-background.png?v=2' },
-    { id: 'dungeon', name: 'Dungeon', description: 'Ancient stone corridors', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/dungeon-background.png?v=2' }
+    { id: 'dungeon', name: 'Dungeon', description: 'Ancient stone corridors', isOwned: false, isEquipped: false, category: 'background' as const, image: '/assets/images/dungeon-background.png?v=3' }
   ]
 };
 
