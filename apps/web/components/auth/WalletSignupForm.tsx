@@ -80,13 +80,17 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
         // For Base App users, we'll use their Farcaster ID as the identifier
         // The email will be used for the account creation
         await signUpWithWallet(email, displayName);
+        // Only call onSuccess if signup was actually successful
+        // The signUpWithWallet function will handle errors and throw if failed
+        console.log('✅ Base App signup successful');
         onSuccess?.();
       } else {
         setError('Base App authentication completed but no user data received');
       }
     } catch (err: any) {
-      console.error('❌ Base App authentication failed:', err);
-      setError(err.message || 'Base App authentication failed');
+      console.error('❌ Base App authentication or signup failed:', err);
+      // Don't close the modal on error - let the user see the error and try again
+      setError(err.message || 'Base App authentication or signup failed');
     } finally {
       setIsLoading(false);
     }

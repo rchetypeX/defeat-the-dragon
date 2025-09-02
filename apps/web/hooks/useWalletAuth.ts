@@ -903,8 +903,14 @@ export function useWalletAuth() {
           throw new Error('Request timed out - please try again');
         } else if (response.status === 503) {
           throw new Error('Connection error - please check your internet and try again');
+        } else if (response.status === 409) {
+          // Handle conflict errors (email already exists, wallet already exists)
+          const errorMessage = result.error || 'Account already exists';
+          throw new Error(errorMessage);
         } else {
-          throw new Error(result.error || 'Registration failed');
+          // For other errors, try to extract the error message from the response
+          const errorMessage = result.error || `Registration failed (${response.status})`;
+          throw new Error(errorMessage);
         }
       }
 
@@ -943,7 +949,11 @@ export function useWalletAuth() {
           setAuthError('Connection error - please check your internet and try again');
         } else if (error.message.includes('Failed to fetch')) {
           setAuthError('Network error - please check your connection and try again');
+        } else if (error.message.includes('Account already exists') || error.message.includes('already exists')) {
+          // Handle duplicate account errors
+          setAuthError(error.message);
         } else {
+          // For all other errors, display the actual error message
           setAuthError(error.message || 'Registration failed');
         }
       } else {
