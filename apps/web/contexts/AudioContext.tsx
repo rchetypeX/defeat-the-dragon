@@ -19,6 +19,7 @@ interface AudioContextType extends AudioState {
   toggleBackgroundPlayPause: () => void;
   toggleFocusSessionPlayPause: () => void;
   hasUserInteracted: boolean;
+  isBaseApp: boolean;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -45,6 +46,46 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
   });
   const [isMounted, setIsMounted] = useState(false);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [isBaseApp, setIsBaseApp] = useState(false);
+
+  // Detect Base App environment
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const detectBaseApp = () => {
+      try {
+        // Check for MiniKit hooks availability (Base App indicator)
+        const hasMiniKit = typeof window !== 'undefined' && 
+          (window as any).__MINIKIT_AVAILABLE__ || 
+          (window as any).__BASE_APP_CONTEXT__;
+        
+        // Check for Base App specific indicators
+        const hasBaseAppContext = typeof window !== 'undefined' && 
+          (window as any).__BASE_APP_CONTEXT__ ||
+          window.location.hostname.includes('base.org') ||
+          window.navigator.userAgent.includes('BaseApp') ||
+          window.location.search.includes('base_app=true');
+        
+        const baseAppDetected = hasMiniKit || hasBaseAppContext;
+        setIsBaseApp(baseAppDetected);
+        
+        console.log('AudioContext: Base App detection:', {
+          hasMiniKit,
+          hasBaseAppContext,
+          baseAppDetected,
+          hostname: window.location.hostname,
+          userAgent: window.navigator.userAgent
+        });
+        
+        return baseAppDetected;
+      } catch (error) {
+        console.warn('AudioContext: Error detecting Base App:', error);
+        return false;
+      }
+    };
+    
+    detectBaseApp();
+  }, []);
 
   // Handle client-side mounting and user interaction detection
   useEffect(() => {
@@ -66,32 +107,64 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
       }
     }
 
-    // Listen for user interaction to enable audio
-    const handleUserInteraction = () => {
+    // Enhanced user interaction detection for Base App
+    const handleUserInteraction = (event: Event) => {
       if (!hasUserInteracted) {
-        console.log('AudioContext: User interaction detected - audio system ready');
+        console.log('AudioContext: User interaction detected - audio system ready', {
+          eventType: event.type,
+          isBaseApp,
+          target: event.target
+        });
+        
         setHasUserInteracted(true);
         
-        // Don't automatically enable background music - let user choose
-        // This complies with browser autoplay policies
+        // For Base App, we need to be more aggressive about enabling audio
+        if (isBaseApp) {
+          console.log('AudioContext: Base App user interaction - enabling audio system');
+          
+          // Try to create and play a silent audio context to unlock audio
+          try {
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Set volume to 0 (silent)
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            
+            // Start and immediately stop to unlock audio
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.001);
+            
+            console.log('AudioContext: Base App audio context unlocked successfully');
+          } catch (error) {
+            console.warn('AudioContext: Failed to unlock Base App audio context:', error);
+          }
+        }
         
         // Remove listeners after first interaction
         document.removeEventListener('click', handleUserInteraction);
         document.removeEventListener('touchstart', handleUserInteraction);
         document.removeEventListener('keydown', handleUserInteraction);
+        document.removeEventListener('mousedown', handleUserInteraction);
+        document.removeEventListener('pointerdown', handleUserInteraction);
       }
     };
     
-    document.addEventListener('click', handleUserInteraction);
-    document.addEventListener('touchstart', handleUserInteraction);
-    document.addEventListener('keydown', handleUserInteraction);
+    // Add more comprehensive event listeners for Base App
+    const events = ['click', 'touchstart', 'keydown', 'mousedown', 'pointerdown'];
+    events.forEach(eventType => {
+      document.addEventListener(eventType, handleUserInteraction, { passive: true });
+    });
     
     return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
+      events.forEach(eventType => {
+        document.removeEventListener(eventType, handleUserInteraction);
+      });
     };
-  }, [hasUserInteracted]);
+  }, [hasUserInteracted, isBaseApp]);
 
   // Save audio settings to localStorage when they change
   useEffect(() => {
@@ -101,8 +174,6 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
       localStorage.setItem('backgroundPlaying', JSON.stringify(audioState.isBackgroundPlaying));
     }
   }, [audioState.backgroundVolume, audioState.focusSessionVolume, audioState.isBackgroundPlaying, isMounted]);
-
-
 
   const setBackgroundVolume = useCallback((volume: number) => {
     setAudioState(prev => ({ ...prev, backgroundVolume: volume }));
@@ -130,10 +201,10 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
         ...prev, 
         isBackgroundPlaying: !prev.isBackgroundPlaying 
       };
-      console.log('AudioContext: Background play/pause toggled:', newState.isBackgroundPlaying);
+      console.log('AudioContext: Background play/pause toggled:', newState.isBackgroundPlaying, 'isBaseApp:', isBaseApp);
       return newState;
     });
-  }, []);
+  }, [isBaseApp]);
 
   const toggleFocusSessionPlayPause = useCallback(() => {
     setAudioState(prev => {
@@ -141,10 +212,10 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
         ...prev, 
         isFocusSessionPlaying: !prev.isFocusSessionPlaying 
       };
-      console.log('AudioContext: Focus session play/pause toggled:', newState.isFocusSessionPlaying);
+      console.log('AudioContext: Focus session play/pause toggled:', newState.isFocusSessionPlaying, 'isBaseApp:', isBaseApp);
       return newState;
     });
-  }, []);
+  }, [isBaseApp]);
 
   const value: AudioContextType = useMemo(() => ({
     ...audioState,
@@ -156,7 +227,8 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
     toggleBackgroundPlayPause,
     toggleFocusSessionPlayPause,
     hasUserInteracted,
-  }), [audioState, setBackgroundVolume, setFocusSessionVolume, setBackgroundPlaying, setFocusSessionPlaying, setSessionActive, toggleBackgroundPlayPause, toggleFocusSessionPlayPause, hasUserInteracted]);
+    isBaseApp,
+  }), [audioState, setBackgroundVolume, setFocusSessionVolume, setBackgroundPlaying, setFocusSessionPlaying, setSessionActive, toggleBackgroundPlayPause, toggleFocusSessionPlayPause, hasUserInteracted, isBaseApp]);
 
   return (
     <AudioContext.Provider value={value}>

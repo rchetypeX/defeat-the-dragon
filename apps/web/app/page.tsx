@@ -156,6 +156,17 @@ function HomePageContent() {
     }
   }, [isBaseAppAuthenticated, verifiedUser, user]);
 
+  // Auto-set auth mode based on environment
+  useEffect(() => {
+    if (isBaseApp) {
+      console.log('🔐 Base App detected, setting auth mode to wallet');
+      setAuthMode('wallet');
+    } else if (isSIWFFarcaster) {
+      console.log('🔮 Farcaster detected, setting auth mode to siwf');
+      setAuthMode('siwf');
+    }
+  }, [isBaseApp, isSIWFFarcaster]);
+
   // Handle SIWF authentication and platform detection
   useEffect(() => {
     // Auto-detect platform and set auth mode
@@ -232,7 +243,7 @@ function HomePageContent() {
                           : 'text-gray-300 hover:text-white'
                       }`}
                     >
-                      Wallet
+                      {isBaseApp ? '🔐 Base App' : 'Wallet'}
                     </button>
                     <button
                       onClick={() => setAuthMode('login')}

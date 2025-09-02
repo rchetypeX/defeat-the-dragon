@@ -422,13 +422,42 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
              
              <div className="flex gap-3 justify-center">
                <button
-                 onClick={onSessionFail}
+                 onClick={async () => {
+                   try {
+                     console.log('SessionProgress: User confirmed stop, calling onSessionFail...');
+                     setShowStopConfirmation(false); // Close modal first
+                     
+                     // Small delay to ensure modal closes before callback
+                     setTimeout(() => {
+                       try {
+                         onSessionFail();
+                       } catch (error) {
+                         console.error('SessionProgress: Error in onSessionFail callback:', error);
+                         // Force cleanup if callback fails
+                         setShowStopConfirmation(false);
+                         setShowWarning(false);
+                         setWarningTimeLeft(0);
+                         setIsDisturbed(false);
+                       }
+                     }, 100);
+                   } catch (error) {
+                     console.error('SessionProgress: Error handling stop confirmation:', error);
+                     // Force cleanup on error
+                     setShowStopConfirmation(false);
+                     setShowWarning(false);
+                     setWarningTimeLeft(0);
+                     setIsDisturbed(false);
+                   }
+                 }}
                  className="pixel-button bg-[#ef4444] hover:bg-[#dc2626] text-white px-6 py-2 text-sm flex-1 max-w-[100px]"
                >
                  Yes
                </button>
                <button
-                 onClick={() => setShowStopConfirmation(false)}
+                 onClick={() => {
+                   console.log('SessionProgress: User cancelled stop, closing modal...');
+                   setShowStopConfirmation(false);
+                 }}
                  className="pixel-button bg-[#6b7280] hover:bg-[#4b5563] text-white px-6 py-2 text-sm flex-1 max-w-[100px]"
                >
                  No

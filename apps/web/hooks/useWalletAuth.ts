@@ -953,6 +953,11 @@ export function useWalletAuth() {
     }
   };
 
+  const shouldShowExternalWallets = () => {
+    // Only show external wallets if not in Base App environment
+    return !isBaseApp;
+  };
+
   return {
     address,
     isConnected,
@@ -979,5 +984,6 @@ export function useWalletAuth() {
     baseAppUser,
     baseAppContext,
     authenticateWithBaseApp,
+    shouldShowExternalWallets,
   };
 }

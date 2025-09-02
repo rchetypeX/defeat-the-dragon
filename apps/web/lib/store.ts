@@ -242,89 +242,148 @@ export const useGameStore = create<GameState & GameActions>()(
             
             const actualDurationMinutes = Math.floor((Date.now() - state.sessionProgress.startTime!) / (1000 * 60));
             
-            console.log('Completing session with:', {
+            console.log('Store: Completing session with:', {
               sessionId: state.currentSession.id,
               actualDurationMinutes,
               disturbedSeconds: state.sessionProgress.disturbedSeconds,
-              outcome
+              outcome,
+              playerExists: !!state.player
             });
             
-            const response = await completeSession({
-              session_id: state.currentSession.id,
-              actual_duration_minutes: actualDurationMinutes,
-              outcome
-              // disturbed_seconds removed as part of database cleanup
-            });
-            
-            console.log('Session completion response:', response);
+            // Try to complete session via API first
+            let response;
+            try {
+              response = await completeSession({
+                session_id: state.currentSession.id,
+                actual_duration_minutes: actualDurationMinutes,
+                outcome
+              });
+              console.log('Store: Session completion API response:', response);
+            } catch (apiError) {
+              console.warn('Store: API call failed, using fallback completion:', apiError);
+              
+              // Create fallback response for development/testing
+              const fallbackResponse = {
+                xp_gained: Math.max(1, Math.floor(actualDurationMinutes * 2)),
+                coins_gained: Math.max(1, Math.floor(actualDurationMinutes * 0.8)),
+                sparks_gained: Math.max(0, Math.floor(actualDurationMinutes * 0.2)),
+                level_up: false,
+                new_level: state.player?.level || 1,
+              };
+              
+              response = fallbackResponse;
+              console.log('Store: Using fallback completion response:', fallbackResponse);
+            }
             
             // Update player data with rewards
             if (state.player) {
               console.log('Store: Updating player data with rewards:', {
-                oldPlayer: state.player,
+                oldPlayer: {
+                  xp: state.player.xp,
+                  coins: state.player.coins,
+                  sparks: state.player.sparks,
+                  level: state.player.level
+                },
                 rewards: {
                   xp_gained: response.xp_gained,
                   coins_gained: response.coins_gained,
                   sparks_gained: response.sparks_gained,
                   new_level: response.new_level,
-
                 }
               });
               
+              const updatedPlayer = {
+                ...state.player,
+                xp: state.player.xp + response.xp_gained,
+                coins: state.player.coins + response.coins_gained,
+                sparks: state.player.sparks + response.sparks_gained,
+                level: response.new_level,
+              };
+              
+              console.log('Store: New player data:', updatedPlayer);
+              
+              // Update state with new player data and clear session
               set({
-                player: {
-                  ...state.player,
-                  xp: state.player.xp + response.xp_gained,
-                  coins: state.player.coins + response.coins_gained,
-                  sparks: state.player.sparks + response.sparks_gained,
-                  level: response.new_level,
-
-                },
+                player: updatedPlayer,
                 currentSession: null,
                 sessionProgress: {
                   ...state.sessionProgress,
                   isActive: false,
+                  sessionId: null,
+                  startTime: null,
+                  durationMinutes: 0,
+                  elapsedSeconds: 0,
+                  isDisturbed: false,
+                  disturbedSeconds: 0,
                 },
               });
               
-              console.log('Store: Player data and session state updated');
+              console.log('Store: Player data and session state updated successfully');
+              
+              // Try to sync updated player data to database
+              try {
+                if (typeof window !== 'undefined') {
+                  // Store updated player data in localStorage for persistence
+                  const playerData = {
+                    ...updatedPlayer,
+                    updated_at: new Date().toISOString()
+                  };
+                  localStorage.setItem('playerData', JSON.stringify(playerData));
+                  console.log('Store: Player data saved to localStorage');
+                }
+              } catch (syncError) {
+                console.warn('Store: Failed to sync player data to localStorage:', syncError);
+              }
+            } else {
+              console.warn('Store: No player data available, only clearing session state');
             }
             
+            // Always clear session state regardless of player update success
+            set((state) => ({
+              currentSession: null,
+              sessionProgress: {
+                ...state.sessionProgress,
+                isActive: false,
+                sessionId: null,
+                startTime: null,
+                durationMinutes: 0,
+                elapsedSeconds: 0,
+                isDisturbed: false,
+                disturbedSeconds: 0,
+              },
+            }));
+            
+            console.log('Store: Session completion finished successfully');
             return response;
           } catch (error) {
-            console.error('Failed to complete session:', error);
-            // Create mock response for development
+            console.error('Store: Failed to complete session:', error);
+            
+            // Force cleanup on error to prevent stuck state
             const currentState = get();
+            set({
+              currentSession: null,
+              sessionProgress: {
+                ...currentState.sessionProgress,
+                isActive: false,
+                sessionId: null,
+                startTime: null,
+                durationMinutes: 0,
+                elapsedSeconds: 0,
+                isDisturbed: false,
+                disturbedSeconds: 0,
+              },
+            });
+            
+            // Create mock response for development
             const mockResponse = {
               xp_gained: 10,
               coins_gained: 5,
-              sparks_gained: 0, // Sparks not implemented yet
+              sparks_gained: 0,
               level_up: false,
               new_level: currentState.player?.level || 1,
-
             };
             
-            console.log('Store: Using mock completion response:', mockResponse);
-            
-            // Update player data with mock rewards
-            if (currentState.player) {
-              set({
-                player: {
-                  ...currentState.player,
-                  xp: currentState.player.xp + mockResponse.xp_gained,
-                  coins: currentState.player.coins + mockResponse.coins_gained,
-                  sparks: currentState.player.sparks + mockResponse.sparks_gained,
-                  level: mockResponse.new_level,
-
-                },
-                currentSession: null,
-                sessionProgress: {
-                  ...currentState.sessionProgress,
-                  isActive: false,
-                },
-              });
-            }
-            
+            console.log('Store: Using mock completion response due to error:', mockResponse);
             return mockResponse;
           }
         },

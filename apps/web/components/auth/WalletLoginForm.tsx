@@ -27,6 +27,7 @@ export function WalletLoginForm() {
     signUpWithWallet,
     selectProvider,
     cancelProviderSelection,
+    isBaseApp,
   } = useWalletAuth();
 
   const handleConnect = async () => {
@@ -60,6 +61,10 @@ export function WalletLoginForm() {
   // Check if the form is valid for submission
   const isFormValid = true;
 
+  const shouldShowExternalWallets = () => {
+    return !isBaseApp;
+  };
+
   return (
     <div className="max-w-md mx-auto pixel-card p-1 sm:p-2 wallet-login-form">
       <h2 className="text-sm sm:text-base font-bold text-center mb-1 sm:mb-2 text-[#f2751a]">
@@ -72,11 +77,11 @@ export function WalletLoginForm() {
         </div>
       )}
 
-      {/* Wallet Provider Selection Modal */}
-      {showProviderSelection && (
+      {/* Wallet Provider Selection Modal - Only show for external wallets */}
+      {showProviderSelection && shouldShowExternalWallets() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-4 sm:p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto">
-            <h3 className="text-base sm:text-lg font-bold text-center mb-4 text-[#f2751a]">
+          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-4 max-w-xs w-full pixel-card">
+            <h3 className="text-[#f2751a] font-bold text-sm mb-2 text-center">
               Select Wallet Provider
             </h3>
             <p className="text-[#fbbf24] text-xs sm:text-sm mb-4 text-center">
@@ -119,20 +124,27 @@ export function WalletLoginForm() {
               ) : (
                 <>
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0zm6 0a2 2 0 114 0 2 2 0 01-4 0z" clipRule="evenodd" />
+                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a2 2 0 114 0 2 2 0 01-4 0z" clipRule="evenodd" />
                   </svg>
                   <span>
-                    {selectedProvider 
-                      ? `Connect ${selectedProvider}` 
-                      : 'Connect your Web3 Wallet'
+                    {isBaseApp 
+                      ? 'Connect Base App Wallet'
+                      : selectedProvider 
+                        ? `Connect ${selectedProvider}` 
+                        : 'Connect your Web3 Wallet'
                     }
                   </span>
                 </>
               )}
             </button>
-            {selectedProvider && (
+            {selectedProvider && shouldShowExternalWallets() && (
               <p className="text-xs text-[#fbbf24] mt-2 text-center">
                 Selected: {selectedProvider}
+              </p>
+            )}
+            {isBaseApp && (
+              <p className="text-xs text-[#fbbf24] mt-2 text-center">
+                Using Base App's built-in wallet
               </p>
             )}
           </div>
