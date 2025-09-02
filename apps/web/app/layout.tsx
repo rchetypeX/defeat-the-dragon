@@ -48,8 +48,8 @@ export function generateMetadata(): Metadata {
       images: [
         {
           url: '/icon-simple.png',
-          width: 192,
-          height: 192,
+          width: 172,
+          height: 172,
           alt: 'Defeat the Dragon: Focus RPG',
         },
       ],
