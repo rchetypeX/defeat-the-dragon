@@ -16,6 +16,7 @@ function ResetPasswordContent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(2);
   
   const router = useRouter();
 
@@ -110,18 +111,38 @@ function ResetPasswordContent() {
       if (error) {
         console.error('Password update error:', error);
         setError(error.message);
-      } else {
-        console.log('Password updated successfully');
-        setSuccess(true);
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-          router.push('/');
-        }, 3000);
+        setLoading(false);
+        return;
       }
+
+      console.log('Password updated successfully');
+      setSuccess(true);
+      setLoading(false); // Ensure loading is cleared immediately
+      
+      // Start countdown and redirect
+      let countdown = 2;
+      setRedirectCountdown(countdown);
+      
+      const countdownInterval = setInterval(() => {
+        countdown--;
+        setRedirectCountdown(countdown);
+        console.log(`Password reset: Redirecting in ${countdown} seconds...`);
+        
+        if (countdown <= 0) {
+          clearInterval(countdownInterval);
+          console.log('Password reset: Attempting automatic redirect...');
+          try {
+            router.push('/');
+          } catch (redirectError) {
+            console.error('Password reset: Redirect error:', redirectError);
+            setError('Password updated successfully, but automatic redirect failed. Please click the button below.');
+          }
+        }
+      }, 1000);
+      
     } catch (err: any) {
       console.error('Unexpected error during password update:', err);
       setError('An unexpected error occurred. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
@@ -191,14 +212,22 @@ function ResetPasswordContent() {
                   Password Reset Successful!
                 </h2>
                 <p className="text-[#fbbf24] text-sm mb-4">
-                  Your password has been updated successfully. You will be redirected to the login page in a few seconds.
+                  Your password has been updated successfully! Redirecting in <span className="font-bold text-[#f2751a]">{redirectCountdown}</span> seconds...
                 </p>
-                <button
-                  onClick={() => router.push('/')}
-                  className="pixel-button"
-                >
-                  Go to Login
-                </button>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => router.push('/')}
+                    className="w-full pixel-button"
+                  >
+                    Go to Login Now
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/'}
+                    className="w-full px-4 py-2 bg-[#654321] hover:bg-[#4a321a] transition-colors rounded text-white font-semibold"
+                  >
+                    Force Redirect (if stuck)
+                  </button>
+                </div>
               </div>
             ) : (
               <>
