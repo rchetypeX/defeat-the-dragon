@@ -8,6 +8,17 @@ const nextConfig = {
     outputFileTracingRoot: undefined,
   },
   
+  // Farcaster Mini App redirect to hosted manifest
+  async redirects() {
+    return [
+      {
+        source: '/.well-known/farcaster.json',
+        destination: 'https://api.farcaster.xyz/miniapps/hosted-manifest/019909b5-42c7-b640-de5b-7f959976e7ea',
+        permanent: false,
+      },
+    ];
+  },
+  
   // Add cache busting for static assets
   async headers() {
     return [
