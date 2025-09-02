@@ -855,11 +855,31 @@ export function useWalletAuth() {
 
       // Send to our API for verification and Supabase auth
       console.log('Sending signup request to API...');
+      
+      // Prepare headers with potential Farcaster metadata for Base App users
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Add Farcaster metadata if available for Base App users
+      if (isBaseApp && baseAppUser) {
+        if (baseAppUser.fid) {
+          headers['x-farcaster-fid'] = baseAppUser.fid.toString();
+          console.log('🔐 Adding Farcaster FID to signup request:', baseAppUser.fid);
+        }
+        if (baseAppUser.username) {
+          headers['x-farcaster-username'] = baseAppUser.username;
+          console.log('🔐 Adding Farcaster username to signup request:', baseAppUser.username);
+        }
+        if (baseAppUser.avatarUrl) {
+          headers['x-farcaster-avatar-url'] = baseAppUser.avatarUrl;
+          console.log('🔐 Adding Farcaster avatar URL to signup request:', baseAppUser.avatarUrl);
+        }
+      }
+      
       const response = await fetch('/api/auth/wallet-signup', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           address,
           email,

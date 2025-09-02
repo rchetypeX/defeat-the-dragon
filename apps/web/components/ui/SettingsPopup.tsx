@@ -340,7 +340,7 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
               rel="noopener noreferrer"
               className="text-[#fbbf24] hover:text-[#f2751a] transition-colors text-sm underline inline-flex items-center gap-1"
             >
-              <span>🐦</span>
+              <span>👁️</span>
               Follow @rchetypeX for app updates
             </a>
           </div>

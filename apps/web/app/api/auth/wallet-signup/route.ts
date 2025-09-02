@@ -107,13 +107,39 @@ export async function POST(request: NextRequest) {
     // Create a new Supabase user with the provided email
     console.log('Creating auth user with email:', email);
     
+    // Prepare user metadata with wallet and potential Farcaster data
+    const userMetadata: any = {
+      wallet_address: address.toLowerCase(),
+      display_name: displayName,
+    };
+    
+    // Check if this is a Base App user by looking for Farcaster context
+    // This would typically come from the request headers or context
+    const farcasterFid = request.headers.get('x-farcaster-fid');
+    const farcasterUsername = request.headers.get('x-farcaster-username');
+    const farcasterAvatarUrl = request.headers.get('x-farcaster-avatar-url');
+    
+    if (farcasterFid) {
+      userMetadata.farcaster_fid = farcasterFid;
+      console.log('Base App user detected with Farcaster FID:', farcasterFid);
+    }
+    
+    if (farcasterUsername) {
+      userMetadata.username = farcasterUsername;
+      console.log('Base App user detected with username:', farcasterUsername);
+    }
+    
+    if (farcasterAvatarUrl) {
+      userMetadata.avatar_url = farcasterAvatarUrl;
+      console.log('Base App user detected with avatar URL:', farcasterAvatarUrl);
+    }
+    
+    console.log('Creating user with metadata:', userMetadata);
+    
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: email,
       email_confirm: true,
-      user_metadata: {
-        wallet_address: address.toLowerCase(),
-        display_name: displayName,
-      },
+      user_metadata: userMetadata,
     });
 
     if (authError) {
