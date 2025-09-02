@@ -56,6 +56,13 @@ export function useWalletAuth() {
           if (context?.user) {
             setBaseAppUser(context.user);
             console.log('🔐 Base App user detected:', context.user);
+            
+            // For Base App users, set the wallet address from the Base App wallet
+            if (context.wallet?.address) {
+              setAddress(context.wallet.address);
+              setIsConnected(true);
+              console.log('🔐 Base App wallet connected:', context.wallet.address);
+            }
           }
         }
       } else {
@@ -91,7 +98,19 @@ export function useWalletAuth() {
   const checkIfWalletIsConnected = async () => {
     try {
       if (typeof window !== 'undefined') {
-        // Detect available wallet providers
+        // For Base App users, we don't need to check external wallets
+        if (isBaseApp && baseAppContext?.wallet?.address) {
+          console.log('🔐 Base App wallet already connected:', baseAppContext.wallet.address);
+          setAddress(baseAppContext.wallet.address);
+          setIsConnected(true);
+          // Check if this Base App user has an account
+          if (baseAppContext.user?.fid) {
+            await checkAccountExistsForBaseApp(baseAppContext.user.fid);
+          }
+          return;
+        }
+        
+        // For regular browser users, detect available wallet providers
         const providers = [];
         if (window.ethereum) {
           providers.push('MetaMask');
@@ -137,6 +156,16 @@ export function useWalletAuth() {
   // Get the selected provider
   const getProvider = () => {
     console.log('getProvider called with selectedProvider:', selectedProvider);
+    
+    // If we're in Base App, prioritize the Base App wallet
+    if (isBaseApp) {
+      const baseAppProvider = getBaseAppWalletProvider();
+      if (baseAppProvider) {
+        console.log('🔐 Using Base App wallet provider');
+        return baseAppProvider;
+      }
+    }
+    
     if (!selectedProvider) {
       console.log('No selectedProvider, returning window.ethereum');
       return window.ethereum;
@@ -192,6 +221,49 @@ export function useWalletAuth() {
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  // Get Base App wallet provider for signing transactions
+  const getBaseAppWalletProvider = () => {
+    if (!isBaseApp || !baseAppContext?.wallet) {
+      return null;
+    }
+    
+    // Return the Base App wallet provider
+    return {
+      request: async (method: string, params: any[]) => {
+        console.log('🔐 Base App wallet request:', method, params);
+        
+        // Handle different signing methods for Base App wallet
+        switch (method) {
+          case 'personal_sign':
+            // For Base App, we need to use the wallet's signing capabilities
+            if (baseAppContext.wallet?.signMessage) {
+              const [message, address] = params;
+              return await baseAppContext.wallet.signMessage(message);
+            }
+            break;
+          case 'eth_sign':
+            // Alternative signing method
+            if (baseAppContext.wallet?.signMessage) {
+              const [address, message] = params;
+              return await baseAppContext.wallet.signMessage(message);
+            }
+            break;
+          case 'eth_personalSign':
+            // Another alternative
+            if (baseAppContext.wallet?.signMessage) {
+              const [message, address] = params;
+              return await baseAppContext.wallet.signMessage(message);
+            }
+            break;
+          default:
+            console.warn('Unsupported Base App wallet method:', method);
+        }
+        
+        throw new Error(`Base App wallet method ${method} not supported`);
+      }
+    };
   };
 
   // Check if a Base App user has an existing account
@@ -374,7 +446,20 @@ export function useWalletAuth() {
       return;
     }
 
-    // Check for available providers
+    // For Base App users, use Base App authentication instead
+    if (isBaseApp) {
+      console.log('🔐 Base App user detected, using Base App authentication');
+      try {
+        await authenticateWithBaseApp();
+        return;
+      } catch (error) {
+        console.error('Base App authentication failed:', error);
+        setAuthError('Base App authentication failed. Please try again.');
+        return;
+      }
+    }
+
+    // Check for available providers (only for regular browser users)
     const providers = [];
     console.log('Checking for wallet providers...');
     console.log('window.ethereum:', !!window.ethereum);
@@ -593,7 +678,8 @@ export function useWalletAuth() {
         throw new Error('No wallet provider available');
       }
       
-      console.log('Requesting signature from wallet...');
+            console.log('Requesting signature from wallet...');
+      console.log('Provider type:', isBaseApp ? 'Base App Wallet' : 'External Wallet');
       
       let signature;
       try {
@@ -623,7 +709,7 @@ export function useWalletAuth() {
               params: [message, address],
             });
             console.log('Signature received using eth_personalSign:', signature);
-          } catch (finalError) {
+        } catch (finalError) {
             console.error('All signature methods failed:', finalError);
             throw new Error('Wallet signature failed. Please try a different wallet or contact support.');
           }
@@ -726,6 +812,7 @@ export function useWalletAuth() {
       }
       
       console.log('Requesting signature from wallet...');
+      console.log('Provider type:', isBaseApp ? 'Base App Wallet' : 'External Wallet');
       
       let signature;
       try {
