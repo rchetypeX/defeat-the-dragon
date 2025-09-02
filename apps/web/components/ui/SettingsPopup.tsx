@@ -344,6 +344,22 @@ export const SettingsPopup: React.FC<SettingsPopupProps> = ({ isOpen, onClose })
               Follow @rchetypeX for app updates
             </a>
           </div>
+
+          {/* rchetypeX Logo */}
+          <div className="mt-4 pt-4 border-t border-[#8b4513]">
+            <a
+              href="https://rchetype.xyz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block hover:opacity-80 transition-opacity"
+            >
+              <img
+                src="/rchetypex.png"
+                alt="rchetypeX"
+                className="mx-auto h-8 w-auto"
+              />
+            </a>
+          </div>
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSIWF } from '../contexts/SIWFContext';
 import { useGameStore } from '../lib/store';
 import { LoginForm } from '../components/auth/LoginForm';
 import { SignUpForm } from '../components/auth/SignUpForm';
@@ -35,7 +36,15 @@ function HomePageLoading() {
 // Main component that uses useSearchParams
 function HomePageContent() {
   const { user, loading } = useAuth();
-  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet'>('wallet');
+  const { 
+    isAuthenticated: isSIWFAuthenticated, 
+    user: siwfUser, 
+    isLoading: isSIWFLoading,
+    isBaseApp: isSIWFBaseApp,
+    isFarcaster: isSIWFFarcaster
+  } = useSIWF();
+  
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet' | 'siwf'>('wallet');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
   const [walletKey, setWalletKey] = useState(0); // Key to force remount of WalletLoginForm
@@ -128,13 +137,30 @@ function HomePageContent() {
     }
   }, [isBaseAppAuthenticated, verifiedUser, user]);
 
+  // Handle SIWF authentication and platform detection
+  useEffect(() => {
+    // Auto-detect platform and set auth mode
+    if (isSIWFBaseApp || isSIWFFarcaster) {
+      console.log('🔍 Platform detected:', { isSIWFBaseApp, isSIWFFarcaster });
+      setAuthMode('siwf');
+    }
+  }, [isSIWFBaseApp, isSIWFFarcaster]);
+
+  // Redirect SIWF users to dedicated auth page
+  useEffect(() => {
+    if ((isSIWFBaseApp || isSIWFFarcaster) && !isSIWFAuthenticated && !user) {
+      console.log('🔄 Redirecting SIWF user to auth page');
+      window.location.href = '/auth/siwf';
+    }
+  }, [isSIWFBaseApp, isSIWFFarcaster, isSIWFAuthenticated, user]);
+
   // Show loading state while authentication is being determined
-  if (loading || isBaseAppLoading) {
+  if (loading || isBaseAppLoading || isSIWFLoading) {
     return <HomePageLoading />;
   }
 
   // User is not authenticated - show authentication options
-  if (!user && !verifiedUser && !isBaseAppAuthenticated) {
+  if (!user && !verifiedUser && !isBaseAppAuthenticated && !isSIWFAuthenticated) {
     return (
       <ContextAwareLayout>
         <EntryPointExperience>
@@ -209,6 +235,18 @@ function HomePageContent() {
                     >
                       Sign Up
                     </button>
+                    {(isSIWFBaseApp || isSIWFFarcaster) && (
+                      <button
+                        onClick={() => setAuthMode('siwf')}
+                        className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                          authMode === 'siwf'
+                            ? 'bg-purple-500 text-white'
+                            : 'text-gray-300 hover:text-white'
+                        }`}
+                      >
+                        🔮 Farcaster
+                      </button>
+                    )}
                   </div>
 
                   {/* Authentication Forms */}
@@ -224,6 +262,33 @@ function HomePageContent() {
                   
                   {authMode === 'signup' && (
                     <SignUpForm />
+                  )}
+
+                  {authMode === 'siwf' && (
+                    <div className="text-center py-8">
+                      <div className="mb-4">
+                        <div className="w-16 h-16 bg-purple-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                          <span className="text-2xl">🔮</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">
+                          Sign in with Farcaster
+                        </h3>
+                        <p className="text-gray-300 text-sm mb-6">
+                          {isSIWFBaseApp ? 'Base App detected' : 'Farcaster detected'}
+                        </p>
+                      </div>
+                      
+                      <button
+                        onClick={() => window.location.href = '/auth/siwf'}
+                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                      >
+                        Continue to Farcaster Auth
+                      </button>
+                      
+                      <p className="text-gray-400 text-xs mt-3">
+                        You'll be redirected to our dedicated Farcaster authentication page
+                      </p>
+                    </div>
                   )}
                 </div>
 

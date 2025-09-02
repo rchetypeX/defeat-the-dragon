@@ -226,6 +226,22 @@ export function WalletLoginForm() {
         )}
       </div>
 
+      {/* rchetypeX Logo */}
+      <div className="mt-6 text-center">
+        <a
+          href="https://rchetype.xyz"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block hover:opacity-80 transition-opacity"
+        >
+          <img
+            src="/rchetypex.png"
+            alt="rchetypeX"
+            className="mx-auto h-8 w-auto"
+          />
+        </a>
+      </div>
+
       {/* Wallet Signup Modal */}
       {showSignupForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

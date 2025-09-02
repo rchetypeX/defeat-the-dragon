@@ -147,6 +147,22 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
           </button>
         </div>
       </form>
+
+      {/* rchetypeX Logo */}
+      <div className="mt-4 text-center">
+        <a
+          href="https://rchetype.xyz"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block hover:opacity-80 transition-opacity"
+        >
+          <img
+            src="/rchetypex.png"
+            alt="rchetypeX"
+            className="mx-auto h-6 w-auto"
+          />
+        </a>
+      </div>
     </div>
   );
 }

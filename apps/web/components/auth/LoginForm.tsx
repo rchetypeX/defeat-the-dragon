@@ -108,15 +108,19 @@ export function LoginForm() {
         </button>
       </div>
 
-      {/* External Links */}
-      <div className="mt-4 text-center">
+      {/* rchetypeX Logo */}
+      <div className="mt-6 text-center">
         <a
           href="https://rchetype.xyz"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#fbbf24] hover:text-[#f2751a] transition-colors text-sm underline block"
+          className="inline-block hover:opacity-80 transition-opacity"
         >
-          Visit rchetype.xyz
+          <img
+            src="/rchetypex.png"
+            alt="rchetypeX"
+            className="mx-auto h-8 w-auto"
+          />
         </a>
       </div>
 

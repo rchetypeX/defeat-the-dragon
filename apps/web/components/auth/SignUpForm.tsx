@@ -198,6 +198,22 @@ export function SignUpForm() {
            'Start Adventure'}
         </button>
       </form>
+
+      {/* rchetypeX Logo */}
+      <div className="mt-6 text-center">
+        <a
+          href="https://rchetype.xyz"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block hover:opacity-80 transition-opacity"
+        >
+          <img
+            src="/rchetypex.png"
+            alt="rchetypeX"
+            className="mx-auto h-8 w-auto"
+          />
+        </a>
+      </div>
     </div>
   );
 }

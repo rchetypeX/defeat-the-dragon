@@ -5,6 +5,7 @@ import './mobile-first.css';
 import { AudioProvider } from '../contexts/AudioContext';
 import { AuthProvider } from '../contexts/AuthContext';
 import { InventoryProvider } from '../contexts/InventoryContext';
+import { SIWFProvider } from '../contexts/SIWFContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
 
 
@@ -111,15 +112,17 @@ export default function RootLayout({
         <meta name="twitter:site" content="@yourusername" />
       </head>
       <body className={inter.className}>
-        <AuthProvider>
-          <InventoryProvider>
-            <MiniKitContextProvider>
-              <AudioProvider>
-                {children}
-              </AudioProvider>
-            </MiniKitContextProvider>
-          </InventoryProvider>
-        </AuthProvider>
+        <SIWFProvider>
+          <AuthProvider>
+            <InventoryProvider>
+              <MiniKitContextProvider>
+                <AudioProvider>
+                  {children}
+                </AudioProvider>
+              </MiniKitContextProvider>
+            </InventoryProvider>
+          </AuthProvider>
+        </SIWFProvider>
       </body>
     </html>
   );
