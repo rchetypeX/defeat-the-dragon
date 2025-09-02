@@ -352,6 +352,23 @@ input:focus, textarea:focus, select:focus {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  /* Ensure consistent positioning and scaling across all character types */
+  display: block;
+  margin: 0 auto;
+}
+
+/* Ensure all character sprites have consistent scaling */
+.character-dynamic[src*="fighter"],
+.character-dynamic[src*="wizard"],
+.character-dynamic[src*="paladin"],
+.character-dynamic[src*="rogue"] {
+  /* All character sprites should scale identically */
+  max-width: min(98vw, 1200px);
+  max-height: min(98vw, 1200px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
 }
 
 /* Character Dialogue Positioning - Adjusted for much bigger character */

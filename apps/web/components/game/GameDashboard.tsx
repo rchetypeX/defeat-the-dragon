@@ -493,8 +493,8 @@ export function GameDashboard() {
         {/* Central Character Area - Hidden during Focus Session */}
         {!sessionProgress.isActive && !showSessionTimer && !sessionResult && !showSettings && !showShop && !showInventory && !showAudioControls && (
           <div className="flex-1 flex items-center justify-center relative px-4">
-                            {/* Character positioned lower mid-center with much better scaling and positioning */}
-                <div className="relative z-5 transform translate-y-32 sm:translate-y-40">
+            {/* Character positioned in center with consistent scaling and positioning */}
+            <div className="relative z-5">
               <img 
                 src={getCharacterImage(equippedCharacter)} 
                 alt="Tiny Adventurer" 

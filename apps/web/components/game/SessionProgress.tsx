@@ -346,15 +346,15 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
       </div>
 
        {/* Character - Positioned in the center with much bigger size like reference image */}
-       <div className="fixed left-1/2 transform -translate-x-1/2 top-1/2 transform -translate-y-1/4 z-50 overflow-hidden" style={{ pointerEvents: 'none' }}>
+       <div className="fixed left-1/2 transform -translate-x-1/2 top-1/2 transform -translate-y-1/2 z-50 overflow-hidden" style={{ pointerEvents: 'none' }}>
          <img 
            src={getCharacterImage(equippedCharacter)} 
            alt="Tiny Adventurer" 
-           className="w-96 h-[28rem] sm:w-[32rem] sm:h-[36rem] lg:w-[40rem] lg:h-[44rem] pixel-art drop-shadow-lg object-contain"
+           className="character-dynamic pixel-art drop-shadow-lg object-contain"
            style={{
              imageRendering: 'pixelated',
              objectPosition: 'center bottom',
-             objectFit: 'cover',
+             objectFit: 'contain',
              height: '100%',
              width: '100%'
            }}

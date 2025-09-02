@@ -48,11 +48,11 @@ export function SuccessMessage({
       {/* Full Screen Overlay */}
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         {/* Large Character in Center - Much bigger like reference image */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 bottom-1/6 z-10">
+        <div className="absolute left-1/2 transform -translate-x-1/2 top-1/2 transform -translate-y-1/2 z-10">
           <img 
             src={getCharacterImage(equippedCharacter)} 
             alt="Tiny Adventurer" 
-            className="w-96 h-[28rem] sm:w-[32rem] sm:h-[36rem] lg:w-[40rem] lg:h-[44rem] pixel-art drop-shadow-lg"
+            className="character-dynamic pixel-art drop-shadow-lg"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}
