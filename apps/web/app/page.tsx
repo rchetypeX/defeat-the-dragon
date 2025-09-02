@@ -16,6 +16,7 @@ import { useBaseAppAuth } from '../hooks/useBaseAppAuth';
 import { useContextAware } from '../hooks/useContextAware';
 import { AddMiniAppPrompt } from '../components/AddMiniAppPrompt';
 import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 import { EntryPointExperience } from '../components/context/EntryPointExperience';
 
@@ -63,6 +64,18 @@ function HomePageContent() {
     if (!isFrameReady) {
       setFrameReady();
     }
+    
+    // Call Farcaster SDK ready action
+    const initializeFarcaster = async () => {
+      try {
+        await sdk.actions.ready();
+        console.log('✅ Farcaster Mini App ready');
+      } catch (error) {
+        console.error('❌ Farcaster SDK ready failed:', error);
+      }
+    };
+    
+    initializeFarcaster();
   }, [isFrameReady, setFrameReady]);
 
   // Log authentication status for development

@@ -21,9 +21,9 @@ export async function GET(request: Request) {
       },
       miniapp: withValidProperties({
         version: '1',
-        name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon',
-        subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE || 'Pomodoro-style Focus RPG',
-        description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'Level up your productivity with this pixel-art Pomodoro RPG',
+        name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon: Focus RPG',
+        subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE || 'Focus RPG',
+        description: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'A Pomodoro-style Focus RPG that gamifies productivity',
         screenshotUrls: [
           `${URL.replace(/\/$/, '')}/screenshots/gameplay-1.png`,
           `${URL.replace(/\/$/, '')}/screenshots/focus-session.png`,
@@ -31,16 +31,16 @@ export async function GET(request: Request) {
         ],
         iconUrl: process.env.NEXT_PUBLIC_APP_ICON || `${URL}/icon.png`,
         splashImageUrl: process.env.NEXT_PUBLIC_APP_SPLASH_IMAGE || `${URL}/icon.png`,
-        splashBackgroundColor: process.env.NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR || '#221afe',
+        splashBackgroundColor: '#060945',
         homeUrl: URL,
         castShareUrl: `${URL}/share`,
         webhookUrl: `${URL}/api/webhook`,
-        primaryCategory: process.env.NEXT_PUBLIC_APP_PRIMARY_CATEGORY || 'gaming',
-        tags: ['productivity', 'pomodoro', 'rpg', 'focus', 'gamification'],
+        primaryCategory: 'games',
+        tags: ['focus', 'rpg', 'pomodoro', 'productivity', 'dragon'],
         heroImageUrl: process.env.NEXT_PUBLIC_APP_HERO_IMAGE || `${URL}/og-image.webp`,
         tagline: process.env.NEXT_PUBLIC_APP_TAGLINE || 'Turn focus into adventure!',
-        ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || 'Defeat the Dragon - Focus RPG',
-        ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION || 'Level up your productivity with this pixel-art Pomodoro RPG',
+        ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || 'Defeat the Dragon: Focus RPG',
+        ogDescription: process.env.NEXT_PUBLIC_APP_OG_DESCRIPTION || 'A Pomodoro-style Focus RPG that gamifies productivity',
         ogImageUrl: process.env.NEXT_PUBLIC_APP_OG_IMAGE || `${URL}/og-image.webp`,
         // Required capabilities for wallet integration
         requiredCapabilities: [
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
       }),
               // Set to true for testing, false for production
         // IMPORTANT: Set to false for production to enable search indexing
-        noindex: process.env.NODE_ENV === 'development' || process.env.FARCASTER_NOINDEX === 'true',
+        noindex: process.env.NODE_ENV === 'development' || process.env.FARCASTER_NOINDEX === 'false',
     };
 
     return Response.json(manifest);

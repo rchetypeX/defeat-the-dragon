@@ -40,29 +40,44 @@ export function generateMetadata(): Metadata {
       statusBarStyle: 'default',
       title: 'Defeat the Dragon: Focus RPG',
     },
-          openGraph: {
-        title: 'Defeat the Dragon: Focus RPG',
-        description: 'A Pomodoro-style Focus RPG that gamifies productivity',
-        url: 'https://dtd.rchetype.xyz/',
-        siteName: 'Defeat the Dragon: Focus RPG',
-        images: [
-          {
-            url: 'https://dtd.rchetype.xyz/og-image.webp',
-            width: 1200,
-            height: 630,
-            alt: 'Defeat the Dragon: Focus RPG',
-          },
-        ],
-        locale: 'en_US',
-        type: 'website',
-      },
-          twitter: {
-        card: 'summary_large_image',
-        title: 'Defeat the Dragon: Focus RPG',
-        description: 'A Pomodoro-style Focus RPG that gamifies productivity',
-        images: ['https://dtd.rchetype.xyz/og-image.webp'],
-      },
-
+    openGraph: {
+      title: 'Defeat the Dragon: Focus RPG',
+      description: 'A Pomodoro-style Focus RPG that gamifies productivity',
+      url: 'https://dtd.rchetype.xyz/',
+      siteName: 'Defeat the Dragon: Focus RPG',
+      images: [
+        {
+          url: 'https://dtd.rchetype.xyz/og-image.webp',
+          width: 1200,
+          height: 630,
+          alt: 'Defeat the Dragon: Focus RPG',
+        },
+      ],
+      locale: 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Defeat the Dragon: Focus RPG',
+      description: 'A Pomodoro-style Focus RPG that gamifies productivity',
+      images: ['https://dtd.rchetype.xyz/og-image.webp'],
+    },
+    other: {
+      "fc:miniapp": JSON.stringify({
+        version: "1",
+        imageUrl: "https://dtd.rchetype.xyz/og-image.webp",
+        button: {
+          title: "Start Adventure",
+          action: {
+            type: "launch_frame",
+            name: "Defeat the Dragon: Focus RPG",
+            url: "https://dtd.rchetype.xyz",
+            splashImageUrl: "https://dtd.rchetype.xyz/icon.png",
+            splashBackgroundColor: "#060945"
+          }
+        }
+      })
+    }
   };
 }
 
