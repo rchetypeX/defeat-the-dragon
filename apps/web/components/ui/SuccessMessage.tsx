@@ -48,7 +48,7 @@ export function SuccessMessage({
       {/* Full Screen Overlay */}
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         {/* Large Character in Center - Much bigger like reference image */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 bottom-1/3 z-10">
+        <div className="absolute left-1/2 transform -translate-x-1/2 bottom-1/6 z-10">
           <img 
             src={getCharacterImage(equippedCharacter)} 
             alt="Tiny Adventurer" 
