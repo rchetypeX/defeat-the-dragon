@@ -174,6 +174,18 @@ export function GameDashboard() {
     }
   }, [sessionProgress.isActive, isSessionActive, setSessionActive]);
 
+  // Debug session state changes
+  useEffect(() => {
+    console.log('GameDashboard: Session state changed:', {
+      isActive: sessionProgress.isActive,
+      sessionId: sessionProgress.sessionId,
+      startTime: sessionProgress.startTime,
+      durationMinutes: sessionProgress.durationMinutes,
+      isDisturbed: sessionProgress.isDisturbed,
+      disturbedSeconds: sessionProgress.disturbedSeconds
+    });
+  }, [sessionProgress.isActive, sessionProgress.sessionId, sessionProgress.startTime, sessionProgress.durationMinutes, sessionProgress.isDisturbed, sessionProgress.disturbedSeconds]);
+
   const handleSessionStart = async (action: Action, durationMinutes: number) => {
     console.log('GameDashboard: handleSessionStart called');
     try {

@@ -268,16 +268,32 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
           softShieldRef.current.stop();
         }
         
+        console.log('SessionProgress: Timer reached zero, checking session state:', {
+          isDisturbed: sessionProgress.isDisturbed,
+          disturbedSeconds: sessionProgress.disturbedSeconds,
+          onSessionComplete: !!onSessionComplete,
+          onSessionFail: !!onSessionFail
+        });
+        
         // Check if session was disturbed
         if (sessionProgress.isDisturbed) {
-          console.log('SessionProgress: Timer reached zero but session was disturbed, calling onSessionFail');
+          console.log('SessionProgress: Session was disturbed, calling onSessionFail');
           // Send session failed notification
           showSessionFailed(sessionProgress.disturbedSeconds, sessionProgress.durationMinutes || 0);
-          onSessionFail();
+          try {
+            onSessionFail();
+            console.log('SessionProgress: onSessionFail called successfully');
+          } catch (error) {
+            console.error('SessionProgress: Error calling onSessionFail:', error);
+          }
         } else {
-          console.log('SessionProgress: Timer reached zero, calling onSessionComplete');
-          // Session completed successfully - notification will be handled by onSessionComplete
-          onSessionComplete();
+          console.log('SessionProgress: Session completed successfully, calling onSessionComplete');
+          try {
+            onSessionComplete();
+            console.log('SessionProgress: onSessionComplete called successfully');
+          } catch (error) {
+            console.error('SessionProgress: Error calling onSessionComplete:', error);
+          }
         }
       }
     }, 1000);
