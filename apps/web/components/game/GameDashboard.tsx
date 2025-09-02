@@ -17,7 +17,6 @@ import { useCharacterStore } from '../../lib/characterStore';
 import { useBackgroundStore } from '../../lib/backgroundStore';
 import { CharacterDialogue } from './CharacterDialogue';
 import { useDataSync } from '../../hooks/useDataSync';
-import { usePrimaryButton } from '@coinbase/onchainkit/minikit';
 import { AdventurerNamePrompt } from '../auth/AdventurerNamePrompt';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -156,51 +155,8 @@ export function GameDashboard() {
   //   });
   // }, [showSessionTimer, sessionResult, showSettings, showShop, showInventory, showAudioControls, sessionProgress.isActive]);
 
-  // Primary Button Configuration
-  const getPrimaryButtonConfig = useCallback(() => {
-    if (sessionProgress.isActive) {
-      return {
-        text: 'PAUSE SESSION',
-        action: () => {
-          // Handle pause session logic
-          console.log('Primary button: Pause session clicked');
-          // TODO: Implement pause session functionality
-        }
-      };
-    } else if (sessionResult) {
-      return {
-        text: 'CONTINUE FOCUSING',
-        action: () => {
-          console.log('Primary button: Continue focusing clicked');
-          handleDismissSuccess();
-        }
-      };
-    } else if (showSessionTimer) {
-      return {
-        text: 'START FOCUS SESSION',
-        action: () => {
-          console.log('Primary button: Start focus session clicked');
-          // This will be handled by the SessionTimer component
-        }
-      };
-    } else {
-      return {
-        text: 'START FOCUSING',
-        action: () => {
-          console.log('Primary button: Start focusing clicked');
-          setShowSessionTimer(true);
-        }
-      };
-    }
-  }, [sessionProgress.isActive, sessionResult, showSessionTimer]);
-
-  const primaryButtonConfig = getPrimaryButtonConfig();
-
-  // Configure primary button based on game state - show nothing when player is not loaded
-  usePrimaryButton(
-    { text: player ? primaryButtonConfig.text : '' },
-    player ? primaryButtonConfig.action : () => {}
-  );
+  // Primary Button functionality removed to prevent platform interference
+  // All actions are now handled through in-app UI buttons
 
   useEffect(() => {
     // Notification system is now handled by useBaseAppNotifications hook
@@ -492,9 +448,9 @@ export function GameDashboard() {
         
         {/* Central Character Area - Hidden during Focus Session */}
         {!sessionProgress.isActive && !showSessionTimer && !sessionResult && !showSettings && !showShop && !showInventory && !showAudioControls && (
-          <div className="flex-1 flex items-center justify-center relative px-4">
-            {/* Character positioned in center with consistent scaling and positioning */}
-            <div className="relative z-5">
+          <div className="flex-1 flex items-end justify-center relative px-4 pb-8">
+            {/* Character positioned lower with consistent scaling and positioning */}
+            <div className="relative z-5 transform translate-y-8">
               <img 
                 src={getCharacterImage(equippedCharacter)} 
                 alt="Tiny Adventurer" 

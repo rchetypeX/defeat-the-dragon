@@ -374,7 +374,7 @@ input:focus, textarea:focus, select:focus {
 /* Character Dialogue Positioning - Adjusted for much bigger character */
 .character-dialogue {
   position: absolute;
-  bottom: 12rem;  /* Much lower to avoid covering UI elements */
+  bottom: 8rem;  /* Lower positioning to avoid covering UI elements */
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -384,26 +384,45 @@ input:focus, textarea:focus, select:focus {
 
 @media (min-width: 640px) {
   .character-dialogue {
-    bottom: 14rem;  /* Much lower on tablets */
+    bottom: 10rem;  /* Lower on tablets */
     max-width: 80vw;
   }
 }
 
 @media (min-width: 768px) {
   .character-dialogue {
-    bottom: 16rem;  /* Much lower on desktop */
+    bottom: 12rem;  /* Lower on desktop */
     max-width: 70vw;
+  }
+}
+
+@media (min-width: 1024px) {
+  .character-dialogue {
+    bottom: 14rem;  /* Even lower on large screens */
+    max-width: 60vw;
   }
 }
 
 /* Focus Button Positioning */
 .focus-button-container {
-  padding-bottom: 8rem;  /* Increased to accommodate much bigger character and dialogue */
+  padding-bottom: 6rem;  /* Reduced to accommodate lower positioning */
 }
 
 @media (min-width: 640px) {
   .focus-button-container {
-    padding-bottom: 10rem;  /* Increased to accommodate much bigger character and dialogue */
+    padding-bottom: 8rem;  /* Reduced on tablets */
+  }
+}
+
+@media (min-width: 768px) {
+  .focus-button-container {
+    padding-bottom: 10rem;  /* Reduced on desktop */
+  }
+}
+
+@media (min-width: 1024px) {
+  .focus-button-container {
+    padding-bottom: 12rem;  /* Reduced on large screens */
   }
 }
 
@@ -1614,4 +1633,25 @@ html, body {
   .focus-session-dialogue .text-content {
     font-size: 1.125rem;
   }
+}
+
+/* Wallet Signup Form Text Visibility Fixes */
+.wallet-signup-form {
+  color: #f5f5dc !important;
+}
+
+.wallet-signup-form label {
+  color: #fbbf24 !important;
+  font-weight: 600 !important;
+}
+
+.wallet-signup-form input {
+  color: #f5f5dc !important;
+  background-color: #2d1b0e !important;
+  border-color: #8b4513 !important;
+}
+
+.wallet-signup-form input:focus {
+  border-color: #f2751a !important;
+  box-shadow: 0 0 0 3px rgba(242, 117, 26, 0.3) !important;
 }

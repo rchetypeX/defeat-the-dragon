@@ -25,7 +25,6 @@ export const SUPPORTED_CHAINS = [
 // Currently unsupported features
 export const UNSUPPORTED_FEATURES = [
   'notifications',           // Notifications not yet supported
-  'addMiniApp',             // .addMiniApp() action
   'requestCameraAndMicrophoneAccess', // Camera/microphone access
 ];
 
@@ -36,7 +35,6 @@ export interface BaseAppCompatibilityInfo {
   
   // Feature support
   supportsNotifications: boolean;
-  supportsMiniAppActions: boolean;
   supportsCameraAccess: boolean;
   
   // Wallet integration
@@ -90,7 +88,6 @@ export function useBaseAppCompatibility(): BaseAppCompatibilityInfo {
   
   // Feature support (based on current Base App capabilities)
   const supportsNotifications = false; // Not yet supported
-  const supportsMiniAppActions = false; // ETA 8/28
   const supportsCameraAccess = false; // ETA 8/28
   
   // Wallet integration support
@@ -110,7 +107,6 @@ export function useBaseAppCompatibility(): BaseAppCompatibilityInfo {
     
     // Feature support
     supportsNotifications,
-    supportsMiniAppActions,
     supportsCameraAccess,
     
     // Wallet integration
@@ -211,7 +207,6 @@ export function logBaseAppCompatibility(): void {
       hostname: compatibility.hostname,
       supportedFeatures: {
         notifications: compatibility.supportsNotifications,
-        miniAppActions: compatibility.supportsMiniAppActions,
         cameraAccess: compatibility.supportsCameraAccess,
         openUrl: compatibility.supportsOpenUrl,
         composeCast: compatibility.supportsComposeCast,
@@ -361,7 +356,6 @@ export const BASE_APP_DEVELOPMENT_NOTES = {
   // Feature support timeline
   timeline: {
     'notifications': 'Coming soon',
-    'addMiniApp': 'ETA 8/28',
     'requestCameraAndMicrophoneAccess': 'ETA 8/28',
   },
   

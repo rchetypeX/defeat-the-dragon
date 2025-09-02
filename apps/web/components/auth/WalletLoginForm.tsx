@@ -153,7 +153,7 @@ export function WalletLoginForm() {
               
               {/* Current wallet address - more compact */}
               <div className="mb-2">
-                <p className="text-xs text-white font-mono break-all wallet-address">
+                <p className="text-xs text-[#f5f5dc] font-mono break-all wallet-address font-semibold bg-[#2d1b0e] p-1 rounded border border-[#654321]">
                   {address}
                 </p>
               </div>
@@ -172,7 +172,7 @@ export function WalletLoginForm() {
                       }
                     }}
                     disabled={isSwitchingWallet}
-                    className="w-full bg-[#2d1b0e] border border-[#8b4513] rounded px-1 py-0.5 text-white text-xs wallet-address"
+                    className="w-full bg-[#2d1b0e] border border-[#8b4513] rounded px-1 py-0.5 text-[#f5f5dc] text-xs wallet-address font-medium"
                   >
                     {availableAccounts.map((acc) => (
                       <option key={acc} value={acc}>
@@ -244,8 +244,8 @@ export function WalletLoginForm() {
 
       {/* Wallet Signup Modal */}
       {showSignupForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-4 max-w-sm w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#2d1b0e] border-2 border-[#8b4513] rounded-lg p-6 max-w-md w-full shadow-2xl">
             <WalletSignupForm
               onSuccess={() => {
                 setShowSignupForm(false);

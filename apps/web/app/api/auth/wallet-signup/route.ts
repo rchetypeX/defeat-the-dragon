@@ -11,6 +11,35 @@ export async function POST(request: NextRequest) {
   let timeoutId: NodeJS.Timeout | undefined;
   
   try {
+    console.log('Wallet signup API called');
+    
+    // Test database connection
+    console.log('Testing database connection...');
+    console.log('SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL ? 'Set' : 'Missing');
+    console.log('SERVICE_ROLE_KEY:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Missing');
+    
+    try {
+      const { data: testData, error: testError } = await supabase
+        .from('players')
+        .select('count')
+        .limit(1);
+      
+      if (testError) {
+        console.error('Database connection test failed:', testError);
+        return NextResponse.json(
+          { error: 'Database connection failed' },
+          { status: 500 }
+        );
+      }
+      console.log('Database connection test successful');
+    } catch (error) {
+      console.error('Database connection test error:', error);
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
+    
     // Add timeout and better error handling
     const controller = new AbortController();
     timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
@@ -98,9 +127,11 @@ export async function POST(request: NextRequest) {
     console.log('Auth user created successfully:', authUser.user.id);
 
     // Wait a moment for the trigger to execute, then check if player record was created
+    console.log('Waiting for trigger to execute...');
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Check if player record was already created by the trigger
+    console.log('Checking if player record was created by trigger...');
     const { data: existingPlayer, error: checkError } = await supabase
       .from('players')
       .select('*')
@@ -141,6 +172,15 @@ export async function POST(request: NextRequest) {
     } else {
       // Trigger failed or didn't execute, create player record manually
       console.log('Player record not created by trigger, creating manually');
+      console.log('Trigger may have failed. Checking auth.users table...');
+      
+      // Let's check if the user was actually created in auth.users
+      const { data: authUserCheck, error: authCheckError } = await supabase.auth.admin.getUserById(authUser.user.id);
+      if (authCheckError) {
+        console.error('Error checking auth user:', authCheckError);
+      } else {
+        console.log('Auth user exists:', authUserCheck.user);
+      }
       
       const playerResult = await supabase
         .from('players')
@@ -160,6 +200,7 @@ export async function POST(request: NextRequest) {
 
       if (playerResult.error) {
         // Clean up the auth user if player creation fails
+        console.error('Player creation failed, cleaning up auth user...');
         await supabase.auth.admin.deleteUser(authUser.user.id);
         console.error('Player creation error:', playerResult.error);
         console.error('Error details:', {

@@ -76,21 +76,21 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 wallet-signup-form">
       <div className="text-center">
         <h3 className="text-lg font-semibold text-[#fbbf24] mb-2">🔗 Wallet Signup</h3>
         
         {/* Connected Wallet Display */}
-        <div className="bg-[#1a1a2e] p-2 border border-[#654321] rounded mb-3">
-          <p className="text-xs text-[#fbbf24] mb-1">Connected Wallet:</p>
-          <p className="text-xs text-white font-mono break-all font-medium">{address}</p>
-          <p className="text-xs text-white mt-1">Display Name: {displayName}</p>
+        <div className="bg-[#2d1b0e] p-3 border-2 border-[#8b4513] rounded mb-3">
+          <p className="text-sm text-[#fbbf24] mb-2 font-medium">Connected Wallet:</p>
+          <p className="text-sm text-[#f5f5dc] font-mono break-all font-semibold bg-[#1a1a2e] p-2 rounded border border-[#654321]">{address}</p>
+          <p className="text-sm text-[#f5f5dc] mt-2 font-medium">Display Name: <span className="text-[#fbbf24] font-semibold">{displayName}</span></p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-white mb-1">
+          <label htmlFor="email" className="block text-sm font-semibold text-[#fbbf24] mb-2">
             Email Address <span className="text-red-400">*</span>
           </label>
           <input
@@ -98,7 +98,7 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
             id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={`w-full px-3 py-2 bg-[#1a1a2e] border rounded text-white placeholder-gray-200 focus:outline-none focus:border-[#f2751a] ${
+            className={`w-full px-3 py-2 bg-[#2d1b0e] border-2 rounded text-[#f5f5dc] placeholder-[#a0a0a0] focus:outline-none focus:border-[#f2751a] focus:ring-2 focus:ring-[#f2751a] focus:ring-opacity-50 ${
               email && !isEmailValid ? 'border-red-500' : 'border-[#8b4513]'
             }`}
             placeholder="Enter your email address"
@@ -106,35 +106,35 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
             disabled={isLoading}
           />
           {email && !isEmailValid && (
-            <p className="text-xs text-red-400 mt-1">Please enter a valid email address</p>
+            <p className="text-xs text-red-400 mt-1 font-medium">Please enter a valid email address</p>
           )}
         </div>
 
         {error && (
-          <div className="bg-[#ef4444] text-white p-2 border-2 border-white text-sm rounded font-medium">
+          <div className="bg-[#ef4444] text-white p-3 border-2 border-white text-sm rounded font-semibold">
             {error}
           </div>
         )}
 
         {walletAuthError && (
-          <div className="bg-[#ef4444] text-white p-2 border-2 border-white text-sm rounded font-medium">
+          <div className="bg-[#ef4444] text-white p-3 border-2 border-white text-sm rounded font-semibold">
             {walletAuthError}
           </div>
         )}
 
-        <div className="flex gap-3 pt-1">
+        <div className="flex gap-3 pt-2">
           <button
             type="button"
             onClick={handleCancel}
             disabled={isLoading}
-            className="flex-1 px-4 py-2 bg-[#6b7280] text-white rounded hover:bg-[#4b5563] disabled:opacity-50 transition-colors font-medium"
+            className="flex-1 px-4 py-2 bg-[#6b7280] text-white rounded hover:bg-[#4b5563] disabled:opacity-50 transition-colors font-semibold"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isLoading || !isEmailValid}
-            className="flex-1 px-4 py-2 bg-[#8B4513] text-white rounded hover:bg-[#654321] disabled:opacity-50 transition-colors font-medium"
+            className="flex-1 px-4 py-2 bg-[#8B4513] text-white rounded hover:bg-[#654321] disabled:opacity-50 transition-colors font-semibold"
           >
             {isLoading ? (
               <span className="flex items-center justify-center">

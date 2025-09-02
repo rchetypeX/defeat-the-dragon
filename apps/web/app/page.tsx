@@ -3,7 +3,7 @@
 // Force dynamic rendering to prevent static generation errors
 export const dynamic = 'force-dynamic';
 
-import { Suspense, useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSIWF } from '../contexts/SIWFContext';
 import { useGameStore } from '../lib/store';
@@ -15,10 +15,9 @@ import { GameDashboard } from '../components/game/GameDashboard';
 import BackgroundMusic from '../components/audio/BackgroundMusic';
 import FocusSessionMusic from '../components/audio/FocusSessionMusic';
 import { AudioProvider } from '../contexts/AudioContext';
-import { useMiniKit, usePrimaryButton } from '@coinbase/onchainkit/minikit';
+import { useMiniKit } from '@coinbase/onchainkit/minikit';
 import { useBaseAppAuth } from '../hooks/useBaseAppAuth';
 import { useContextAware } from '../hooks/useContextAware';
-import { AddMiniAppPrompt } from '../components/AddMiniAppPrompt';
 import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
 import { sdk } from '@farcaster/miniapp-sdk';
 
@@ -312,12 +311,7 @@ function HomePageContent() {
                   )}
                 </div>
 
-                {/* Add Mini App Prompt */}
-                <AddMiniAppPrompt 
-                  showAfterDelay={10000} // Show after 10 seconds
-                  onSuccess={() => console.log('✅ Mini App added successfully')}
-                  onError={(error) => console.error('❌ Failed to add Mini App:', error)}
-                />
+
 
               </div>
             </main>
