@@ -275,7 +275,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-3 flex-shrink-0">
-          <h2 className="text-lg font-bold text-[#8B4513]">🎒 Inventory</h2>
+          <h2 className="text-lg font-bold text-[#8B4513]">Inventory</h2>
           <button
             onClick={onClose}
             className="text-[#8B4513] hover:text-[#654321] text-xl font-bold"
@@ -301,7 +301,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
                 : 'bg-[#f5f5dc] text-[#8B4513] border-[#8B4513] hover:bg-[#e8e8d0]'
             }`}
           >
-            🧙‍♂️ Character
+            Character
           </button>
           <button
             onClick={() => setActiveTab('background')}
@@ -311,7 +311,7 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
                 : 'bg-[#f5f5dc] text-[#8B4513] border-[#8B4513] hover:bg-[#e8e8d0]'
             }`}
           >
-            🖼️ Background
+            Background
           </button>
         </div>
 
@@ -351,10 +351,10 @@ export function InventoryPopup({ isOpen, onClose }: InventoryPopupProps) {
                           />
                         </div>
                       ) : (
-                        <div className="text-lg mb-1">
-                          {activeTab === 'character' && '🧙‍♂️'}
-                          {activeTab === 'background' && '🖼️'}
-                        </div>
+                                              <div className="text-lg mb-1">
+                        {activeTab === 'character' && 'Character'}
+                        {activeTab === 'background' && 'Background'}
+                      </div>
                       )}
                       <h3 className={`font-bold text-xs ${
                         isItemEquipped(item) ? 'text-[#f5f5dc]' : 'text-[#8B4513]'

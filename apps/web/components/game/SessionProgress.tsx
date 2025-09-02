@@ -345,8 +345,8 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
         />
       </div>
 
-       {/* Character - Positioned in the center with much bigger size like reference image */}
-       <div className="fixed left-1/2 transform -translate-x-1/2 top-1/2 transform -translate-y-1/2 z-50 overflow-hidden" style={{ pointerEvents: 'none' }}>
+       {/* Character - Positioned lower than center with increased size */}
+       <div className="fixed left-1/2 transform -translate-x-1/2 top-1/2 transform translate-y-8 z-50 overflow-hidden" style={{ pointerEvents: 'none' }}>
          <img 
            src={getCharacterImage(equippedCharacter)} 
            alt="Tiny Adventurer" 
@@ -355,8 +355,8 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
              imageRendering: 'pixelated',
              objectPosition: 'center bottom',
              objectFit: 'contain',
-             height: '100%',
-             width: '100%'
+             height: '120%',  // Increased from 100% to 120%
+             width: '120%'    // Increased from 100% to 120%
            }}
            onError={(e) => {
              console.log('Character image failed to load:', getCharacterImage(equippedCharacter));

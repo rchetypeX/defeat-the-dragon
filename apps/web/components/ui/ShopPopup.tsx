@@ -59,7 +59,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   useEffect(() => {
     if (isOpen) {
       // Always reload inventory when shop opens to ensure fresh data
-      console.log('🏪 Shop opened, loading fresh data...');
+      console.log('Shop opened, loading fresh data...');
       refreshInventory(); // Use inventory context refresh
       loadShopItems();
       loadSubscriptionStatus();
@@ -382,7 +382,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-3 flex-shrink-0">
-          <h2 className="text-lg font-bold text-[#8B4513]">🏪 Shop</h2>
+          <h2 className="text-lg font-bold text-[#8B4513]">Shop</h2>
           <div className="flex items-center space-x-2">
             <button
                               onClick={() => refreshInventory()}
@@ -484,7 +484,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
                 : 'bg-[#f5f5dc] text-[#8B4513] border-[#8B4513] hover:bg-[#e8e8d0]'
             }`}
           >
-            🧙‍♂️ Character
+            Character
           </button>
           <button
             onClick={() => setActiveTab('background')}
@@ -494,7 +494,7 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
                 : 'bg-[#f5f5dc] text-[#8B4513] border-[#8B4513] hover:bg-[#e8e8d0]'
             }`}
           >
-            🖼️ Background
+            Background
           </button>
         </div>
 
@@ -536,8 +536,8 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
                       </div>
                     ) : (
                       <div className="text-lg mb-1">
-                        {activeTab === 'character' && '🧙‍♂️'}
-                        {activeTab === 'background' && '🖼️'}
+                        {activeTab === 'character' && 'Character'}
+                        {activeTab === 'background' && 'Background'}
                       </div>
                     )}
                     <h3 className="font-bold text-[#8B4513] text-xs">
