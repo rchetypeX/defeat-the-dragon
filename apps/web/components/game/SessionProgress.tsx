@@ -22,7 +22,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
   const { equippedCharacter, getCharacterImage } = useCharacterStore();
   
   // Enhanced notification system
-  const { showSoftShieldWarning, showSessionFailed } = useBaseAppNotifications();
+  const { showSoftShieldWarning, showSoftShieldBroken, showSessionFailed } = useBaseAppNotifications();
   const [timeLeft, setTimeLeft] = useState(0);
   const [isDisturbed, setIsDisturbed] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
@@ -181,18 +181,27 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
               disturbedSeconds: sessionProgress.disturbedSeconds + awayTime
             });
           },
-                     onWarning: (remainingTime: number) => {
-             console.log(`SoftShield: Warning triggered - ${remainingTime}s remaining`);
-             if (!showWarning) {
-               setShowWarning(true);
-               setWarningStartTime(Date.now());
-               showSoftShieldWarning(remainingTime);
-               console.log('SessionProgress: Warning state set to true');
-             }
-             setWarningTimeLeft(remainingTime);
-           },
+                               onWarning: (remainingTime: number) => {
+            console.log(`SoftShield: Warning triggered - ${remainingTime}s remaining`);
+            if (!showWarning) {
+              setShowWarning(true);
+              setWarningStartTime(Date.now());
+              // Use broken notification when soft shield is broken (remaining time <= 5 seconds)
+              if (remainingTime <= 5) {
+                showSoftShieldBroken(remainingTime);
+                console.log('SessionProgress: Soft shield broken notification sent');
+              } else {
+                showSoftShieldWarning(remainingTime);
+                console.log('SessionProgress: Soft shield warning notification sent');
+              }
+              console.log('SessionProgress: Warning state set to true');
+            }
+            setWarningTimeLeft(remainingTime);
+          },
           onFail: (totalAwayTime: number) => {
             console.log(`SoftShield: Failed after ${totalAwayTime}s away`);
+            // Send session failed notification
+            showSessionFailed(totalAwayTime, sessionProgress.durationMinutes || 0);
             onSessionFail();
           }
         }
@@ -208,7 +217,7 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
         softShieldRef.current = null;
       }
     };
-  }, [sessionProgress.isActive, updateSessionProgress, sessionProgress.disturbedSeconds, onSessionFail]);
+  }, [sessionProgress.isActive, updateSessionProgress, sessionProgress.disturbedSeconds, onSessionFail, showSoftShieldWarning, showSoftShieldBroken, showSessionFailed, sessionProgress.durationMinutes]);
 
   // Handle SoftShield state changes
   useEffect(() => {
@@ -260,9 +269,12 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
         // Check if session was disturbed
         if (sessionProgress.isDisturbed) {
           console.log('SessionProgress: Timer reached zero but session was disturbed, calling onSessionFail');
+          // Send session failed notification
+          showSessionFailed(sessionProgress.disturbedSeconds, sessionProgress.durationMinutes || 0);
           onSessionFail();
         } else {
           console.log('SessionProgress: Timer reached zero, calling onSessionComplete');
+          // Session completed successfully - notification will be handled by onSessionComplete
           onSessionComplete();
         }
       }

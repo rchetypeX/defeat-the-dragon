@@ -10,6 +10,7 @@ export type NotificationType =
   | 'session_complete'
   | 'session_failed'
   | 'soft_shield_warning'
+  | 'soft_shield_broken'
   | 'level_up'
   | 'achievement_unlocked'
 
@@ -319,6 +320,36 @@ export function showSoftShieldWarningNotification(remainingTime: number): Promis
     data: { 
       deepLink: '/?action=session',
       remainingTime
+    }
+  };
+
+  return showNotification(config);
+}
+
+/**
+ * Soft shield broken notification - sent when user has been away for 10+ seconds
+ */
+export function showSoftShieldBrokenNotification(remainingTime: number): Promise<boolean> {
+  const config: NotificationConfig = {
+    type: 'soft_shield_broken',
+    priority: 'urgent',
+    title: '🚨 Session at Risk!',
+    body: `Your focus session is breaking! Return within ${remainingTime} seconds or lose all progress!`,
+    icon: '/icon.png',
+    tag: 'soft-shield-broken',
+    requireInteraction: true,
+    rateLimit: { maxPerHour: 30, maxPerDay: 150 },
+    actions: [
+      {
+        action: 'return',
+        title: 'Return Now',
+        icon: '/icon.png'
+      }
+    ],
+    data: { 
+      deepLink: '/?action=session',
+      remainingTime,
+      critical: true
     }
   };
 

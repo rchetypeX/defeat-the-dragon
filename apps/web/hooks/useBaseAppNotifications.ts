@@ -11,6 +11,7 @@ import {
   showSessionCompleteNotification,
   showSessionFailedNotification,
   showSoftShieldWarningNotification,
+  showSoftShieldBrokenNotification,
   showLevelUpNotification,
   showAchievementNotification,
 
@@ -37,6 +38,7 @@ interface NotificationManager {
   showSessionComplete: (xpGained: number, coinsGained: number, sparksGained?: number, levelUp?: boolean, newLevel?: number) => Promise<boolean>;
   showSessionFailed: (disturbedSeconds: number, sessionDuration: number) => Promise<boolean>;
   showSoftShieldWarning: (remainingTime: number) => Promise<boolean>;
+  showSoftShieldBroken: (remainingTime: number) => Promise<boolean>;
   showLevelUp: (newLevel: number, unlockedFeatures?: string[]) => Promise<boolean>;
   showAchievement: (achievementName: string, achievementDescription: string, rarity?: 'common' | 'rare' | 'epic' | 'legendary') => Promise<boolean>;
 
@@ -174,6 +176,10 @@ export function useBaseAppNotifications(options: UseBaseAppNotificationsOptions 
     return showSoftShieldWarningNotification(remainingTime);
   }, []);
 
+  const enhancedShowSoftShieldBroken = useCallback(async (remainingTime: number): Promise<boolean> => {
+    return showSoftShieldBrokenNotification(remainingTime);
+  }, []);
+
   const enhancedShowLevelUp = useCallback(async (
     newLevel: number,
     unlockedFeatures?: string[]
@@ -227,6 +233,7 @@ export function useBaseAppNotifications(options: UseBaseAppNotificationsOptions 
     showSessionComplete: enhancedShowSessionComplete,
     showSessionFailed: enhancedShowSessionFailed,
     showSoftShieldWarning: enhancedShowSoftShieldWarning,
+    showSoftShieldBroken: enhancedShowSoftShieldBroken,
     showLevelUp: enhancedShowLevelUp,
     showAchievement: enhancedShowAchievement,
 

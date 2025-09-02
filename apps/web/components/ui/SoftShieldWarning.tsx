@@ -8,43 +8,35 @@ interface SoftShieldWarningProps {
 }
 
 export function SoftShieldWarning({ remainingTime, onDismiss }: SoftShieldWarningProps) {
-  const [isVisible, setIsVisible] = useState(true);
   const [timeLeft, setTimeLeft] = useState(remainingTime);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // Always update timeLeft when remainingTime changes to prevent skipping
-    setTimeLeft(remainingTime);
-    
     if (remainingTime <= 0) {
-      setIsVisible(false);
-      onDismiss?.();
+      // Auto-dismiss when time runs out
+      setTimeout(() => {
+        setIsVisible(false);
+        onDismiss();
+      }, 1000);
       return;
     }
 
-    // Only start countdown if we have a valid time
-    if (remainingTime > 0) {
-      const interval = setInterval(() => {
-        setTimeLeft(prev => {
-          const newTime = Math.max(0, prev - 1);
-          if (newTime <= 0) {
-            // Don't auto-dismiss, let the parent component handle it
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        const newTime = Math.max(0, prev - 1);
+        if (newTime === 0) {
+          // Auto-dismiss when countdown reaches 0
+          setTimeout(() => {
+            setIsVisible(false);
+            onDismiss();
+          }, 1000);
+        }
+        return newTime;
+      });
+    }, 1000);
 
-      return () => clearInterval(interval);
-    }
+    return () => clearInterval(interval);
   }, [remainingTime, onDismiss]);
-
-  // Handle dismissal when time reaches 0
-  useEffect(() => {
-    if (timeLeft <= 0 && remainingTime <= 0) {
-      setIsVisible(false);
-      onDismiss?.();
-    }
-  }, [timeLeft, remainingTime, onDismiss]);
 
   if (!isVisible) return null;
 
@@ -54,7 +46,7 @@ export function SoftShieldWarning({ remainingTime, onDismiss }: SoftShieldWarnin
         <div className="text-4xl mb-4">⚠️</div>
         <h2 className="text-xl font-bold text-white mb-2">Focus Interrupted!</h2>
         <p className="text-white mb-4">
-          You've been away from the app for too long. Return to continue your focus session!
+          You've switched away from the app! Return within the time limit or your session will fail and you'll lose your progress.
         </p>
         
         <div className="bg-[#991b1b] border-2 border-[#7f1d1d] p-3 mb-4">
@@ -64,9 +56,19 @@ export function SoftShieldWarning({ remainingTime, onDismiss }: SoftShieldWarnin
           </div>
         </div>
         
-        <div className="text-white text-sm">
-          ⚡ Stay focused! Your tiny adventurer needs you!
+        <div className="text-white text-sm mb-4">
+          ⚡ Return to the app now to continue your focus session!
         </div>
+
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            onDismiss();
+          }}
+          className="pixel-button bg-[#059669] hover:bg-[#047857] text-white px-6 py-2 text-sm"
+        >
+          I'm Back!
+        </button>
       </div>
     </div>
   );

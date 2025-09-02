@@ -19,6 +19,8 @@ export interface SoftShieldState {
   lastWarningTime: number | null;
   isMobile: boolean;
   lastUserActivity: number;
+  lastVisibilityChange: number;
+  isScreenTimeout: boolean; // Track if this is likely a screen timeout
 }
 
 export class SoftShield {
@@ -54,6 +56,8 @@ export class SoftShield {
       lastWarningTime: null,
       isMobile: this.detectMobile(),
       lastUserActivity: Date.now(),
+      lastVisibilityChange: Date.now(),
+      isScreenTimeout: false,
     };
 
     this.onDisturbance = callbacks.onDisturbance || (() => {});
@@ -76,9 +80,11 @@ export class SoftShield {
   }
 
   private setupVisibilityListener() {
-    // Only use visibilitychange event - more reliable for detecting actual app hiding
-    // Don't use window.blur/focus as they can trigger on screen timeout
+    // Track visibility changes with timestamp
     document.addEventListener('visibilitychange', () => {
+      const now = Date.now();
+      this.state.lastVisibilityChange = now;
+      
       if (this.state.isActive) {
         if (document.hidden) {
           this.handlePageHidden();
@@ -97,6 +103,32 @@ export class SoftShield {
     ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(event => {
       document.addEventListener(event, updateActivity, { passive: true });
     });
+
+    // Additional mobile-specific detection
+    if (this.state.isMobile) {
+      // Listen for page focus/blur events (more reliable on mobile)
+      window.addEventListener('focus', () => {
+        if (this.state.isActive && !document.hidden) {
+          this.handlePageVisible();
+        }
+      });
+
+      window.addEventListener('blur', () => {
+        if (this.state.isActive && document.hidden) {
+          this.handlePageHidden();
+        }
+      });
+
+      // Listen for orientation changes (can indicate app switching)
+      window.addEventListener('orientationchange', () => {
+        // Small delay to let the change settle
+        setTimeout(() => {
+          if (this.state.isActive && document.hidden) {
+            this.handlePageHidden();
+          }
+        }, 100);
+      });
+    }
   }
 
   private handlePageHidden() {
@@ -110,10 +142,19 @@ export class SoftShield {
     const timeSinceActivity = Date.now() - this.state.lastUserActivity;
     const wasRecentlyActive = timeSinceActivity < 5000;
 
+    // Check if this might be a screen timeout (longer delay, no recent activity)
+    const isLikelyScreenTimeout = !wasRecentlyActive && timeSinceActivity > 10000;
+    
+    if (isLikelyScreenTimeout) {
+      this.state.isScreenTimeout = true;
+      console.log(`SoftShield: Likely screen timeout detected (${timeSinceActivity}ms since activity)`);
+      return; // Don't start away timer for screen timeouts
+    }
+
     // Don't start away timer immediately - use a delay to avoid false positives
     // This helps with mobile screen timeout scenarios
     this.awayStartTimeout = setTimeout(() => {
-      if (document.hidden && this.state.isActive && !this.state.awayStartTime) {
+      if (document.hidden && this.state.isActive && !this.state.awayStartTime && !this.state.isScreenTimeout) {
         this.state.awayStartTime = Date.now();
         console.log(`SoftShield: Page hidden for ${this.config.awayStartDelay}ms, starting away timer (mobile: ${this.state.isMobile}, wasRecentlyActive: ${wasRecentlyActive})`);
       }
@@ -127,6 +168,9 @@ export class SoftShield {
       this.awayStartTimeout = null;
       console.log('SoftShield: User returned before away timer started');
     }
+
+    // Reset screen timeout flag when user returns
+    this.state.isScreenTimeout = false;
 
     if (this.state.awayStartTime) {
       const awayTime = Math.floor((Date.now() - this.state.awayStartTime) / 1000);
@@ -166,40 +210,51 @@ export class SoftShield {
       const currentTime = Date.now();
       let currentAwayTime = this.state.totalAwayTime;
 
-      // Add current away time if page is hidden
-      if (this.state.awayStartTime) {
+      // Add current away time if page is hidden and not a screen timeout
+      if (this.state.awayStartTime && !this.state.isScreenTimeout) {
         currentAwayTime += Math.floor((currentTime - this.state.awayStartTime) / 1000);
       }
 
-      // Check for warning
+      // Check for warning (at exactly 10 seconds)
       if (currentAwayTime >= this.config.warningTime && 
           currentAwayTime < this.config.maxAwayTime &&
           !this.state.lastWarningTime) { // Only show warning once
-        // Start with exactly 5 seconds for the warning countdown
-        this.onWarning(5);
+        // Calculate remaining time until failure
+        const remainingTime = this.config.maxAwayTime - currentAwayTime;
+        this.onWarning(remainingTime);
         this.state.lastWarningTime = currentTime;
-        console.log(`SoftShield: Warning triggered - starting 5 second countdown, current away time: ${currentAwayTime}s`);
+        console.log(`SoftShield: Warning triggered at ${currentAwayTime}s - ${remainingTime}s remaining until failure`);
       }
 
       // Continue warning countdown if warning is active
       if (this.state.lastWarningTime) {
         const timeSinceWarning = currentTime - this.state.lastWarningTime;
-        const remainingTime = Math.max(0, 5000 - timeSinceWarning); // 5 second warning duration
-        if (remainingTime > 0) {
-          // Calculate seconds more precisely to avoid skipping numbers
-          const remainingSeconds = Math.max(1, Math.ceil(remainingTime / 1000));
-          console.log(`SoftShield: Countdown - timeSinceWarning: ${timeSinceWarning}ms, remainingTime: ${remainingTime}ms, remainingSeconds: ${remainingSeconds}s`);
-          this.onWarning(remainingSeconds);
-        } else {
-          // Warning time expired, session should fail
-          console.log('SoftShield: Warning time expired, session should fail');
-          this.onWarning(0); // Send 0 before failing
-          setTimeout(() => this.fail(), 100); // Small delay to ensure 0 is sent
+        const warningDuration = 1000; // 1 second intervals for countdown
+        
+        if (timeSinceWarning >= warningDuration) {
+          // Update warning with new remaining time
+          let newAwayTime = this.state.totalAwayTime;
+          if (this.state.awayStartTime && !this.state.isScreenTimeout) {
+            newAwayTime += Math.floor((currentTime - this.state.awayStartTime) / 1000);
+          }
+          
+          const remainingTime = Math.max(0, this.config.maxAwayTime - newAwayTime);
+          
+          if (remainingTime > 0) {
+            this.onWarning(remainingTime);
+            this.state.lastWarningTime = currentTime; // Reset warning time for next update
+            console.log(`SoftShield: Warning update - ${remainingTime}s remaining until failure`);
+          } else {
+            // Warning time expired, session should fail
+            console.log('SoftShield: Warning time expired, session should fail');
+            this.onWarning(0); // Send 0 before failing
+            setTimeout(() => this.fail(), 100); // Small delay to ensure 0 is sent
+          }
         }
       }
 
-      // Check for failure
-      if (currentAwayTime >= this.config.maxAwayTime) {
+      // Check for failure (at exactly 15 seconds)
+      if (currentAwayTime >= this.config.maxAwayTime && !this.state.isScreenTimeout) {
         console.log(`SoftShield: Max away time reached (${currentAwayTime}s), failing session`);
         this.fail();
       }
@@ -226,6 +281,8 @@ export class SoftShield {
     this.state.totalAwayTime = 0;
     this.state.lastWarningTime = null;
     this.state.lastUserActivity = Date.now();
+    this.state.lastVisibilityChange = Date.now();
+    this.state.isScreenTimeout = false;
     
     console.log(`SoftShield: Started (mobile: ${this.state.isMobile})`);
     this.startChecking();
@@ -255,7 +312,7 @@ export class SoftShield {
     
     let currentAwayTime = this.state.totalAwayTime;
     
-    if (this.state.awayStartTime) {
+    if (this.state.awayStartTime && !this.state.isScreenTimeout) {
       currentAwayTime += Math.floor((Date.now() - this.state.awayStartTime) / 1000);
     }
     
@@ -266,11 +323,16 @@ export class SoftShield {
     this.state.totalAwayTime = 0;
     this.state.isDisturbed = false;
     this.state.lastWarningTime = null;
+    this.state.isScreenTimeout = false;
   }
 
   public clearDisturbed() {
     this.state.isDisturbed = false;
     console.log('SoftShield: Disturbed state cleared');
+  }
+
+  public isScreenTimeout(): boolean {
+    return this.state.isScreenTimeout;
   }
 }
 
