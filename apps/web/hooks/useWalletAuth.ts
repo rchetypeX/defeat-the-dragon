@@ -276,6 +276,17 @@ export function useWalletAuth() {
     };
   };
 
+  // Helper function to check if an address is a Base App identifier
+  const isBaseAppIdentifier = (addr: string | null): boolean => {
+    return addr ? addr.startsWith('baseapp:') : false;
+  };
+
+  // Helper function to extract FID from Base App identifier
+  const extractFidFromBaseAppIdentifier = (addr: string | null): string | null => {
+    if (!addr || !addr.startsWith('baseapp:')) return null;
+    return addr.replace('baseapp:', '');
+  };
+
   // Check if a Base App user has an existing account
   const checkAccountExistsForBaseApp = async (fid: string) => {
     try {
@@ -286,7 +297,7 @@ export function useWalletAuth() {
       // Check if there's a player record with this Farcaster ID
       const { data: player, error } = await supabase
         .from('players')
-        .select('id, user_id, display_name')
+        .select('id, user_id, display_name, farcaster_fid')
         .eq('farcaster_fid', fid)
         .maybeSingle();
       
@@ -298,13 +309,16 @@ export function useWalletAuth() {
       if (player) {
         console.log('✅ Base App user has existing account:', player);
         setHasAccount(true);
-        // Set the address to the user_id for consistency
-        setAddress(player.user_id);
+        // For Base App users, use a special identifier format to prevent UUID mismatches
+        // This will be used for UI purposes but won't be used in database queries
+        setAddress(`baseapp:${fid}`);
         setIsConnected(true);
       } else {
         console.log('❌ Base App user has no existing account, FID:', fid);
         setHasAccount(false);
         setIsConnected(false);
+        // For new Base App users, set a temporary identifier
+        setAddress(`baseapp:${fid}`);
       }
     } catch (error) {
       console.error('Error checking Base App account:', error);
@@ -1025,6 +1039,10 @@ export function useWalletAuth() {
     baseAppContext,
     authenticateWithBaseApp,
     shouldShowExternalWallets,
+    
+    // Base App helper functions
+    isBaseAppIdentifier,
+    extractFidFromBaseAppIdentifier,
   };
 }
 
