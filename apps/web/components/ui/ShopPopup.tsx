@@ -295,34 +295,6 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
         await refreshInventory(); // Use inventory context refresh
         console.log('🔄 Inventory reloaded, checking ownership again...');
         
-        // Force a re-render by updating the inventory state
-        setUserInventory(prevInventory => {
-          const newInventory = [...prevInventory];
-          const existingItemIndex = newInventory.findIndex(
-            invItem => invItem.item_id === item.id && invItem.item_type === (activeTab === 'character' ? 'character' : 'background')
-          );
-          
-          if (existingItemIndex === -1) {
-            // Add the new item to inventory
-            newInventory.push({
-              id: `temp-${Date.now()}`, // Temporary ID
-              user_id: user.id || 'unknown',
-              item_id: item.id,
-              item_type: activeTab === 'character' ? 'character' : 'background' as any,
-              quantity: 1,
-              equipped: false,
-              acquired_at: new Date().toISOString()
-            });
-            console.log('➕ Added item to local inventory state:', item.id);
-          } else {
-            // Update quantity if item already exists
-            newInventory[existingItemIndex].quantity += 1;
-            console.log('🔄 Updated quantity for existing item:', item.id);
-          }
-          
-          return newInventory;
-        });
-        
         // Clear success status after 2 seconds
         setTimeout(() => {
           setPurchaseStatus(prev => ({ ...prev, [item.id]: 'idle' }));
