@@ -68,31 +68,26 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
   // Farcaster Auth hooks (primary authentication)
   const { isAuthenticated, profile } = useProfile();
   
-  // Base App hooks (for additional context and analytics) - only on client side
+  // Base App hooks (for additional context and analytics)
   const [baseAppContext, setBaseAppContext] = useState<any>(null);
-  const [setFrameReady, setSetFrameReady] = useState<(() => void) | null>(null);
-  const [isFrameReady, setIsFrameReady] = useState(false);
   
-  // Initialize Base App frame when component mounts - only on client side
+  // Use MiniKit hooks directly - they handle client-side initialization
+  const miniKitResult = useMiniKit();
+  const context = miniKitResult?.context || null;
+  const setFrameReady = miniKitResult?.setFrameReady || null;
+  const isFrameReady = miniKitResult?.isFrameReady || false;
+  
+  // Initialize Base App frame when component mounts
   useEffect(() => {
-    // Only run MiniKit hooks on client side to prevent build errors
-    if (typeof window !== 'undefined') {
-      try {
-        const { useMiniKit } = require('@coinbase/onchainkit/minikit');
-        const { context, setFrameReady: miniKitSetFrameReady, isFrameReady: miniKitIsFrameReady } = useMiniKit();
-        setBaseAppContext(context);
-        setSetFrameReady(() => miniKitSetFrameReady);
-        setIsFrameReady(miniKitIsFrameReady);
-        
-        // Initialize frame when ready
-        if (miniKitSetFrameReady && !miniKitIsFrameReady) {
-          miniKitSetFrameReady();
-        }
-      } catch (error) {
-        console.warn('MiniKit not available during build:', error);
-      }
+    if (context) {
+      setBaseAppContext(context);
     }
-  }, []);
+    
+    // Initialize frame when ready
+    if (setFrameReady && !isFrameReady) {
+      setFrameReady();
+    }
+  }, [context, setFrameReady, isFrameReady]);
 
   const { signIn: farcasterSignIn, signOut: farcasterSignOut, isConnected, connect } = useSignIn({
     onSuccess: async ({ fid, username, signature }) => {

@@ -51,31 +51,8 @@ function HomePageContent() {
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
   const [walletKey, setWalletKey] = useState(0); // Key to force remount of WalletLoginForm
   
-  // Conditional MiniKit hooks to prevent build-time errors
-  const [isFrameReady, setIsFrameReady] = useState(false);
-  const [setFrameReady, setSetFrameReady] = useState<(() => void) | null>(null);
-
+  // Call Farcaster SDK ready action
   useEffect(() => {
-    // Only initialize MiniKit on the client side
-    if (typeof window !== 'undefined') {
-      try {
-        const { useMiniKit } = require('@coinbase/onchainkit/minikit');
-        const miniKitHook = useMiniKit();
-        setIsFrameReady(miniKitHook.isFrameReady);
-        setSetFrameReady(() => miniKitHook.setFrameReady);
-      } catch (error) {
-        console.warn('MiniKit not available during build:', error);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    // Optimize for Base App - only set frame ready once
-    if (!isFrameReady && setFrameReady) {
-      setFrameReady();
-    }
-    
-    // Call Farcaster SDK ready action
     const initializeFarcaster = async () => {
       try {
         await sdk.actions.ready();
@@ -86,7 +63,7 @@ function HomePageContent() {
     };
     
     initializeFarcaster();
-  }, [isFrameReady, setFrameReady]);
+  }, []);
 
   // Base App Authentication
   const {

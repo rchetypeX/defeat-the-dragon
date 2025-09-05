@@ -1,6 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { 
+  useMiniKit, 
+  useIsInMiniApp, 
+  useComposeCast, 
+  useViewProfile, 
+  useViewCast 
+} from '@coinbase/onchainkit/minikit';
 
 interface ContextAwareState {
   // Context data
@@ -44,53 +51,29 @@ interface ContextAwareState {
 
 export function useContextAware(): ContextAwareState {
   // Initialize state with default values to prevent build-time errors
-  const [context, setContext] = useState<any>(null);
-  const [isFrameReady, setIsFrameReady] = useState(false);
-  const [setFrameReady, setSetFrameReady] = useState<(() => void) | null>(null);
-  const [isInMiniApp, setIsInMiniApp] = useState(false);
-  const [composeCastFn, setComposeCastFn] = useState<any>(null);
-  const [viewProfileFn, setViewProfileFn] = useState<any>(null);
-  const [viewCastFn, setViewCastFn] = useState<any>(null);
-  
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize MiniKit hooks only on client side to prevent build errors
+  // Use MiniKit hooks directly - they handle client-side initialization
+  const miniKitResult = useMiniKit();
+  const isInMiniAppResult = useIsInMiniApp();
+  const composeCastResult = useComposeCast();
+  const viewProfileResult = useViewProfile();
+  const viewCastResult = useViewCast();
+  
+  const context = miniKitResult?.context || null;
+  const isFrameReady = miniKitResult?.isFrameReady || false;
+  const setFrameReady = miniKitResult?.setFrameReady || null;
+  const isInMiniApp = isInMiniAppResult?.isInMiniApp || false;
+  const composeCastFn = composeCastResult || null;
+  const viewProfileFn = viewProfileResult || null;
+  const viewCastFn = viewCastResult || null;
+
+  // Set frame ready when available
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const { 
-          useMiniKit, 
-          useIsInMiniApp, 
-          useComposeCast, 
-          useViewProfile, 
-          useViewCast 
-        } = require('@coinbase/onchainkit/minikit');
-        
-        // Get the hook results
-        const miniKitResult = useMiniKit();
-        const isInMiniAppResult = useIsInMiniApp();
-        const composeCastResult = useComposeCast();
-        const viewProfileResult = useViewProfile();
-        const viewCastResult = useViewCast();
-        
-        // Update state with hook results
-        setContext(miniKitResult.context);
-        setIsFrameReady(miniKitResult.isFrameReady);
-        setSetFrameReady(() => miniKitResult.setFrameReady);
-        setIsInMiniApp(isInMiniAppResult.isInMiniApp);
-        setComposeCastFn(composeCastResult);
-        setViewProfileFn(viewProfileResult);
-        setViewCastFn(viewCastResult);
-        
-        // Set frame ready
-        if (!miniKitResult.isFrameReady) {
-          miniKitResult.setFrameReady();
-        }
-      } catch (error) {
-        console.warn('MiniKit hooks not available during build:', error);
-      }
+    if (setFrameReady && !isFrameReady) {
+      setFrameReady();
     }
-  }, []);
+  }, [setFrameReady, isFrameReady]);
 
   // Extract context data
   const user = context?.user || null;

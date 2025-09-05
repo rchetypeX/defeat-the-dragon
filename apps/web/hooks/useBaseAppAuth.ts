@@ -28,19 +28,11 @@ export function useBaseAppAuth(): BaseAppAuthState {
   const [isLoading, setIsLoading] = useState(true);
   const [isBaseApp, setIsBaseApp] = useState(false);
 
-  // Use MiniKit hooks directly (they handle client-side initialization)
-  let context: any = null;
-  let contextUser: any = null;
-  let contextFid: string | null = null;
-  
-  try {
-    const miniKitResult = useMiniKit();
-    context = miniKitResult.context;
-    contextUser = context?.user || null;
-    contextFid = contextUser?.fid?.toString() || null;
-  } catch (error) {
-    console.warn('MiniKit not available:', error);
-  }
+  // Use MiniKit hooks directly - they handle client-side initialization
+  const miniKitResult = useMiniKit();
+  const context = miniKitResult?.context || null;
+  const contextUser = context?.user || null;
+  const contextFid = contextUser?.fid?.toString() || null;
 
   // Detect if we're in Base App environment
   useEffect(() => {
