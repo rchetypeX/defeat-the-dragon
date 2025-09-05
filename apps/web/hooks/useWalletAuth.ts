@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAccount, useConnect } from 'wagmi';
-import { useBaseAccountCapabilities } from './useBaseAccountCapabilities';
 
 // Base App integration
 let useAuthenticate: any = null;
@@ -24,7 +23,6 @@ export function useWalletAuth() {
   // Use wagmi hooks for wallet connection
   const { address: wagmiAddress, isConnected: wagmiIsConnected } = useAccount();
   const { connect, connectors } = useConnect();
-  const baseAccountCapabilities = useBaseAccountCapabilities();
   
   const [isConnecting, setIsConnecting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
@@ -1078,9 +1076,6 @@ export function useWalletAuth() {
     // Base App helper functions
     isBaseAppIdentifier,
     extractFidFromBaseAppIdentifier,
-    
-    // Base Account capabilities
-    baseAccountCapabilities,
   };
 }
 

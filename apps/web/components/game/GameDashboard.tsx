@@ -20,7 +20,6 @@ import { CharacterDialogue } from './CharacterDialogue';
 import { useDataSync } from '../../hooks/useDataSync';
 import { AdventurerNamePrompt } from '../auth/AdventurerNamePrompt';
 import { useAuth } from '../../contexts/AuthContext';
-import { BaseAccountGameExample } from '../wallet/BaseAccountGameExample';
 
 
 interface SessionResult {
@@ -483,13 +482,6 @@ export function GameDashboard() {
                 triggerQuoteChangeCount={quoteTriggerCount}
               />
             </div>
-          </div>
-        )}
-        
-        {/* Base Account Features - Show when not in session */}
-        {!sessionProgress.isActive && !showSessionTimer && !sessionResult && !showSettings && !showShop && !showInventory && !showAudioControls && (
-          <div className="px-4 pb-4">
-            <BaseAccountGameExample />
           </div>
         )}
         
