@@ -36,7 +36,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
   const [error, setError] = useState<string | null>(null);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [subscriptionType, setSubscriptionType] = useState<'monthly' | 'annual' | 'donate'>('monthly');
-  const [donateAmount, setDonateAmount] = useState<number>(1);
+  const [donateAmount, setDonateAmount] = useState<number | ''>(1);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [pricing, setPricing] = useState<Record<string, SubscriptionPricing>>({});
@@ -313,6 +313,10 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
       let durationDays: number;
       
       if (subscriptionType === 'donate') {
+        if (donateAmount === '' || donateAmount < 1) {
+          setError('Please enter a valid USDC amount (minimum 1)');
+          return;
+        }
         priceUsdc = donateAmount;
         durationDays = donateAmount; // 1 USDC = 1 Day
       } else {
@@ -368,6 +372,9 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
       let subscriptionTypeForAPI: string;
       
       if (subscriptionType === 'donate') {
+        if (donateAmount === '' || donateAmount < 1) {
+          throw new Error('Invalid donate amount');
+        }
         durationDays = donateAmount;
         subscriptionTypeForAPI = 'donate';
       } else {
@@ -456,8 +463,8 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-      <div ref={modalRef} className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-6 w-full max-w-md pixel-art">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-2 sm:p-4">
+      <div ref={modalRef} className="bg-[#f5f5dc] border-4 border-[#8B4513] rounded-lg p-4 sm:p-6 w-full max-w-md pixel-art max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="text-center mb-6">
           <div className="text-2xl mb-2">✨</div>
@@ -524,33 +531,36 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1 mb-4">
           <button
             onClick={() => setSubscriptionType('monthly')}
-            className={`flex-1 py-2 px-2 rounded text-xs font-medium transition-colors ${
+            className={`flex-1 py-2 px-1 sm:px-2 rounded text-xs font-medium transition-colors ${
               subscriptionType === 'monthly'
                 ? 'bg-[#f2751a] text-white'
                 : 'text-[#fbbf24] hover:text-white'
             }`}
           >
-            Monthly
+            <span className="hidden sm:inline">Monthly</span>
+            <span className="sm:hidden">Monthly</span>
           </button>
           <button
             onClick={() => setSubscriptionType('annual')}
-            className={`flex-1 py-2 px-2 rounded text-xs font-medium transition-colors ${
+            className={`flex-1 py-2 px-1 sm:px-2 rounded text-xs font-medium transition-colors ${
               subscriptionType === 'annual'
                 ? 'bg-[#f2751a] text-white'
                 : 'text-[#fbbf24] hover:text-white'
             }`}
           >
-            Annual
+            <span className="hidden sm:inline">Annual</span>
+            <span className="sm:hidden">Annual</span>
           </button>
           <button
             onClick={() => setSubscriptionType('donate')}
-            className={`flex-1 py-2 px-2 rounded text-xs font-medium transition-colors ${
+            className={`flex-1 py-2 px-1 sm:px-2 rounded text-xs font-medium transition-colors ${
               subscriptionType === 'donate'
                 ? 'bg-[#f2751a] text-white'
                 : 'text-[#fbbf24] hover:text-white'
             }`}
           >
-            Donate
+            <span className="hidden sm:inline">Donate</span>
+            <span className="sm:hidden">Donate</span>
           </button>
         </div>
 
@@ -573,21 +583,22 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
                   <div className="flex justify-between">
                     <span className="text-[#8B4513] font-bold">Duration:</span>
                     <span className="text-[#654321]">
-                      {donateAmount} Day{donateAmount !== 1 ? 's' : ''}
+                      {donateAmount === '' ? 'Enter amount' : `${donateAmount} Day${donateAmount !== 1 ? 's' : ''}`}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#8B4513] font-bold">Price:</span>
                     <span className="text-[#654321] font-bold">
-                      {formatUSDC(donateAmount)} USDC
+                      {donateAmount === '' ? 'Enter amount' : `${formatUSDC(donateAmount)} USDC`}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-[#8B4513] font-bold">Network:</span>
                     <span className="text-[#654321]">Base</span>
                   </div>
-                  <div className="bg-[#fbbf24] text-[#8B4513] p-2 rounded text-xs text-center font-bold">
-                    💝 Custom donation amount - 1 USDC = 1 Day of Inspiration
+                  <div className="bg-[#fbbf24] text-[#8B4513] p-2 rounded text-xs text-center font-bold break-words">
+                    💝 Custom donation amount<br className="sm:hidden" />
+                    <span className="hidden sm:inline"> - </span>1 USDC = 1 Day of Inspiration
                   </div>
                 </div>
               </div>
@@ -625,8 +636,9 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
               <div className="bg-[#e8e8d0] border-2 border-[#8B4513] rounded-lg p-4 mb-6">
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[#8B4513] font-bold text-sm mb-2">
-                      USDC Amount (Whole numbers only):
+                    <label className="block text-[#8B4513] font-bold text-sm mb-2 break-words">
+                      <span className="hidden sm:inline">USDC Amount (Whole numbers only):</span>
+                      <span className="sm:hidden">USDC Amount:</span>
                     </label>
                     <input
                       type="number"
@@ -634,16 +646,21 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
                       step="1"
                       value={donateAmount}
                       onChange={(e) => {
-                        const value = parseInt(e.target.value);
-                        if (!isNaN(value) && value >= 1) {
-                          setDonateAmount(value);
+                        const value = e.target.value;
+                        if (value === '') {
+                          setDonateAmount('');
+                        } else {
+                          const numValue = parseInt(value);
+                          if (!isNaN(numValue) && numValue >= 1) {
+                            setDonateAmount(numValue);
+                          }
                         }
                       }}
                       className="w-full pixel-input bg-[#f5f5dc] border-2 border-[#8B4513] rounded text-[#8B4513] px-3 py-2 font-mono text-center"
                       placeholder="Enter USDC amount"
                     />
                   </div>
-                  <div className="text-center text-xs text-[#654321]">
+                  <div className="text-center text-xs text-[#654321] break-words">
                     💡 Minimum: 1 USDC = 1 Day of Inspiration
                   </div>
                 </div>
@@ -659,7 +676,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
                     <li>• Support to keep the Game Ad-free</li>
                     <li>• Earn Sparks from successful focus sessions</li>
                     <li>• Access to exclusive shop items</li>
-                    <li>• {donateAmount} Day{donateAmount !== 1 ? 's' : ''} of Inspiration Boon</li>
+                    <li>• {donateAmount === '' ? 'Enter amount for' : `${donateAmount} Day${donateAmount !== 1 ? 's' : ''} of`} Inspiration Boon</li>
                   </>
                 ) : (
                   pricing[subscriptionType]?.benefits.map((benefit, index) => (
@@ -728,7 +745,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
           </button>
           <button
             onClick={handleSubscribe}
-            disabled={isLoading}
+            disabled={isLoading || (subscriptionType === 'donate' && (donateAmount === '' || donateAmount < 1))}
             className="flex-1 pixel-button bg-[#8B4513] hover:bg-[#654321] text-white px-4 py-3 font-bold disabled:opacity-50 flex items-center justify-center"
           >
             {isLoading ? 'Processing...' : 'SUBSCRIBE'}
