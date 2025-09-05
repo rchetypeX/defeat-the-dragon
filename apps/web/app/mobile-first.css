@@ -1282,118 +1282,103 @@ html, body {
   cursor: not-allowed;
 }
 
-/* Desktop Browser Mobile Device Frame Effect */
-@media (min-width: 1024px) and (min-height: 768px) {
-  /* Only apply to desktop browsers, not mobile devices */
-  html, body {
-    /* Set background color for desktop */
+/* Desktop Browser 3:4 Aspect Ratio */
+@media (min-width: 1200px) and (min-height: 800px) and (min-aspect-ratio: 3/2) {
+  /* Only apply to desktop browsers, not mobile devices or tablets */
+  
+  /* Set the root background */
+  html {
     background-color: #e1e1e1 !important;
-    /* Remove any previous constraints */
-    width: 100% !important;
     height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
+  }
+  
+  body {
+    background-color: #e1e1e1 !important;
     margin: 0 !important;
     padding: 0 !important;
+    height: 100vh !important;
+    width: 100vw !important;
     overflow: hidden !important;
-    /* Center content */
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    position: relative !important;
   }
   
-  /* Create the mobile device frame container */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('/desktop-frame.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: 1000;
-    pointer-events: none; /* Allow clicks to pass through to the app */
-  }
-  
-  /* Main app container - positioned behind the frame */
+  /* Main app container - 3:4 aspect ratio, fit to height */
   #__next {
-    width: 1765px !important;
-    height: 3753px !important;
-    max-width: 1765px !important;
-    max-height: 3753px !important;
+    width: calc(100vh * 3 / 4) !important;
+    height: 100vh !important;
+    max-width: calc(100vh * 3 / 4) !important;
+    max-height: 100vh !important;
     position: relative !important;
     z-index: 1 !important;
-    /* Center the app content */
     margin: 0 auto !important;
-    /* Ensure content fits within the frame */
     overflow: hidden !important;
-    /* Add subtle shadow to make it look like it's behind the frame */
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 0 !important;
   }
   
-  /* Ensure all content fits within the mobile frame dimensions */
+  /* Ensure all content fits within the 3:4 aspect ratio */
   .min-h-screen {
-    min-height: 3753px !important;
-    height: 3753px !important;
-    max-height: 3753px !important;
+    min-height: 100vh !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
   }
   
-  /* Adjust container to fit within mobile frame */
+  /* Adjust container to fit within 3:4 aspect ratio */
   .container {
-    max-width: 1765px !important;
-    width: 1765px !important;
+    max-width: calc(100vh * 3 / 4) !important;
+    width: calc(100vh * 3 / 4) !important;
     padding: 0 var(--spacing-4) !important;
   }
   
-  /* Ensure game dashboard fits within mobile frame */
+  /* Ensure game dashboard fits within 3:4 aspect ratio */
   .game-dashboard {
-    width: 1765px !important;
-    height: 3753px !important;
-    max-width: 1765px !important;
-    max-height: 3753px !important;
+    width: calc(100vh * 3 / 4) !important;
+    height: 100vh !important;
+    max-width: calc(100vh * 3 / 4) !important;
+    max-height: 100vh !important;
     overflow: hidden !important;
   }
   
-  /* Adjust character scaling for mobile frame */
+  /* Adjust character scaling for 3:4 aspect ratio */
   .character-dynamic {
-    --character-max-width: min(50vw, 400px) !important;
-    --character-max-height: min(50vw, 400px) !important;
+    --character-max-width: min(40vh, 300px) !important;
+    --character-max-height: min(40vh, 300px) !important;
   }
   
-  /* Adjust focus button for mobile frame */
+  /* Adjust focus button for 3:4 aspect ratio */
   .focus-button-container {
-    padding-bottom: 6rem !important;
+    padding-bottom: 4rem !important;
   }
   
-  /* Adjust character dialogue for mobile frame */
+  /* Adjust character dialogue for 3:4 aspect ratio */
   .character-dialogue {
-    bottom: 10rem !important;
-    max-width: 60vw !important;
+    bottom: 8rem !important;
+    max-width: 50vw !important;
   }
   
-  /* Ensure pixel cards fit within mobile frame */
+  /* Ensure pixel cards fit within 3:4 aspect ratio */
   .pixel-card {
     max-width: 90% !important;
     max-height: 80vh !important;
     overflow-y: auto !important;
   }
   
-  /* Adjust authentication forms for mobile frame */
+  /* Adjust authentication forms for 3:4 aspect ratio */
   .auth-container {
-    min-height: 3753px !important;
-    height: 3753px !important;
-    max-height: 3753px !important;
+    min-height: 100vh !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
   }
   
   .auth-form {
-    max-width: 500px !important;
+    max-width: 400px !important;
     max-height: 70vh !important;
   }
   
-  /* Ensure wallet login form fits in mobile frame */
+  /* Ensure wallet login form fits in 3:4 aspect ratio */
   .wallet-login-form {
     max-height: 70vh !important;
     overflow-y: auto !important;
