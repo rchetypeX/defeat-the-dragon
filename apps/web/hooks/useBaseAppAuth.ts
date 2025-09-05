@@ -25,22 +25,22 @@ export function useBaseAppAuth(): BaseAppAuthState {
   const { signIn: miniKitSignIn } = useAuthenticate();
   
   // Initialize state with default values to prevent build-time errors
-  const [context, setContext] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isBaseApp, setIsBaseApp] = useState(false);
 
-  // Initialize MiniKit hooks only on client side to prevent build errors
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const { useMiniKit } = require('@coinbase/onchainkit/minikit');
-        const { context: miniKitContext } = useMiniKit();
-        setContext(miniKitContext);
-      } catch (error) {
-        console.warn('MiniKit not available during build:', error);
-      }
-    }
-  }, []);
+  // Use MiniKit hooks directly (they handle client-side initialization)
+  let context: any = null;
+  let contextUser: any = null;
+  let contextFid: string | null = null;
+  
+  try {
+    const miniKitResult = useMiniKit();
+    context = miniKitResult.context;
+    contextUser = context?.user || null;
+    contextFid = contextUser?.fid?.toString() || null;
+  } catch (error) {
+    console.warn('MiniKit not available:', error);
+  }
 
   // Detect if we're in Base App environment
   useEffect(() => {
@@ -62,10 +62,6 @@ export function useBaseAppAuth(): BaseAppAuthState {
 
     detectBaseApp();
   }, [context?.client?.clientFid]);
-
-  // Extract context data for analytics (safe to use)
-  const contextUser = context?.user || null;
-  const contextFid = contextUser?.fid?.toString() || null;
 
   // Use context data for authentication (with fallback to wallet auth)
   const isAuthenticated = !!context?.user;
@@ -112,7 +108,7 @@ export function useBaseAppAuth(): BaseAppAuthState {
 
   return {
     // Context-based authentication (with fallback)
-    verifiedUser: context?.user || null,
+    verifiedUser: contextUser,
     isAuthenticated,
     
     // Context data (safe for analytics only)

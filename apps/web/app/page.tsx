@@ -130,6 +130,14 @@ function HomePageContent() {
 
   // Handle Base App authentication
   useEffect(() => {
+    console.log('🔐 Base App Auth Check:', {
+      isBaseAppAuthenticated,
+      verifiedUser: !!verifiedUser,
+      user: !!user,
+      isBaseApp,
+      verifiedUserData: verifiedUser
+    });
+    
     if (isBaseAppAuthenticated && verifiedUser && !user) {
       console.log('🔐 Base App user detected, setting up user session:', verifiedUser);
       
@@ -153,8 +161,10 @@ function HomePageContent() {
       });
       
       console.log('✅ Base App user session created:', baseAppUser);
+    } else if (isBaseApp && !isBaseAppAuthenticated && !user) {
+      console.log('🔐 Base App detected but not authenticated, user may need to sign in');
     }
-  }, [isBaseAppAuthenticated, verifiedUser, user]);
+  }, [isBaseAppAuthenticated, verifiedUser, user, isBaseApp]);
 
   // Auto-set auth mode based on environment
   useEffect(() => {

@@ -156,10 +156,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check for Base App user in localStorage
   const checkBaseAppUser = () => {
+    console.log('AuthContext: Checking for Base App user in localStorage...');
     const baseAppUserStr = localStorage.getItem('baseAppUser');
+    console.log('AuthContext: Base App user string found:', !!baseAppUserStr);
+    
     if (baseAppUserStr) {
       try {
         const baseAppUser = JSON.parse(baseAppUserStr);
+        console.log('AuthContext: Parsed Base App user:', baseAppUser);
         
         // Check if this is the old invalid UUID that's causing loading issues
         if (baseAppUser.id === '795246' || baseAppUser.id === 795246) {
@@ -169,7 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return null;
         }
         
-        console.log('AuthContext: Found Base App user in localStorage:', baseAppUser);
+        console.log('AuthContext: Found valid Base App user in localStorage:', baseAppUser);
         return baseAppUser;
       } catch (error) {
         console.error('Error parsing Base App user data:', error);
@@ -177,6 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
     }
+    console.log('AuthContext: No Base App user found in localStorage');
     return null;
   };
 
@@ -187,11 +192,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [setGameUser, resetGame]);
 
   const initializeAuth = () => {
+    console.log('AuthContext: Initializing authentication...');
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log('AuthContext: Supabase session check completed:', !!session);
       setSession(session);
       setLoading(false);
       
       if (session?.user) {
+        console.log('AuthContext: Supabase session exists, using Supabase user');
         // Supabase session exists - use it
         setUser(session.user);
         setGameUser({
@@ -208,9 +216,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('Failed to load player data:', error);
         }
       } else {
+        console.log('AuthContext: No Supabase session, checking for wallet/Base App users...');
         // No Supabase session - check for wallet user
         const walletUser = checkWalletUser();
         if (walletUser) {
+          console.log('AuthContext: Found wallet user:', walletUser.id);
           setUser(walletUser);
           setGameUser({
             id: walletUser.id,
@@ -230,6 +240,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Check for Base App user
           const baseAppUser = checkBaseAppUser();
           if (baseAppUser) {
+            console.log('AuthContext: Found Base App user:', baseAppUser.id);
             setUser(baseAppUser);
             setGameUser({
               id: baseAppUser.id,
