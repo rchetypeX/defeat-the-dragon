@@ -9,7 +9,7 @@ import {
   computeCoins,
   computeSparks
 } from '@defeat-the-dragon/engine';
-import { calculateLevel } from '../../../lib/levelUtils';
+import { calculateLevel } from '../../../../lib/levelUtils';
 
 // Initialize Supabase client for server-side operations (service role for bypassing RLS)
 const supabase = createClient(
