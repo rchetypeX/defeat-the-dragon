@@ -35,7 +35,8 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
-  const [subscriptionType, setSubscriptionType] = useState<'monthly' | 'annual'>('monthly');
+  const [subscriptionType, setSubscriptionType] = useState<'monthly' | 'annual' | 'donate'>('monthly');
+  const [donateAmount, setDonateAmount] = useState<number>(1);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [pricing, setPricing] = useState<Record<string, SubscriptionPricing>>({});
@@ -307,15 +308,25 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         }
       }
 
-      // Get pricing from the loaded data
-      const currentPricing = pricing[subscriptionType];
-      if (!currentPricing) {
-        setError('Pricing not available. Please try again.');
-        return;
+      // Get pricing from the loaded data or use donate amount
+      let priceUsdc: number;
+      let durationDays: number;
+      
+      if (subscriptionType === 'donate') {
+        priceUsdc = donateAmount;
+        durationDays = donateAmount; // 1 USDC = 1 Day
+      } else {
+        const currentPricing = pricing[subscriptionType];
+        if (!currentPricing) {
+          setError('Pricing not available. Please try again.');
+          return;
+        }
+        priceUsdc = currentPricing.price_usdc;
+        durationDays = currentPricing.duration_days;
       }
 
       // Check USDC balance
-      const balanceCheck = await checkUSDCBalance(account, currentPricing.price_usdc);
+      const balanceCheck = await checkUSDCBalance(account, priceUsdc);
       if (!balanceCheck.hasBalance) {
         setError(`Insufficient USDC balance. You have ${formatUSDC(balanceCheck.currentBalance)} but need ${formatUSDC(balanceCheck.requiredAmount)}.`);
         return;
@@ -324,7 +335,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
       // Transfer USDC
       const txHash = await transferUSDC({
         to: MERCHANT_WALLET,
-        amount: currentPricing.price_usdc,
+        amount: priceUsdc,
         from: account,
       });
 
@@ -353,9 +364,19 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
 
   const updateUserSubscription = async (txHash: string) => {
     try {
-      const currentPricing = pricing[subscriptionType];
-      if (!currentPricing) {
-        throw new Error('Pricing not available');
+      let durationDays: number;
+      let subscriptionTypeForAPI: string;
+      
+      if (subscriptionType === 'donate') {
+        durationDays = donateAmount;
+        subscriptionTypeForAPI = 'donate';
+      } else {
+        const currentPricing = pricing[subscriptionType];
+        if (!currentPricing) {
+          throw new Error('Pricing not available');
+        }
+        durationDays = currentPricing.duration_days;
+        subscriptionTypeForAPI = subscriptionType;
       }
 
       // Get auth token for the request
@@ -413,8 +434,8 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         method: 'POST',
         headers,
         body: JSON.stringify({
-          subscriptionType: subscriptionType, // Use the actual selected type: 'monthly' or 'annual'
-          duration: currentPricing.duration_days,
+          subscriptionType: subscriptionTypeForAPI, // Use the actual selected type: 'monthly', 'annual', or 'donate'
+          duration: durationDays,
           transactionHash: txHash,
         }),
       });
@@ -503,7 +524,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         <div className="flex bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-1 mb-4">
           <button
             onClick={() => setSubscriptionType('monthly')}
-            className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors ${
+            className={`flex-1 py-2 px-2 rounded text-xs font-medium transition-colors ${
               subscriptionType === 'monthly'
                 ? 'bg-[#f2751a] text-white'
                 : 'text-[#fbbf24] hover:text-white'
@@ -513,13 +534,23 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
           </button>
           <button
             onClick={() => setSubscriptionType('annual')}
-            className={`flex-1 py-2 px-3 rounded text-xs font-medium transition-colors ${
+            className={`flex-1 py-2 px-2 rounded text-xs font-medium transition-colors ${
               subscriptionType === 'annual'
                 ? 'bg-[#f2751a] text-white'
                 : 'text-[#fbbf24] hover:text-white'
             }`}
           >
             Annual
+          </button>
+          <button
+            onClick={() => setSubscriptionType('donate')}
+            className={`flex-1 py-2 px-2 rounded text-xs font-medium transition-colors ${
+              subscriptionType === 'donate'
+                ? 'bg-[#f2751a] text-white'
+                : 'text-[#fbbf24] hover:text-white'
+            }`}
+          >
+            Donate
           </button>
         </div>
 
@@ -533,53 +564,122 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
         )}
 
         {/* Subscription Details */}
-        {!isLoadingPricing && pricing[subscriptionType] && (
+        {!isLoadingPricing && (subscriptionType === 'donate' || pricing[subscriptionType]) && (
           <>
-            <div className="bg-[#e8e8d0] border-2 border-[#8B4513] rounded-lg p-4 mb-6">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-[#8B4513] font-bold">Duration:</span>
-                  <span className="text-[#654321]">
-                    {pricing[subscriptionType].duration_days} Days
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#8B4513] font-bold">Price:</span>
-                  <span className="text-[#654321] font-bold">
-                    {formatUSDC(pricing[subscriptionType].price_usdc)} USDC
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#8B4513] font-bold">Network:</span>
-                  <span className="text-[#654321]">Base</span>
-                </div>
-                {subscriptionType === 'annual' && (
-                  <div className="bg-[#10b981] text-white p-2 rounded text-xs text-center font-bold">
-                    🎉 2 months FREE! Save with annual subscription
+            {subscriptionType === 'donate' ? (
+              /* Donate Option */
+              <div className="bg-[#e8e8d0] border-2 border-[#8B4513] rounded-lg p-4 mb-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-[#8B4513] font-bold">Duration:</span>
+                    <span className="text-[#654321]">
+                      {donateAmount} Day{donateAmount !== 1 ? 's' : ''}
+                    </span>
                   </div>
-                )}
+                  <div className="flex justify-between">
+                    <span className="text-[#8B4513] font-bold">Price:</span>
+                    <span className="text-[#654321] font-bold">
+                      {formatUSDC(donateAmount)} USDC
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#8B4513] font-bold">Network:</span>
+                    <span className="text-[#654321]">Base</span>
+                  </div>
+                  <div className="bg-[#fbbf24] text-[#8B4513] p-2 rounded text-xs text-center font-bold">
+                    💝 Custom donation amount - 1 USDC = 1 Day of Inspiration
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              /* Monthly/Annual Options */
+              <div className="bg-[#e8e8d0] border-2 border-[#8B4513] rounded-lg p-4 mb-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-[#8B4513] font-bold">Duration:</span>
+                    <span className="text-[#654321]">
+                      {pricing[subscriptionType].duration_days} Days
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#8B4513] font-bold">Price:</span>
+                    <span className="text-[#654321] font-bold">
+                      {formatUSDC(pricing[subscriptionType].price_usdc)} USDC
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#8B4513] font-bold">Network:</span>
+                    <span className="text-[#654321]">Base</span>
+                  </div>
+                  {subscriptionType === 'annual' && (
+                    <div className="bg-[#10b981] text-white p-2 rounded text-xs text-center font-bold">
+                      🎉 2 months FREE! Save with annual subscription
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Donate Amount Input */}
+            {subscriptionType === 'donate' && (
+              <div className="bg-[#e8e8d0] border-2 border-[#8B4513] rounded-lg p-4 mb-6">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[#8B4513] font-bold text-sm mb-2">
+                      USDC Amount (Whole numbers only):
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={donateAmount}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value) && value >= 1) {
+                          setDonateAmount(value);
+                        }
+                      }}
+                      className="w-full pixel-input bg-[#f5f5dc] border-2 border-[#8B4513] rounded text-[#8B4513] px-3 py-2 font-mono text-center"
+                      placeholder="Enter USDC amount"
+                    />
+                  </div>
+                  <div className="text-center text-xs text-[#654321]">
+                    💡 Minimum: 1 USDC = 1 Day of Inspiration
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Benefits */}
             <div className="mb-6">
               <h3 className="text-[#8B4513] font-bold mb-3">✨ What you get:</h3>
               <ul className="space-y-2 text-sm text-[#654321]">
-                {pricing[subscriptionType].benefits.map((benefit, index) => (
-                  <li key={index}>• {benefit}</li>
-                ))}
+                {subscriptionType === 'donate' ? (
+                  <>
+                    <li>• Support to keep the Game Ad-free</li>
+                    <li>• Earn Sparks from successful focus sessions</li>
+                    <li>• Access to exclusive shop items</li>
+                    <li>• {donateAmount} Day{donateAmount !== 1 ? 's' : ''} of Inspiration Boon</li>
+                  </>
+                ) : (
+                  pricing[subscriptionType]?.benefits.map((benefit, index) => (
+                    <li key={index}>• {benefit}</li>
+                  ))
+                )}
               </ul>
             </div>
 
             {/* Last Updated Timestamp */}
-            <div className="mb-4 text-center">
-              <p className="text-xs text-[#654321] opacity-75">
-                Last updated: {pricing[subscriptionType].updated_at ? 
-                  new Date(pricing[subscriptionType].updated_at).toLocaleString() : 
-                  'Unknown'
-                }
-              </p>
-            </div>
+            {subscriptionType !== 'donate' && (
+              <div className="mb-4 text-center">
+                <p className="text-xs text-[#654321] opacity-75">
+                  Last updated: {pricing[subscriptionType]?.updated_at ? 
+                    new Date(pricing[subscriptionType].updated_at).toLocaleString() : 
+                    'Unknown'
+                  }
+                </p>
+              </div>
+            )}
           </>
         )}
 
