@@ -86,21 +86,21 @@ function HomePageContent() {
   useEffect(() => {
     console.log('🔐 Authentication Status:', {
       user: !!user,
-      loading,
+      loading: loading || false,
       verifiedUser: !!verifiedUser,
-      isBaseAppAuthenticated,
-      isBaseApp,
+      isBaseAppAuthenticated: isBaseAppAuthenticated || false,
+      isBaseApp: isBaseApp || false,
     });
   }, [user, loading, verifiedUser, isBaseAppAuthenticated, isBaseApp]);
 
   // Log context information for development
   useEffect(() => {
     console.log('🌍 Context Information:', {
-      entryType,
-      isViralEntry,
-      isReturningUser,
-      platformType,
-      isContextAvailable,
+      entryType: entryType || 'unknown',
+      isViralEntry: isViralEntry || false,
+      isReturningUser: isReturningUser || false,
+      platformType: platformType || 'unknown',
+      isContextAvailable: isContextAvailable || false,
     });
   }, [entryType, isViralEntry, isReturningUser, platformType, isContextAvailable]);
 
@@ -151,7 +151,7 @@ function HomePageContent() {
       console.log('🔮 Farcaster detected, setting auth mode to siwf');
       setAuthMode('siwf');
     }
-  }, [isBaseApp, isSIWFFarcaster]);
+  }, [isBaseApp || false, isSIWFFarcaster || false]);
 
   // Handle SIWF authentication and platform detection
   useEffect(() => {
@@ -160,7 +160,7 @@ function HomePageContent() {
       console.log('🔍 Platform detected:', { isSIWFBaseApp, isSIWFFarcaster });
       setAuthMode('siwf');
     }
-  }, [isSIWFBaseApp, isSIWFFarcaster]);
+  }, [isSIWFBaseApp || false, isSIWFFarcaster || false]);
 
   // Redirect SIWF users to dedicated auth page
   useEffect(() => {
@@ -168,7 +168,7 @@ function HomePageContent() {
       console.log('🔄 Redirecting SIWF user to auth page');
       window.location.href = '/auth/siwf';
     }
-  }, [isSIWFBaseApp, isSIWFFarcaster, isSIWFAuthenticated, user]);
+  }, [isSIWFBaseApp || false, isSIWFFarcaster || false, isSIWFAuthenticated || false, user]);
 
   // Show loading state while authentication is being determined
   if (loading || isBaseAppLoading || isSIWFLoading) {

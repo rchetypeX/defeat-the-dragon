@@ -4,17 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { AuthKitProvider, useProfile, useSignIn, useSignInMessage } from '@farcaster/auth-kit';
 import '@farcaster/auth-kit/styles.css';
 import { createClient } from '@supabase/supabase-js';
-// Conditional imports to prevent SSR issues
-let useMiniKit: any = null;
-
-if (typeof window !== 'undefined') {
-  try {
-    const minikit = require('@coinbase/onchainkit/minikit');
-    useMiniKit = minikit.useMiniKit;
-  } catch (error) {
-    console.warn('MiniKit not available:', error);
-  }
-}
+import { useMiniKit } from '@coinbase/onchainkit/minikit';
 
 // Supabase client
 const supabase = createClient(
@@ -88,16 +78,19 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
   let setFrameReady: any = null;
   let isFrameReady: boolean = false;
   
-  if (useMiniKit) {
-    try {
-      miniKitResult = useMiniKit();
-      context = miniKitResult?.context || null;
-      setFrameReady = miniKitResult?.setFrameReady || null;
-      isFrameReady = miniKitResult?.isFrameReady || false;
-    } catch (error) {
-      // MiniKit not available during SSR/SSG
-      console.warn('MiniKit not available during build:', error);
-    }
+  // Use MiniKit hooks with proper error handling
+  try {
+    miniKitResult = useMiniKit();
+    context = miniKitResult?.context || null;
+    setFrameReady = miniKitResult?.setFrameReady || null;
+    isFrameReady = miniKitResult?.isFrameReady || false;
+  } catch (error) {
+    // MiniKit not available - provide fallback values
+    console.warn('MiniKit not available during build:', error);
+    miniKitResult = null;
+    context = null;
+    setFrameReady = null;
+    isFrameReady = false;
   }
   
   // Initialize Base App frame when component mounts

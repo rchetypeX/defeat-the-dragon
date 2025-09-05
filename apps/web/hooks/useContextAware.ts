@@ -1,26 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-// Import MiniKit hooks conditionally to prevent SSR issues
-let useMiniKit: any = null;
-let useIsInMiniApp: any = null;
-let useComposeCast: any = null;
-let useViewProfile: any = null;
-let useViewCast: any = null;
-
-// Only import on client side
-if (typeof window !== 'undefined') {
-  try {
-    const minikit = require('@coinbase/onchainkit/minikit');
-    useMiniKit = minikit.useMiniKit;
-    useIsInMiniApp = minikit.useIsInMiniApp;
-    useComposeCast = minikit.useComposeCast;
-    useViewProfile = minikit.useViewProfile;
-    useViewCast = minikit.useViewCast;
-  } catch (error) {
-    console.warn('MiniKit not available:', error);
-  }
-}
+import { 
+  useMiniKit, 
+  useIsInMiniApp, 
+  useComposeCast, 
+  useViewProfile, 
+  useViewCast 
+} from '@coinbase/onchainkit/minikit';
 
 interface ContextAwareState {
   // Context data
@@ -81,34 +68,41 @@ export function useContextAware(): ContextAwareState {
   let viewProfileFn = null;
   let viewCastFn = null;
 
-  if (isClient && useMiniKit) {
-    try {
-      const miniKitResult = useMiniKit();
-      const isInMiniAppResult = useIsInMiniApp?.();
-      const composeCastResult = useComposeCast?.();
-      const viewProfileResult = useViewProfile?.();
-      const viewCastResult = useViewCast?.();
+  // Use MiniKit hooks with proper error handling
+  try {
+    const miniKitResult = useMiniKit();
+    const isInMiniAppResult = useIsInMiniApp();
+    const composeCastResult = useComposeCast();
+    const viewProfileResult = useViewProfile();
+    const viewCastResult = useViewCast();
 
-      context = miniKitResult?.context || null;
-      isFrameReady = miniKitResult?.isFrameReady || false;
-      setFrameReady = miniKitResult?.setFrameReady || null;
-      isInMiniApp = isInMiniAppResult?.isInMiniApp || false;
-      
-      composeCastFn = (() => {
-        if (typeof composeCastResult === 'function') {
-          return composeCastResult;
-        }
-        if (composeCastResult && typeof composeCastResult.composeCast === 'function') {
-          return composeCastResult.composeCast;
-        }
-        return null;
-      })();
-      
-      viewProfileFn = viewProfileResult || null;
-      viewCastFn = viewCastResult || null;
-    } catch (error) {
-      console.warn('MiniKit hooks failed:', error);
-    }
+    context = miniKitResult?.context || null;
+    isFrameReady = miniKitResult?.isFrameReady || false;
+    setFrameReady = miniKitResult?.setFrameReady || null;
+    isInMiniApp = isInMiniAppResult?.isInMiniApp || false;
+    
+    composeCastFn = (() => {
+      if (typeof composeCastResult === 'function') {
+        return composeCastResult;
+      }
+      if (composeCastResult && typeof composeCastResult.composeCast === 'function') {
+        return composeCastResult.composeCast;
+      }
+      return null;
+    })();
+    
+    viewProfileFn = viewProfileResult || null;
+    viewCastFn = viewCastResult || null;
+  } catch (error) {
+    // MiniKit not available - provide fallback values
+    console.warn('MiniKit hooks not available:', error);
+    context = null;
+    isFrameReady = false;
+    setFrameReady = null;
+    isInMiniApp = false;
+    composeCastFn = null;
+    viewProfileFn = null;
+    viewCastFn = null;
   }
 
   // Set frame ready when available
