@@ -7,11 +7,9 @@ import {
   CompleteSessionResponse,
   computeXP,
   computeCoins,
-  computeSparks,
-  computeLevel,
-  xpForNextLevel,
-  xpProgressToNextLevel
+  computeSparks
 } from '@defeat-the-dragon/engine';
+import { calculateLevel } from '../../../lib/levelUtils';
 
 // Initialize Supabase client for server-side operations (service role for bypassing RLS)
 const supabase = createClient(
@@ -248,7 +246,10 @@ export async function POST(request: NextRequest) {
     const newXP = player.xp + rewards.xp;
     const newCoins = player.coins + rewards.coins;
     const newSparks = player.sparks + rewards.sparks;
-    const newLevel = computeLevel(newXP);
+    
+    // Use the new database-driven level calculation system
+    const levelCalculation = await calculateLevel(newXP);
+    const newLevel = levelCalculation.currentLevel;
     const levelUp = newLevel > player.level;
 
     // Temporarily disable the trigger for this update
