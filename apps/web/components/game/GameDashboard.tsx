@@ -285,7 +285,7 @@ export function GameDashboard() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden game-dashboard">
       {/* Focus Session Music */}
       <FocusSessionMusic 
         src="/assets/audio/focus-session-music.mp3"

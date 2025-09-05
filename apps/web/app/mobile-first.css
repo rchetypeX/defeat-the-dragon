@@ -1282,8 +1282,98 @@ html, body {
   cursor: not-allowed;
 }
 
+/* Desktop Browser Locked Aspect Ratio - 1024x1366px */
+@media (min-width: 1024px) and (min-height: 768px) {
+  /* Only apply to desktop browsers, not mobile devices */
+  html, body {
+    /* Lock the viewport to 1024x1366 aspect ratio */
+    width: 1024px !important;
+    height: 1366px !important;
+    max-width: 1024px !important;
+    max-height: 1366px !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+    /* Center the locked viewport */
+    position: relative !important;
+  }
+  
+  /* Create a container that maintains the aspect ratio */
+  body {
+    /* Ensure the body maintains the locked dimensions */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+  
+  /* Ensure all content fits within the locked viewport */
+  .min-h-screen {
+    min-height: 1366px !important;
+    height: 1366px !important;
+    max-height: 1366px !important;
+  }
+  
+  /* Adjust container to fit within locked viewport */
+  .container {
+    max-width: 1024px !important;
+    width: 1024px !important;
+    padding: 0 var(--spacing-4) !important;
+  }
+  
+  /* Ensure game dashboard fits within locked viewport */
+  .game-dashboard {
+    width: 1024px !important;
+    height: 1366px !important;
+    max-width: 1024px !important;
+    max-height: 1366px !important;
+    overflow: hidden !important;
+  }
+  
+  /* Adjust character scaling for locked viewport */
+  .character-dynamic {
+    --character-max-width: min(40vw, 300px) !important;
+    --character-max-height: min(40vw, 300px) !important;
+  }
+  
+  /* Adjust focus button for locked viewport */
+  .focus-button-container {
+    padding-bottom: 4rem !important;
+  }
+  
+  /* Adjust character dialogue for locked viewport */
+  .character-dialogue {
+    bottom: 8rem !important;
+    max-width: 50vw !important;
+  }
+  
+  /* Ensure pixel cards fit within locked viewport */
+  .pixel-card {
+    max-width: 90% !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Adjust authentication forms for locked viewport */
+  .auth-container {
+    min-height: 1366px !important;
+    height: 1366px !important;
+    max-height: 1366px !important;
+  }
+  
+  .auth-form {
+    max-width: 400px !important;
+    max-height: 70vh !important;
+  }
+  
+  /* Ensure wallet login form fits in locked viewport */
+  .wallet-login-form {
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+  }
+}
+
 /* Mobile-First Responsive Design */
-@media (min-width: 640px) {
+@media (min-width: 640px) and (max-width: 1023px) {
   .container {
     max-width: 640px;
   }
