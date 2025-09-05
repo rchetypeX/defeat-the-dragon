@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { AuthKitProvider, useProfile, useSignIn, useSignInMessage } from '@farcaster/auth-kit';
 import '@farcaster/auth-kit/styles.css';
 import { createClient } from '@supabase/supabase-js';
+import { useMiniKit } from '@coinbase/onchainkit/minikit';
 
 // Supabase client
 const supabase = createClient(
