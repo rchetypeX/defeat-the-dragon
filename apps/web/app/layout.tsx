@@ -7,6 +7,7 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { InventoryProvider } from '../contexts/InventoryContext';
 import { SIWFProvider } from '../contexts/SIWFContext';
 import { MiniKitContextProvider } from '../providers/MiniKitProvider';
+import { WagmiProvider } from '../providers/WagmiProvider';
 
 
 import { appLogger } from '../lib/logger';
@@ -121,17 +122,19 @@ export default function RootLayout({
         <meta name="twitter:site" content="@yourusername" />
       </head>
       <body className={inter.className}>
-        <SIWFProvider>
-          <AuthProvider>
-            <InventoryProvider>
-              <MiniKitContextProvider>
-                <AudioProvider>
-                  {children}
-                </AudioProvider>
-              </MiniKitContextProvider>
-            </InventoryProvider>
-          </AuthProvider>
-        </SIWFProvider>
+        <WagmiProvider>
+          <SIWFProvider>
+            <AuthProvider>
+              <InventoryProvider>
+                <MiniKitContextProvider>
+                  <AudioProvider>
+                    {children}
+                  </AudioProvider>
+                </MiniKitContextProvider>
+              </InventoryProvider>
+            </AuthProvider>
+          </SIWFProvider>
+        </WagmiProvider>
       </body>
     </html>
   );

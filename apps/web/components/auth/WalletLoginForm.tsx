@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useWalletAuth } from '../../hooks/useWalletAuth';
 import { WalletSignupForm } from './WalletSignupForm';
+import { BaseAccountFeatures } from '../wallet/BaseAccountFeatures';
 
 export function WalletLoginForm() {
   const [showSignupForm, setShowSignupForm] = useState(false);
@@ -28,6 +29,7 @@ export function WalletLoginForm() {
     selectProvider,
     cancelProviderSelection,
     isBaseApp,
+    baseAccountCapabilities,
   } = useWalletAuth();
 
   const handleConnect = async () => {
@@ -253,6 +255,13 @@ export function WalletLoginForm() {
           />
         </a>
       </div>
+
+      {/* Base Account Features */}
+      {isConnected && baseAccountCapabilities && (
+        <div className="mt-6">
+          <BaseAccountFeatures />
+        </div>
+      )}
 
       {/* Wallet Signup Modal */}
       {showSignupForm && (

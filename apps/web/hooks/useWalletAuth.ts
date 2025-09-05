@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAccount, useConnect } from 'wagmi';
+import { useBaseAccountCapabilities } from './useBaseAccountCapabilities';
 
 // Base App integration
 let useAuthenticate: any = null;
@@ -19,6 +21,11 @@ if (typeof window !== 'undefined') {
 }
 
 export function useWalletAuth() {
+  // Use wagmi hooks for wallet connection
+  const { address: wagmiAddress, isConnected: wagmiIsConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const baseAccountCapabilities = useBaseAccountCapabilities();
+  
   const [isConnecting, setIsConnecting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [address, setAddress] = useState<string | null>(null);
@@ -36,6 +43,22 @@ export function useWalletAuth() {
   const [isBaseApp, setIsBaseApp] = useState(false);
   const [baseAppUser, setBaseAppUser] = useState<any>(null);
   const [baseAppContext, setBaseAppContext] = useState<any>(null);
+
+  // Sync wagmi state with local state
+  useEffect(() => {
+    if (wagmiAddress && wagmiIsConnected) {
+      setAddress(wagmiAddress);
+      setIsConnected(true);
+      setAvailableAccounts([wagmiAddress]);
+      checkAccountExists(wagmiAddress);
+    } else if (!wagmiIsConnected && !manualDisconnect) {
+      // Only reset if not manually disconnected
+      setAddress(null);
+      setIsConnected(false);
+      setAvailableAccounts([]);
+      setHasAccount(null);
+    }
+  }, [wagmiAddress, wagmiIsConnected, manualDisconnect]);
 
   // Check if we're in Base App environment
   const detectBaseApp = () => {
@@ -470,17 +493,29 @@ export function useWalletAuth() {
       return;
     }
 
-    // For Base App users, use Base App authentication instead
+    // For Base App users, use wagmi with injected connector
     if (isBaseApp) {
-      console.log('🔐 Base App user detected, using Base App authentication');
+      console.log('🔐 Base App user detected, using wagmi with injected connector');
+      setIsConnecting(true);
+      setAuthError(null);
+      setManualDisconnect(false);
+
       try {
-        await authenticateWithBaseApp();
-        return;
+        // In Base App, the wallet is automatically connected via injected provider
+        // We just need to connect using wagmi's injected connector
+        const injectedConnector = connectors.find(connector => connector.id === 'injected');
+        if (injectedConnector) {
+          await connect({ connector: injectedConnector });
+        } else {
+          throw new Error('Injected connector not found');
+        }
       } catch (error) {
-        console.error('Base App authentication failed:', error);
-        setAuthError('Base App authentication failed. Please try again.');
-        return;
+        console.error('Base App wallet connection failed:', error);
+        setAuthError('Failed to connect wallet in Base App. Please try again.');
+      } finally {
+        setIsConnecting(false);
       }
+      return;
     }
 
     // Check for available providers (only for regular browser users)
@@ -1043,6 +1078,9 @@ export function useWalletAuth() {
     // Base App helper functions
     isBaseAppIdentifier,
     extractFidFromBaseAppIdentifier,
+    
+    // Base Account capabilities
+    baseAccountCapabilities,
   };
 }
 
