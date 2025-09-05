@@ -63,7 +63,6 @@ export function useBaseAppNotifications(options: UseBaseAppNotificationsOptions 
     maxNotificationsPerDay = 100
   } = options;
 
-  const { isFrameReady } = useMiniKit();
   const isBaseAppRef = useRef(false);
   const isEnabledRef = useRef(false);
 
@@ -103,7 +102,7 @@ export function useBaseAppNotifications(options: UseBaseAppNotificationsOptions 
     });
 
     isEnabledRef.current = true;
-  }, [isFrameReady]);
+  }, []);
 
   // Set up daily reminder scheduling
   useEffect(() => {

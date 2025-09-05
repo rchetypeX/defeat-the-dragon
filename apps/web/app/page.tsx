@@ -15,7 +15,6 @@ import { GameDashboard } from '../components/game/GameDashboard';
 import BackgroundMusic from '../components/audio/BackgroundMusic';
 import FocusSessionMusic from '../components/audio/FocusSessionMusic';
 import { AudioProvider } from '../contexts/AudioContext';
-import { useMiniKit } from '@coinbase/onchainkit/minikit';
 import { useBaseAppAuth } from '../hooks/useBaseAppAuth';
 import { useContextAware } from '../hooks/useContextAware';
 import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';

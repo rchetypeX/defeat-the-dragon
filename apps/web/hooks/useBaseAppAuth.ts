@@ -1,6 +1,18 @@
 'use client';
 
-import { useAuthenticate, useMiniKit } from '@coinbase/onchainkit/minikit';
+// Conditional imports to prevent SSR issues
+let useAuthenticate: any = null;
+let useMiniKit: any = null;
+
+if (typeof window !== 'undefined') {
+  try {
+    const minikit = require('@coinbase/onchainkit/minikit');
+    useAuthenticate = minikit.useAuthenticate;
+    useMiniKit = minikit.useMiniKit;
+  } catch (error) {
+    console.warn('MiniKit not available:', error);
+  }
+}
 import { useEffect, useState } from 'react';
 
 interface BaseAppAuthState {
@@ -22,17 +34,30 @@ interface BaseAppAuthState {
 }
 
 export function useBaseAppAuth(): BaseAppAuthState {
-  const { signIn: miniKitSignIn } = useAuthenticate();
-  
   // Initialize state with default values to prevent build-time errors
   const [isLoading, setIsLoading] = useState(true);
   const [isBaseApp, setIsBaseApp] = useState(false);
 
-  // Use MiniKit hooks directly - they handle client-side initialization
-  const miniKitResult = useMiniKit();
-  const context = miniKitResult?.context || null;
-  const contextUser = context?.user || null;
-  const contextFid = contextUser?.fid?.toString() || null;
+  // Use MiniKit hooks safely for SSR
+  let miniKitSignIn: any = null;
+  let miniKitResult: any = null;
+  let context: any = null;
+  let contextUser: any = null;
+  let contextFid: string | null = null;
+  
+  if (useAuthenticate && useMiniKit) {
+    try {
+      const { signIn } = useAuthenticate();
+      miniKitSignIn = signIn;
+      miniKitResult = useMiniKit();
+      context = miniKitResult?.context || null;
+      contextUser = context?.user || null;
+      contextFid = contextUser?.fid?.toString() || null;
+    } catch (error) {
+      // MiniKit not available during SSR/SSG
+      console.warn('MiniKit not available during build:', error);
+    }
+  }
 
   // Detect if we're in Base App environment
   useEffect(() => {

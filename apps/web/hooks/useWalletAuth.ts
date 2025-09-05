@@ -4,8 +4,19 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAccount, useConnect } from 'wagmi';
 
-// Base App integration
-import { useAuthenticate, useMiniKit } from '@coinbase/onchainkit/minikit';
+// Base App integration - conditional imports to prevent SSR issues
+let useAuthenticate: any = null;
+let useMiniKit: any = null;
+
+if (typeof window !== 'undefined') {
+  try {
+    const minikit = require('@coinbase/onchainkit/minikit');
+    useAuthenticate = minikit.useAuthenticate;
+    useMiniKit = minikit.useMiniKit;
+  } catch (error) {
+    console.warn('MiniKit not available:', error);
+  }
+}
 
 export function useWalletAuth() {
   // Use wagmi hooks for wallet connection
@@ -29,9 +40,19 @@ export function useWalletAuth() {
   const [isBaseApp, setIsBaseApp] = useState(false);
   const [baseAppUser, setBaseAppUser] = useState<any>(null);
   
-  // Use MiniKit hooks directly
-  const miniKitResult = useMiniKit();
-  const baseAppContext = miniKitResult?.context || null;
+  // Use MiniKit hooks safely for SSR
+  let miniKitResult: any = null;
+  let baseAppContext: any = null;
+  
+  if (useMiniKit) {
+    try {
+      miniKitResult = useMiniKit();
+      baseAppContext = miniKitResult?.context || null;
+    } catch (error) {
+      // MiniKit not available during SSR/SSG
+      console.warn('MiniKit not available during build:', error);
+    }
+  }
 
   // Sync wagmi state with local state
   useEffect(() => {
