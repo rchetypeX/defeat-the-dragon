@@ -64,7 +64,15 @@ export function useContextAware(): ContextAwareState {
   const isFrameReady = miniKitResult?.isFrameReady || false;
   const setFrameReady = miniKitResult?.setFrameReady || null;
   const isInMiniApp = isInMiniAppResult?.isInMiniApp || false;
-  const composeCastFn = composeCastResult || null;
+  const composeCastFn = (() => {
+    if (typeof composeCastResult === 'function') {
+      return composeCastResult;
+    }
+    if (composeCastResult && typeof composeCastResult.composeCast === 'function') {
+      return composeCastResult.composeCast;
+    }
+    return null;
+  })();
   const viewProfileFn = viewProfileResult || null;
   const viewCastFn = viewCastResult || null;
 
@@ -105,7 +113,7 @@ export function useContextAware(): ContextAwareState {
 
   // Social actions
   const thankSharer = useCallback(async () => {
-    if (!castAuthor || !castHash) return;
+    if (!castAuthor || !castHash || !composeCastFn) return;
     
     try {
       await composeCastFn({
@@ -132,6 +140,8 @@ export function useContextAware(): ContextAwareState {
   }, [viewCastFn]);
 
   const composeCast = useCallback(async (text: string, parentHash?: string) => {
+    if (!composeCastFn) return;
+    
     try {
       const castOptions: any = { text };
       if (parentHash) {
