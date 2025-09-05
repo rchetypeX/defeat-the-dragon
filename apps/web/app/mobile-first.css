@@ -1282,90 +1282,118 @@ html, body {
   cursor: not-allowed;
 }
 
-/* Desktop Browser Locked Aspect Ratio - 1024x1366px */
+/* Desktop Browser Mobile Device Frame Effect */
 @media (min-width: 1024px) and (min-height: 768px) {
   /* Only apply to desktop browsers, not mobile devices */
   html, body {
-    /* Lock the viewport to 1024x1366 aspect ratio */
-    width: 1024px !important;
-    height: 1366px !important;
-    max-width: 1024px !important;
-    max-height: 1366px !important;
-    margin: 0 auto !important;
+    /* Set background color for desktop */
+    background-color: #e1e1e1 !important;
+    /* Remove any previous constraints */
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
     overflow: hidden !important;
-    /* Center the locked viewport */
-    position: relative !important;
-  }
-  
-  /* Create a container that maintains the aspect ratio */
-  body {
-    /* Ensure the body maintains the locked dimensions */
+    /* Center content */
     display: flex !important;
-    flex-direction: column !important;
     align-items: center !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
   }
   
-  /* Ensure all content fits within the locked viewport */
+  /* Create the mobile device frame container */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/desktop-frame.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 1000;
+    pointer-events: none; /* Allow clicks to pass through to the app */
+  }
+  
+  /* Main app container - positioned behind the frame */
+  #__next {
+    width: 1765px !important;
+    height: 3753px !important;
+    max-width: 1765px !important;
+    max-height: 3753px !important;
+    position: relative !important;
+    z-index: 1 !important;
+    /* Center the app content */
+    margin: 0 auto !important;
+    /* Ensure content fits within the frame */
+    overflow: hidden !important;
+    /* Add subtle shadow to make it look like it's behind the frame */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* Ensure all content fits within the mobile frame dimensions */
   .min-h-screen {
-    min-height: 1366px !important;
-    height: 1366px !important;
-    max-height: 1366px !important;
+    min-height: 3753px !important;
+    height: 3753px !important;
+    max-height: 3753px !important;
   }
   
-  /* Adjust container to fit within locked viewport */
+  /* Adjust container to fit within mobile frame */
   .container {
-    max-width: 1024px !important;
-    width: 1024px !important;
+    max-width: 1765px !important;
+    width: 1765px !important;
     padding: 0 var(--spacing-4) !important;
   }
   
-  /* Ensure game dashboard fits within locked viewport */
+  /* Ensure game dashboard fits within mobile frame */
   .game-dashboard {
-    width: 1024px !important;
-    height: 1366px !important;
-    max-width: 1024px !important;
-    max-height: 1366px !important;
+    width: 1765px !important;
+    height: 3753px !important;
+    max-width: 1765px !important;
+    max-height: 3753px !important;
     overflow: hidden !important;
   }
   
-  /* Adjust character scaling for locked viewport */
+  /* Adjust character scaling for mobile frame */
   .character-dynamic {
-    --character-max-width: min(40vw, 300px) !important;
-    --character-max-height: min(40vw, 300px) !important;
+    --character-max-width: min(50vw, 400px) !important;
+    --character-max-height: min(50vw, 400px) !important;
   }
   
-  /* Adjust focus button for locked viewport */
+  /* Adjust focus button for mobile frame */
   .focus-button-container {
-    padding-bottom: 4rem !important;
+    padding-bottom: 6rem !important;
   }
   
-  /* Adjust character dialogue for locked viewport */
+  /* Adjust character dialogue for mobile frame */
   .character-dialogue {
-    bottom: 8rem !important;
-    max-width: 50vw !important;
+    bottom: 10rem !important;
+    max-width: 60vw !important;
   }
   
-  /* Ensure pixel cards fit within locked viewport */
+  /* Ensure pixel cards fit within mobile frame */
   .pixel-card {
     max-width: 90% !important;
     max-height: 80vh !important;
     overflow-y: auto !important;
   }
   
-  /* Adjust authentication forms for locked viewport */
+  /* Adjust authentication forms for mobile frame */
   .auth-container {
-    min-height: 1366px !important;
-    height: 1366px !important;
-    max-height: 1366px !important;
+    min-height: 3753px !important;
+    height: 3753px !important;
+    max-height: 3753px !important;
   }
   
   .auth-form {
-    max-width: 400px !important;
+    max-width: 500px !important;
     max-height: 70vh !important;
   }
   
-  /* Ensure wallet login form fits in locked viewport */
+  /* Ensure wallet login form fits in mobile frame */
   .wallet-login-form {
     max-height: 70vh !important;
     overflow-y: auto !important;
