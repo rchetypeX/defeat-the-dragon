@@ -20,113 +20,89 @@ CREATE TABLE IF NOT EXISTS session_rewards_master (
 ALTER TABLE session_rewards_master ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policy (public read access for session rewards)
+DROP POLICY IF EXISTS "Anyone can view session rewards" ON session_rewards_master;
 CREATE POLICY "Anyone can view session rewards" ON session_rewards_master FOR SELECT USING (true);
 
 -- Clear any existing data to ensure consistency
 TRUNCATE TABLE session_rewards_master RESTART IDENTITY;
 
--- Insert session rewards data
--- These rewards are designed to be more balanced than the current fallback
--- Current fallback: XP = duration * 2, Coins = duration * 0.8, Sparks = duration * 0.2
--- New rewards: More reasonable progression with bonus multipliers for longer sessions
+-- Insert session rewards data based on the exact table structure provided
+-- Session types are determined by duration ranges:
+-- 5-15: Train, 16-30: Eat, 31-45: Learn, 46-60: Bathe, 61-75: Sleep, 76-90: Maintain, 91-105: Fight, 106-120: Adventure
 
 INSERT INTO session_rewards_master (session_type, duration_minutes, base_xp, base_coins, base_sparks, bonus_multiplier, is_active) VALUES
 
--- 5 minute sessions
-('Train', 5, 8, 3, 1, 1.00, true),
-('Quest_Study', 5, 10, 4, 1, 1.00, true),
-('Learn', 5, 6, 2, 1, 1.00, true),
-('Search', 5, 5, 2, 0, 1.00, true),
-('Eat', 5, 3, 1, 0, 1.00, true),
-('Sleep', 5, 2, 1, 0, 1.00, true),
-('Bathe', 5, 4, 2, 0, 1.00, true),
-('Maintain', 5, 5, 2, 1, 1.00, true),
-('Fight', 5, 12, 5, 2, 1.00, true),
-('Adventure', 5, 15, 6, 2, 1.00, true),
+-- 5 minute sessions (Train)
+('Train', 5, 5, 3, 0, 1.00, true),
 
--- 10 minute sessions
-('Train', 10, 15, 6, 2, 1.00, true),
-('Quest_Study', 10, 18, 7, 2, 1.00, true),
-('Learn', 10, 12, 4, 1, 1.00, true),
-('Search', 10, 10, 4, 1, 1.00, true),
-('Eat', 10, 6, 2, 1, 1.00, true),
-('Sleep', 10, 4, 2, 0, 1.00, true),
-('Bathe', 10, 8, 3, 1, 1.00, true),
-('Maintain', 10, 10, 4, 1, 1.00, true),
-('Fight', 10, 22, 9, 3, 1.00, true),
-('Adventure', 10, 28, 11, 4, 1.00, true),
+-- 10 minute sessions (Train)
+('Train', 10, 10, 6, 0, 1.00, true),
 
--- 15 minute sessions
-('Train', 15, 22, 9, 3, 1.00, true),
-('Quest_Study', 15, 26, 10, 3, 1.00, true),
-('Learn', 15, 18, 6, 2, 1.00, true),
-('Search', 15, 15, 6, 2, 1.00, true),
-('Eat', 15, 9, 3, 1, 1.00, true),
-('Sleep', 15, 6, 3, 1, 1.00, true),
-('Bathe', 15, 12, 4, 1, 1.00, true),
-('Maintain', 15, 15, 6, 2, 1.00, true),
-('Fight', 15, 32, 13, 4, 1.00, true),
-('Adventure', 15, 40, 16, 5, 1.00, true),
+-- 15 minute sessions (Train)
+('Train', 15, 16, 9, 1, 1.00, true),
 
--- 20 minute sessions
-('Train', 20, 28, 11, 4, 1.00, true),
-('Quest_Study', 20, 34, 13, 4, 1.00, true),
-('Learn', 20, 24, 8, 2, 1.00, true),
-('Search', 20, 20, 8, 2, 1.00, true),
-('Eat', 20, 12, 4, 1, 1.00, true),
-('Sleep', 20, 8, 4, 1, 1.00, true),
-('Bathe', 20, 16, 5, 2, 1.00, true),
-('Maintain', 20, 20, 8, 2, 1.00, true),
-('Fight', 20, 42, 17, 5, 1.00, true),
-('Adventure', 20, 52, 20, 6, 1.00, true),
+-- 20 minute sessions (Eat)
+('Eat', 20, 22, 13, 1, 1.00, true),
 
--- 25 minute sessions (your current session)
-('Train', 25, 35, 14, 5, 1.00, true),
-('Quest_Study', 25, 42, 16, 5, 1.00, true),
-('Learn', 25, 30, 10, 3, 1.00, true),
-('Search', 25, 25, 10, 3, 1.00, true),
-('Eat', 25, 15, 5, 2, 1.00, true),
-('Sleep', 25, 10, 5, 1, 1.00, true),
-('Bathe', 25, 20, 6, 2, 1.00, true),
-('Maintain', 25, 25, 10, 3, 1.00, true),
-('Fight', 25, 52, 21, 6, 1.00, true),
-('Adventure', 25, 65, 25, 8, 1.00, true),
+-- 25 minute sessions (Eat) - Your current session
+('Eat', 25, 28, 16, 1, 1.00, true),
 
--- 30 minute sessions
-('Train', 30, 42, 17, 6, 1.00, true),
-('Quest_Study', 30, 50, 19, 6, 1.00, true),
-('Learn', 30, 36, 12, 3, 1.00, true),
-('Search', 30, 30, 12, 3, 1.00, true),
-('Eat', 30, 18, 6, 2, 1.00, true),
-('Sleep', 30, 12, 6, 2, 1.00, true),
-('Bathe', 30, 24, 7, 2, 1.00, true),
-('Maintain', 30, 30, 12, 3, 1.00, true),
-('Fight', 30, 62, 25, 7, 1.00, true),
-('Adventure', 30, 78, 30, 9, 1.00, true),
+-- 30 minute sessions (Eat)
+('Eat', 30, 34, 20, 2, 1.00, true),
 
--- 45 minute sessions
-('Train', 45, 63, 25, 9, 1.00, true),
-('Quest_Study', 45, 75, 28, 9, 1.00, true),
-('Learn', 45, 54, 18, 5, 1.00, true),
-('Search', 45, 45, 18, 5, 1.00, true),
-('Eat', 45, 27, 9, 3, 1.00, true),
-('Sleep', 45, 18, 9, 3, 1.00, true),
-('Bathe', 45, 36, 11, 3, 1.00, true),
-('Maintain', 45, 45, 18, 5, 1.00, true),
-('Fight', 45, 93, 37, 11, 1.00, true),
-('Adventure', 45, 117, 45, 14, 1.00, true),
+-- 35 minute sessions (Learn)
+('Learn', 35, 41, 24, 2, 1.00, true),
 
--- 60 minute sessions
-('Train', 60, 84, 34, 12, 1.00, true),
-('Quest_Study', 60, 100, 38, 12, 1.00, true),
-('Learn', 60, 72, 24, 6, 1.00, true),
-('Search', 60, 60, 24, 6, 1.00, true),
-('Eat', 60, 36, 12, 4, 1.00, true),
-('Sleep', 60, 24, 12, 4, 1.00, true),
-('Bathe', 60, 48, 14, 4, 1.00, true),
-('Maintain', 60, 60, 24, 6, 1.00, true),
-('Fight', 60, 124, 50, 14, 1.00, true),
-('Adventure', 60, 156, 60, 18, 1.00, true);
+-- 40 minute sessions (Learn)
+('Learn', 40, 48, 28, 2, 1.00, true),
+
+-- 45 minute sessions (Learn)
+('Learn', 45, 55, 33, 3, 1.00, true),
+
+-- 50 minute sessions (Bathe)
+('Bathe', 50, 62, 37, 3, 1.00, true),
+
+-- 55 minute sessions (Bathe)
+('Bathe', 55, 70, 42, 3, 1.00, true),
+
+-- 60 minute sessions (Bathe)
+('Bathe', 60, 78, 46, 4, 1.00, true),
+
+-- 65 minute sessions (Sleep)
+('Sleep', 65, 86, 51, 4, 1.00, true),
+
+-- 70 minute sessions (Sleep)
+('Sleep', 70, 94, 56, 4, 1.00, true),
+
+-- 75 minute sessions (Sleep)
+('Sleep', 75, 103, 61, 5, 1.00, true),
+
+-- 80 minute sessions (Maintain)
+('Maintain', 80, 112, 67, 5, 1.00, true),
+
+-- 85 minute sessions (Maintain)
+('Maintain', 85, 121, 72, 5, 1.00, true),
+
+-- 90 minute sessions (Maintain)
+('Maintain', 90, 130, 78, 6, 1.00, true),
+
+-- 95 minute sessions (Fight)
+('Fight', 95, 140, 84, 6, 1.00, true),
+
+-- 100 minute sessions (Fight)
+('Fight', 100, 150, 90, 6, 1.00, true),
+
+-- 105 minute sessions (Fight)
+('Fight', 105, 158, 94, 7, 1.00, true),
+
+-- 110 minute sessions (Adventure)
+('Adventure', 110, 165, 99, 7, 1.00, true),
+
+-- 115 minute sessions (Adventure)
+('Adventure', 115, 172, 103, 7, 1.00, true),
+
+-- 120 minute sessions (Adventure)
+('Adventure', 120, 180, 108, 8, 1.00, true);
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_session_rewards_type_duration ON session_rewards_master(session_type, duration_minutes);
@@ -152,12 +128,12 @@ SELECT
   5 as sparks
 UNION ALL
 SELECT 
-  'New Train (25 min)' as reward_type,
+  'New Eat (25 min)' as reward_type,
   base_xp as xp,
   base_coins as coins,
   base_sparks as sparks
 FROM session_rewards_master 
-WHERE session_type = 'Train' AND duration_minutes = 25;
+WHERE session_type = 'Eat' AND duration_minutes = 25;
 
 -- Count total session reward entries
 SELECT COUNT(*) as total_session_rewards FROM session_rewards_master WHERE is_active = true;
