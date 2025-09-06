@@ -17,6 +17,21 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Helper function to determine session type based on duration
+function getSessionTypeFromDuration(durationMinutes: number): string {
+  if (durationMinutes >= 5 && durationMinutes <= 15) return 'Train';
+  if (durationMinutes >= 16 && durationMinutes <= 30) return 'Eat';
+  if (durationMinutes >= 31 && durationMinutes <= 45) return 'Learn';
+  if (durationMinutes >= 46 && durationMinutes <= 60) return 'Bathe';
+  if (durationMinutes >= 61 && durationMinutes <= 75) return 'Sleep';
+  if (durationMinutes >= 76 && durationMinutes <= 90) return 'Maintain';
+  if (durationMinutes >= 91 && durationMinutes <= 105) return 'Fight';
+  if (durationMinutes >= 106 && durationMinutes <= 120) return 'Adventure';
+  
+  // Fallback for durations outside the defined ranges
+  return 'Train';
+}
+
 // Helper function to calculate rewards based on session completion
 async function calculateSessionRewards(sessionType: string, durationMinutes: number, isSuccessful: boolean = true) {
   try {
@@ -240,7 +255,9 @@ export async function POST(request: NextRequest) {
 
     // Calculate rewards based on outcome
     const isSuccessful = outcome === 'success';
-    const rewards = await calculateSessionRewards(action, durationMinutes, isSuccessful);
+    const sessionType = getSessionTypeFromDuration(durationMinutes);
+    console.log('Session complete: Using session type:', sessionType, 'for duration:', durationMinutes);
+    const rewards = await calculateSessionRewards(sessionType, durationMinutes, isSuccessful);
     
     // Calculate new values
     const newXP = player.xp + rewards.xp;

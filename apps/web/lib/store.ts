@@ -4,6 +4,81 @@ import { Player, Session, Inventory, Class, Action } from '@defeat-the-dragon/en
 import { startSession, completeSession, getCurrentSession, getPlayerData } from './api';
 import { syncService } from './syncService';
 
+// Helper function to calculate fallback rewards based on session rewards table
+function calculateFallbackRewards(durationMinutes: number, currentLevel: number) {
+  // Session type mapping based on duration
+  let sessionType: string;
+  if (durationMinutes >= 5 && durationMinutes <= 15) sessionType = 'Train';
+  else if (durationMinutes >= 16 && durationMinutes <= 30) sessionType = 'Eat';
+  else if (durationMinutes >= 31 && durationMinutes <= 45) sessionType = 'Learn';
+  else if (durationMinutes >= 46 && durationMinutes <= 60) sessionType = 'Bathe';
+  else if (durationMinutes >= 61 && durationMinutes <= 75) sessionType = 'Sleep';
+  else if (durationMinutes >= 76 && durationMinutes <= 90) sessionType = 'Maintain';
+  else if (durationMinutes >= 91 && durationMinutes <= 105) sessionType = 'Fight';
+  else if (durationMinutes >= 106 && durationMinutes <= 120) sessionType = 'Adventure';
+  else sessionType = 'Train'; // Fallback
+
+  // Find the closest duration match (equal or next lower duration)
+  const durationRanges = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120];
+  const closestDuration = durationRanges
+    .filter(d => d <= durationMinutes)
+    .sort((a, b) => b - a)[0] || 5;
+
+  // Session rewards table (matching the database)
+  const rewardsTable: Record<string, Record<number, {xp: number, coins: number, sparks: number}>> = {
+    'Train': {
+      5: {xp: 5, coins: 3, sparks: 0},
+      10: {xp: 10, coins: 6, sparks: 0},
+      15: {xp: 16, coins: 9, sparks: 1}
+    },
+    'Eat': {
+      20: {xp: 22, coins: 13, sparks: 1},
+      25: {xp: 28, coins: 16, sparks: 1},
+      30: {xp: 34, coins: 20, sparks: 2}
+    },
+    'Learn': {
+      35: {xp: 41, coins: 24, sparks: 2},
+      40: {xp: 48, coins: 28, sparks: 2},
+      45: {xp: 55, coins: 33, sparks: 3}
+    },
+    'Bathe': {
+      50: {xp: 62, coins: 37, sparks: 3},
+      55: {xp: 70, coins: 42, sparks: 3},
+      60: {xp: 78, coins: 46, sparks: 4}
+    },
+    'Sleep': {
+      65: {xp: 86, coins: 51, sparks: 4},
+      70: {xp: 94, coins: 56, sparks: 4},
+      75: {xp: 103, coins: 61, sparks: 5}
+    },
+    'Maintain': {
+      80: {xp: 112, coins: 67, sparks: 5},
+      85: {xp: 121, coins: 72, sparks: 5},
+      90: {xp: 130, coins: 78, sparks: 6}
+    },
+    'Fight': {
+      95: {xp: 140, coins: 84, sparks: 6},
+      100: {xp: 150, coins: 90, sparks: 6},
+      105: {xp: 158, coins: 94, sparks: 7}
+    },
+    'Adventure': {
+      110: {xp: 165, coins: 99, sparks: 7},
+      115: {xp: 172, coins: 103, sparks: 7},
+      120: {xp: 180, coins: 108, sparks: 8}
+    }
+  };
+
+  const rewards = rewardsTable[sessionType]?.[closestDuration] || {xp: 5, coins: 3, sparks: 0};
+  
+  return {
+    xp_gained: rewards.xp,
+    coins_gained: rewards.coins,
+    sparks_gained: rewards.sparks,
+    level_up: false,
+    new_level: currentLevel,
+  };
+}
+
 interface GameState {
   // User state
   user: {
@@ -262,14 +337,8 @@ export const useGameStore = create<GameState & GameActions>()(
             } catch (apiError) {
               console.warn('Store: API call failed, using fallback completion:', apiError);
               
-              // Create fallback response for development/testing
-              const fallbackResponse = {
-                xp_gained: Math.max(1, Math.floor(actualDurationMinutes * 2)),
-                coins_gained: Math.max(1, Math.floor(actualDurationMinutes * 0.8)),
-                sparks_gained: Math.max(0, Math.floor(actualDurationMinutes * 0.2)),
-                level_up: false,
-                new_level: state.player?.level || 1,
-              };
+              // Create fallback response using the correct session rewards table
+              const fallbackResponse = calculateFallbackRewards(actualDurationMinutes, state.player?.level || 1);
               
               response = fallbackResponse;
               console.log('Store: Using fallback completion response:', fallbackResponse);
