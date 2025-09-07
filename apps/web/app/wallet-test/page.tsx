@@ -34,7 +34,7 @@ export default function WalletTestPage() {
               <h3 className="text-lg font-semibold text-green-400 mb-2">Transaction Features</h3>
               <ul className="space-y-1 text-gray-300">
                 <li>• Single transaction signing</li>
-                <li>• Batch transactions (EIP-5792)</li>
+                <li>• Multiple transaction amounts</li>
                 <li>• Base Network integration</li>
                 <li>• Error handling and user feedback</li>
               </ul>
@@ -59,7 +59,7 @@ export default function WalletTestPage() {
             </div>
             <div className="flex items-start space-x-3">
               <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">4</span>
-              <p>Test batch transactions for multiple operations in one confirmation</p>
+              <p>Test different transaction amounts to verify wallet functionality</p>
             </div>
           </div>
         </div>

@@ -131,7 +131,7 @@ export function WalletIntegration() {
           <p>1. <strong>Connect:</strong> Click "Connect Wallet" to connect your wallet</p>
           <p>2. <strong>Sign:</strong> Approve the connection in your wallet</p>
           <p>3. <strong>Transact:</strong> Use the transaction examples to test signing</p>
-          <p>4. <strong>Batch:</strong> Try batch transactions for multiple operations</p>
+          <p>4. <strong>Test:</strong> Try different transaction amounts to verify functionality</p>
         </div>
         
         {isBaseApp && (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount, useSendTransaction, useSendCalls } from 'wagmi';
+import { useAccount, useSendTransaction } from 'wagmi';
 import { parseEther } from 'viem';
 
 interface TransactionExampleProps {
@@ -16,9 +16,6 @@ export function TransactionExample({ onTransactionSuccess, onTransactionError }:
 
   // Single transaction hook
   const { sendTransaction } = useSendTransaction();
-  
-  // Batch transactions hook (EIP-5792)
-  const { sendCalls } = useSendCalls();
 
   const handleSingleTransaction = async () => {
     if (!isConnected || !address) {
@@ -30,24 +27,33 @@ export function TransactionExample({ onTransactionSuccess, onTransactionError }:
     setError(null);
 
     try {
-      const hash = await sendTransaction({
+      sendTransaction({
         to: '0x1a9Fce96e04ba06D9190339DF817b43837fa0eA9', // Your merchant wallet
         value: parseEther('0.001'), // 0.001 ETH
+      }, {
+        onSuccess: (hash) => {
+          console.log('Transaction sent:', hash);
+          onTransactionSuccess?.(hash);
+          setIsLoading(false);
+        },
+        onError: (err) => {
+          const errorMessage = err.message || 'Transaction failed';
+          console.error('Transaction error:', err);
+          setError(errorMessage);
+          onTransactionError?.(errorMessage);
+          setIsLoading(false);
+        }
       });
-
-      console.log('Transaction sent:', hash);
-      onTransactionSuccess?.(hash);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Transaction failed';
       console.error('Transaction error:', err);
       setError(errorMessage);
       onTransactionError?.(errorMessage);
-    } finally {
       setIsLoading(false);
     }
   };
 
-  const handleBatchTransaction = async () => {
+  const handleTestTransaction = async () => {
     if (!isConnected || !address) {
       setError('Please connect your wallet first');
       return;
@@ -57,28 +63,28 @@ export function TransactionExample({ onTransactionSuccess, onTransactionError }:
     setError(null);
 
     try {
-      // Example batch transaction: send to multiple addresses
-      const hash = await sendCalls({
-        calls: [
-          {
-            to: '0x1a9Fce96e04ba06D9190339DF817b43837fa0eA9',
-            value: parseEther('0.001')
-          },
-          {
-            to: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-            value: parseEther('0.0005')
-          }
-        ]
+      sendTransaction({
+        to: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', // Test address
+        value: parseEther('0.0001'), // Small test amount
+      }, {
+        onSuccess: (hash) => {
+          console.log('Test transaction sent:', hash);
+          onTransactionSuccess?.(hash);
+          setIsLoading(false);
+        },
+        onError: (err) => {
+          const errorMessage = err.message || 'Test transaction failed';
+          console.error('Test transaction error:', err);
+          setError(errorMessage);
+          onTransactionError?.(errorMessage);
+          setIsLoading(false);
+        }
       });
-
-      console.log('Batch transaction sent:', hash);
-      onTransactionSuccess?.(hash);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Batch transaction failed';
-      console.error('Batch transaction error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Test transaction failed';
+      console.error('Test transaction error:', err);
       setError(errorMessage);
       onTransactionError?.(errorMessage);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -107,15 +113,15 @@ export function TransactionExample({ onTransactionSuccess, onTransactionError }:
           disabled={isLoading}
           className="pixel-button w-full py-2 px-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Sending...' : 'Send Single Transaction (0.001 ETH)'}
+          {isLoading ? 'Sending...' : 'Send Transaction (0.001 ETH)'}
         </button>
 
         <button
-          onClick={handleBatchTransaction}
+          onClick={handleTestTransaction}
           disabled={isLoading}
-          className="pixel-button w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
+          className="pixel-button w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Sending...' : 'Send Batch Transaction (2 transfers)'}
+          {isLoading ? 'Sending...' : 'Send Test Transaction (0.0001 ETH)'}
         </button>
       </div>
 

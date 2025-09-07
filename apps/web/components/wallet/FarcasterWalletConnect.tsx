@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useAccount, useConnect } from 'wagmi';
 
 interface FarcasterWalletConnectProps {
@@ -10,6 +11,13 @@ interface FarcasterWalletConnectProps {
 export function FarcasterWalletConnect({ onConnected, onError }: FarcasterWalletConnectProps) {
   const { isConnected, address } = useAccount();
   const { connect, connectors, isPending } = useConnect();
+
+  // Call onConnected callback when wallet connects
+  useEffect(() => {
+    if (isConnected && address && onConnected) {
+      onConnected(address);
+    }
+  }, [isConnected, address, onConnected]);
 
   const handleConnect = async () => {
     try {
@@ -35,7 +43,6 @@ export function FarcasterWalletConnect({ onConnected, onError }: FarcasterWallet
         <div className="text-sm text-gray-300 break-all">
           Address: {address}
         </div>
-        {onConnected && onConnected(address)}
       </div>
     );
   }
