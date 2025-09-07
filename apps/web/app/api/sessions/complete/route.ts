@@ -284,9 +284,19 @@ export async function POST(request: NextRequest) {
     const newSparks = player.sparks + rewards.sparks;
     
     // Use the new database-driven level calculation system
-    const levelCalculation = await calculateLevel(newXP);
-    const newLevel = levelCalculation.currentLevel;
-    const levelUp = newLevel > player.level;
+    let newLevel = player.level;
+    let levelUp = false;
+    
+    try {
+      const levelCalculation = await calculateLevel(newXP);
+      newLevel = levelCalculation.currentLevel;
+      levelUp = newLevel > player.level;
+    } catch (levelError) {
+      console.warn('Level calculation failed, using simple calculation:', levelError);
+      // Fallback to simple level calculation
+      newLevel = Math.floor(newXP / 100) + 1; // Simple: 100 XP per level
+      levelUp = newLevel > player.level;
+    }
 
     // Temporarily disable the trigger for this update
     // This is a workaround until we can create the proper function
