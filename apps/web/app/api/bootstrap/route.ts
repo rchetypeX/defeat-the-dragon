@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { calculateLevel } from '../../../lib/levelUtils';
 
 // Force dynamic rendering to prevent static generation errors
 export const dynamic = 'force-dynamic';
@@ -193,11 +194,32 @@ export async function GET(request: NextRequest) {
                                 player.display_name.startsWith('Player_') ||
                                 player.display_name.length < 2;
     
+    // Calculate correct level based on current XP
+    let correctLevel = player?.level || 1;
+    try {
+      const levelCalculation = await calculateLevel(player?.xp || 0);
+      correctLevel = levelCalculation.currentLevel;
+      
+      // If the level is incorrect, update it in the database
+      if (correctLevel !== player?.level) {
+        console.log(`Bootstrap: Correcting level from ${player?.level} to ${correctLevel} for user ${userId}`);
+        await supabase
+          .from('players')
+          .update({ 
+            level: correctLevel,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId);
+      }
+    } catch (levelError) {
+      console.warn('Bootstrap: Level calculation failed, using database level:', levelError);
+    }
+    
     // Prepare response
     const response = {
       profile: profile || { id: userId, display_name: player?.display_name || 'Adventurer' },
       player: {
-        level: player?.level || 1,
+        level: correctLevel,
         xp: player?.xp || 0,
         coins: player?.coins || 0,
         sparks: player?.sparks || 0,
