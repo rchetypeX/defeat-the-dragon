@@ -1,0 +1,140 @@
+[1mdiff --git a/apps/web/app/api/sessions/complete/route.ts b/apps/web/app/api/sessions/complete/route.ts[m
+[1mindex a4b99f5..c5dc2d3 100644[m
+[1m--- a/apps/web/app/api/sessions/complete/route.ts[m
+[1m+++ b/apps/web/app/api/sessions/complete/route.ts[m
+[36m@@ -17,6 +17,21 @@[m [mconst supabase = createClient([m
+   process.env.SUPABASE_SERVICE_ROLE_KEY![m
+ );[m
+ [m
+[32m+[m[32m// Helper function to determine session type based on duration[m
+[32m+[m[32mfunction getSessionTypeFromDuration(durationMinutes: number): string {[m
+[32m+[m[32m  if (durationMinutes >= 5 && durationMinutes <= 15) return 'Train';[m
+[32m+[m[32m  if (durationMinutes >= 16 && durationMinutes <= 30) return 'Eat';[m
+[32m+[m[32m  if (durationMinutes >= 31 && durationMinutes <= 45) return 'Learn';[m
+[32m+[m[32m  if (durationMinutes >= 46 && durationMinutes <= 60) return 'Bathe';[m
+[32m+[m[32m  if (durationMinutes >= 61 && durationMinutes <= 75) return 'Sleep';[m
+[32m+[m[32m  if (durationMinutes >= 76 && durationMinutes <= 90) return 'Maintain';[m
+[32m+[m[32m  if (durationMinutes >= 91 && durationMinutes <= 105) return 'Fight';[m
+[32m+[m[32m  if (durationMinutes >= 106 && durationMinutes <= 120) return 'Adventure';[m
+[32m+[m[41m  [m
+[32m+[m[32m  // Fallback for durations outside the defined ranges[m
+[32m+[m[32m  return 'Train';[m
+[32m+[m[32m}[m
+[32m+[m
+ // Helper function to calculate rewards based on session completion[m
+ async function calculateSessionRewards(sessionType: string, durationMinutes: number, isSuccessful: boolean = true) {[m
+   try {[m
+[36m@@ -240,7 +255,9 @@[m [mexport async function POST(request: NextRequest) {[m
+ [m
+     // Calculate rewards based on outcome[m
+     const isSuccessful = outcome === 'success';[m
+[31m-    const rewards = await calculateSessionRewards(action, durationMinutes, isSuccessful);[m
+[32m+[m[32m    const sessionType = getSessionTypeFromDuration(durationMinutes);[m
+[32m+[m[32m    console.log('Session complete: Using session type:', sessionType, 'for duration:', durationMinutes);[m
+[32m+[m[32m    const rewards = await calculateSessionRewards(sessionType, durationMinutes, isSuccessful);[m
+     [m
+     // Calculate new values[m
+     const newXP = player.xp + rewards.xp;[m
+[1mdiff --git a/apps/web/lib/store.ts b/apps/web/lib/store.ts[m
+[1mindex a357024..c1faeaf 100644[m
+[1m--- a/apps/web/lib/store.ts[m
+[1m+++ b/apps/web/lib/store.ts[m
+[36m@@ -4,6 +4,81 @@[m [mimport { Player, Session, Inventory, Class, Action } from '@defeat-the-dragon/en[m
+ import { startSession, completeSession, getCurrentSession, getPlayerData } from './api';[m
+ import { syncService } from './syncService';[m
+ [m
+[32m+[m[32m// Helper function to calculate fallback rewards based on session rewards table[m
+[32m+[m[32mfunction calculateFallbackRewards(durationMinutes: number, currentLevel: number) {[m
+[32m+[m[32m  // Session type mapping based on duration[m
+[32m+[m[32m  let sessionType: string;[m
+[32m+[m[32m  if (durationMinutes >= 5 && durationMinutes <= 15) sessionType = 'Train';[m
+[32m+[m[32m  else if (durationMinutes >= 16 && durationMinutes <= 30) sessionType = 'Eat';[m
+[32m+[m[32m  else if (durationMinutes >= 31 && durationMinutes <= 45) sessionType = 'Learn';[m
+[32m+[m[32m  else if (durationMinutes >= 46 && durationMinutes <= 60) sessionType = 'Bathe';[m
+[32m+[m[32m  else if (durationMinutes >= 61 && durationMinutes <= 75) sessionType = 'Sleep';[m
+[32m+[m[32m  else if (durationMinutes >= 76 && durationMinutes <= 90) sessionType = 'Maintain';[m
+[32m+[m[32m  else if (durationMinutes >= 91 && durationMinutes <= 105) sessionType = 'Fight';[m
+[32m+[m[32m  else if (durationMinutes >= 106 && durationMinutes <= 120) sessionType = 'Adventure';[m
+[32m+[m[32m  else sessionType = 'Train'; // Fallback[m
+[32m+[m
+[32m+[m[32m  // Find the closest duration match (equal or next lower duration)[m
+[32m+[m[32m  const durationRanges = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120];[m
+[32m+[m[32m  const closestDuration = durationRanges[m
+[32m+[m[32m    .filter(d => d <= durationMinutes)[m
+[32m+[m[32m    .sort((a, b) => b - a)[0] || 5;[m
+[32m+[m
+[32m+[m[32m  // Session rewards table (matching the database)[m
+[32m+[m[32m  const rewardsTable: Record<string, Record<number, {xp: number, coins: number, sparks: number}>> = {[m
+[32m+[m[32m    'Train': {[m
+[32m+[m[32m      5: {xp: 5, coins: 3, sparks: 0},[m
+[32m+[m[32m      10: {xp: 10, coins: 6, sparks: 0},[m
+[32m+[m[32m      15: {xp: 16, coins: 9, sparks: 1}[m
+[32m+[m[32m    },[m
+[32m+[m[32m    'Eat': {[m
+[32m+[m[32m      20: {xp: 22, coins: 13, sparks: 1},[m
+[32m+[m[32m      25: {xp: 28, coins: 16, sparks: 1},[m
+[32m+[m[32m      30: {xp: 34, coins: 20, sparks: 2}[m
+[32m+[m[32m    },[m
+[32m+[m[32m    'Learn': {[m
+[32m+[m[32m      35: {xp: 41, coins: 24, sparks: 2},[m
+[32m+[m[32m      40: {xp: 48, coins: 28, sparks: 2},[m
+[32m+[m[32m      45: {xp: 55, coins: 33, sparks: 3}[m
+[32m+[m[32m    },[m
+[32m+[m[32m    'Bathe': {[m
+[32m+[m[32m      50: {xp: 62, coins: 37, sparks: 3},[m
+[32m+[m[32m      55: {xp: 70, coins: 42, sparks: 3},[m
+[32m+[m[32m      60: {xp: 78, coins: 46, sparks: 4}[m
+[32m+[m[32m    },[m
+[32m+[m[32m    'Sleep': {[m
+[32m+[m[32m      65: {xp: 86, coins: 51, sparks: 4},[m
+[32m+[m[32m      70: {xp: 94, coins: 56, sparks: 4},[m
+[32m+[m[32m      75: {xp: 103, coins: 61, sparks: 5}[m
+[32m+[m[32m    },[m
+[32m+[m[32m    'Maintain': {[m
+[32m+[m[32m      80: {xp: 112, coins: 67, sparks: 5},[m
+[32m+[m[32m      85: {xp: 121, coins: 72, sparks: 5},[m
+[32m+[m[32m      90: {xp: 130, coins: 78, sparks: 6}[m
+[32m+[m[32m    },[m
+[32m+[m[32m    'Fight': {[m
+[32m+[m[32m      95: {xp: 140, coins: 84, sparks: 6},[m
+[32m+[m[32m      100: {xp: 150, coins: 90, sparks: 6},[m
+[32m+[m[32m      105: {xp: 158, coins: 94, sparks: 7}[m
+[32m+[m[32m    },[m
+[32m+[m[32m    'Adventure': {[m
+[32m+[m[32m      110: {xp: 165, coins: 99, sparks: 7},[m
+[32m+[m[32m      115: {xp: 172, coins: 103, sparks: 7},[m
+[32m+[m[32m      120: {xp: 180, coins: 108, sparks: 8}[m
+[32m+[m[32m    }[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  const rewards = rewardsTable[sessionType]?.[closestDuration] || {xp: 5, coins: 3, sparks: 0};[m
+[32m+[m[41m  [m
+[32m+[m[32m  return {[m
+[32m+[m[32m    xp_gained: rewards.xp,[m
+[32m+[m[32m    coins_gained: rewards.coins,[m
+[32m+[m[32m    sparks_gained: rewards.sparks,[m
+[32m+[m[32m    level_up: false,[m
+[32m+[m[32m    new_level: currentLevel,[m
+[32m+[m[32m  };[m
+[32m+[m[32m}[m
+[32m+[m
+ interface GameState {[m
+   // User state[m
+   user: {[m
+[36m@@ -262,14 +337,8 @@[m [mexport const useGameStore = create<GameState & GameActions>()([m
+             } catch (apiError) {[m
+               console.warn('Store: API call failed, using fallback completion:', apiError);[m
+               [m
+[31m-              // Create fallback response for development/testing[m
+[31m-              const fallbackResponse = {[m
+[31m-                xp_gained: Math.max(1, Math.floor(actualDurationMinutes * 2)),[m
+[31m-                coins_gained: Math.max(1, Math.floor(actualDurationMinutes * 0.8)),[m
+[31m-                sparks_gained: Math.max(0, Math.floor(actualDurationMinutes * 0.2)),[m
+[31m-                level_up: false,[m
+[31m-                new_level: state.player?.level || 1,[m
+[31m-              };[m
+[32m+[m[32m              // Create fallback response using the correct session rewards table[m
+[32m+[m[32m              const fallbackResponse = calculateFallbackRewards(actualDurationMinutes, state.player?.level || 1);[m
+               [m
+               response = fallbackResponse;[m
+               console.log('Store: Using fallback completion response:', fallbackResponse);[m
