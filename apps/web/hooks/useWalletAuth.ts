@@ -462,21 +462,26 @@ export function useWalletAuth() {
       return;
     }
 
-    // For Base App users, use wagmi with injected connector
+    // For Base App users, use Farcaster Mini App connector
     if (isBaseApp) {
-      console.log('🔐 Base App user detected, using wagmi with injected connector');
+      console.log('🔐 Base App user detected, using Farcaster Mini App connector');
       setIsConnecting(true);
       setAuthError(null);
       setManualDisconnect(false);
 
       try {
-        // In Base App, the wallet is automatically connected via injected provider
-        // We just need to connect using wagmi's injected connector
-        const injectedConnector = connectors.find(connector => connector.id === 'injected');
-        if (injectedConnector) {
-          await connect({ connector: injectedConnector });
+        // In Base App, use the Farcaster Mini App connector first
+        const miniAppConnector = connectors.find(connector => connector.id === 'farcasterMiniApp');
+        if (miniAppConnector) {
+          await connect({ connector: miniAppConnector });
         } else {
-          throw new Error('Injected connector not found');
+          // Fallback to injected connector if Mini App connector not available
+          const injectedConnector = connectors.find(connector => connector.id === 'injected');
+          if (injectedConnector) {
+            await connect({ connector: injectedConnector });
+          } else {
+            throw new Error('No suitable connector found for Base App');
+          }
         }
       } catch (error) {
         console.error('Base App wallet connection failed:', error);

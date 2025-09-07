@@ -31,7 +31,11 @@ export function WalletLoginForm() {
   } = useWalletAuth();
 
   const handleConnect = async () => {
-    await connectWallet();
+    try {
+      await connectWallet();
+    } catch (error) {
+      console.error('Connection failed:', error);
+    }
   };
 
   const handleDisconnect = async () => {

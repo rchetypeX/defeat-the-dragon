@@ -1,6 +1,7 @@
 import { createConfig, http } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { injected, metaMask, coinbaseWallet } from 'wagmi/connectors';
+import { farcasterMiniApp as miniAppConnector } from '@farcaster/miniapp-wagmi-connector';
 
 // Base Account paymaster service URL (from the documentation example)
 const PAYMASTER_SERVICE_URL = 'https://api.developer.coinbase.com/rpc/v1/base/v7HqDLjJY4e28qgIDAAN4JNYXnz88mJZ';
@@ -8,6 +9,7 @@ const PAYMASTER_SERVICE_URL = 'https://api.developer.coinbase.com/rpc/v1/base/v7
 export const config = createConfig({
   chains: [base],
   connectors: [
+    miniAppConnector(), // Farcaster Mini App connector (primary for Base App)
     injected(), // For Base App's automatically injected provider
     metaMask(),
     coinbaseWallet({

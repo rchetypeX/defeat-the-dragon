@@ -304,6 +304,16 @@ function HomePageContent() {
                       <p className="text-gray-400 text-xs mt-3">
                         You'll be redirected to our dedicated Farcaster authentication page
                       </p>
+                      
+                      {/* Development: Wallet Test Link */}
+                      <div className="mt-4 pt-4 border-t border-gray-700">
+                        <a 
+                          href="/wallet-test" 
+                          className="text-blue-400 hover:text-blue-300 text-sm underline"
+                        >
+                          🧪 Test Wallet Integration (Development)
+                        </a>
+                      </div>
                     </div>
                   )}
                 </div>

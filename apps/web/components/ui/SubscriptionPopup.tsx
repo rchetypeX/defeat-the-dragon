@@ -130,7 +130,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
     }
     
     if (!window.ethereum) {
-      setError('MetaMask or another Web3 wallet is required. Please install MetaMask.');
+      setError('Wallet not available. Please ensure you are using a compatible wallet.');
       return;
     }
 
