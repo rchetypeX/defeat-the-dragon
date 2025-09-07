@@ -40,9 +40,14 @@ export async function fetchLevelProgression(): Promise<Record<number, LevelProgr
     if (response.ok) {
       const result = await response.json();
       if (result.success && result.data) {
-        cachedProgression = result.data;
+        // Convert array to object keyed by level
+        const progressionObject: Record<number, LevelProgression> = {};
+        result.data.forEach((item: LevelProgression) => {
+          progressionObject[item.level] = item;
+        });
+        cachedProgression = progressionObject;
         lastFetchTime = now;
-        return result.data;
+        return progressionObject;
       }
     }
     
@@ -72,8 +77,8 @@ export async function calculateLevel(totalXp: number): Promise<LevelCalculation>
   let totalXpForCurrentLevel = 0;
   let totalXpForNextLevel = 0;
   
-  // Find current level
-  for (let level = 1; level <= 99; level++) {
+  // Find current level by checking from highest to lowest
+  for (let level = 99; level >= 1; level--) {
     const levelData = progression[level];
     if (!levelData) continue;
     
@@ -81,10 +86,17 @@ export async function calculateLevel(totalXp: number): Promise<LevelCalculation>
       currentLevel = level;
       currentLevelXp = totalXp - levelData.cumulative_xp;
       totalXpForCurrentLevel = levelData.cumulative_xp;
-    } else {
-      // Found the next level
-      totalXpForNextLevel = levelData.cumulative_xp;
-      xpToNextLevel = levelData.cumulative_xp - totalXp;
+      
+      // Find next level for progress calculation
+      const nextLevelData = progression[level + 1];
+      if (nextLevelData) {
+        totalXpForNextLevel = nextLevelData.cumulative_xp;
+        xpToNextLevel = nextLevelData.cumulative_xp - totalXp;
+      } else {
+        // Max level reached
+        xpToNextLevel = 0;
+        totalXpForNextLevel = totalXpForCurrentLevel;
+      }
       break;
     }
   }
