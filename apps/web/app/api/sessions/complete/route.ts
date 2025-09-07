@@ -51,7 +51,18 @@ async function calculateSessionRewards(sessionType: string, durationMinutes: num
       .order('duration_minutes', { ascending: false })
       .limit(1);
 
-    if (error || !rewards || rewards.length === 0) {
+    if (error) {
+      console.error('Session rewards query error:', error);
+      // Fallback to default rewards if query fails
+      return {
+        xp: Math.floor(durationMinutes * 2),
+        coins: Math.floor(durationMinutes * 0.8),
+        sparks: Math.floor(durationMinutes * 0.2),
+      };
+    }
+
+    if (!rewards || rewards.length === 0) {
+      console.warn(`No rewards found for session type: ${sessionType}, duration: ${durationMinutes}`);
       // Fallback to default rewards if no match found
       return {
         xp: Math.floor(durationMinutes * 2),
@@ -257,7 +268,15 @@ export async function POST(request: NextRequest) {
     const isSuccessful = outcome === 'success';
     const sessionType = getSessionTypeFromDuration(durationMinutes);
     console.log('Session complete: Using session type:', sessionType, 'for duration:', durationMinutes);
-    const rewards = await calculateSessionRewards(sessionType, durationMinutes, isSuccessful);
+    
+    let rewards;
+    try {
+      rewards = await calculateSessionRewards(sessionType, durationMinutes, isSuccessful);
+      console.log('Session rewards calculated:', rewards);
+    } catch (rewardError) {
+      console.error('Error calculating session rewards:', rewardError);
+      throw rewardError;
+    }
     
     // Calculate new values
     const newXP = player.xp + rewards.xp;
