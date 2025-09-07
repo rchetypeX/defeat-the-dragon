@@ -153,7 +153,7 @@ export default function LevelTestPage() {
                     <div>
                       <p className="font-semibold">Level Distribution:</p>
                       {Object.entries(result.summary.level_distribution).map(([level, count]) => (
-                        <p key={level} className="ml-2">Level {level}: {count} players</p>
+                        <p key={level} className="ml-2">Level {level}: {count as number} players</p>
                       ))}
                     </div>
                   )}
