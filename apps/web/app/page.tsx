@@ -305,21 +305,6 @@ function HomePageContent() {
                         You'll be redirected to our dedicated Farcaster authentication page
                       </p>
                       
-                      {/* Development: Test Links */}
-                      <div className="mt-4 pt-4 border-t border-gray-700 space-y-2">
-                        <a 
-                          href="/wallet-test" 
-                          className="block text-blue-400 hover:text-blue-300 text-sm underline"
-                        >
-                          🧪 Test Wallet Integration (Development)
-                        </a>
-                        <a 
-                          href="/level-test" 
-                          className="block text-green-400 hover:text-green-300 text-sm underline"
-                        >
-                          🔧 Test Level Calculation (Development)
-                        </a>
-                      </div>
                     </div>
                   )}
                 </div>

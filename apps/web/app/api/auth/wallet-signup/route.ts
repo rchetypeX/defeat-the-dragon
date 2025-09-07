@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { authRateLimiter, getClientIdentifier } from '../../../../lib/rateLimiter';
 import crypto from 'crypto';
 
 const supabase = createClient(
@@ -11,6 +12,28 @@ export async function POST(request: NextRequest) {
   let timeoutId: NodeJS.Timeout | undefined;
   
   try {
+    // Rate limiting
+    const clientId = getClientIdentifier(request);
+    const rateLimit = authRateLimiter.isAllowed(clientId);
+    
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { 
+          error: 'Too many requests. Please try again later.',
+          retryAfter: Math.ceil((rateLimit.resetTime - Date.now()) / 1000)
+        },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimit.resetTime - Date.now()) / 1000).toString(),
+            'X-RateLimit-Limit': '5',
+            'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+            'X-RateLimit-Reset': rateLimit.resetTime.toString()
+          }
+        }
+      );
+    }
+
     console.log('Wallet signup API called');
     
     // Test database connection

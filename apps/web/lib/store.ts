@@ -150,6 +150,9 @@ interface GameActions {
   
   // Reset
   resetGame: () => void;
+  
+  // Force refresh player data from database
+  refreshPlayerData: () => Promise<void>;
 }
 
 const initialState: GameState = {
@@ -501,6 +504,21 @@ export const useGameStore = create<GameState & GameActions>()(
         }),
         
         resetGame: () => set(initialState),
+        
+        refreshPlayerData: async () => {
+          try {
+            console.log('Store: Force refreshing player data from database...');
+            // Clear current player data to force reload
+            set({ player: null });
+            
+            // Load fresh data from database
+            await get().loadPlayerData();
+            console.log('Store: Player data refreshed successfully');
+          } catch (error) {
+            console.error('Store: Failed to refresh player data:', error);
+            throw error;
+          }
+        },
       }),
       {
         name: 'defeat-the-dragon-storage',

@@ -1,8 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { notificationService } from '../../../../lib/notificationService';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+
+// Authentication helper function
+async function authenticateUser(request: NextRequest) {
+  const cookieStore = cookies();
+  const supabaseAuth = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Ignore cookie setting errors
+          }
+        },
+      },
+    }
+  );
+
+  // Try to get user from session first
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+  
+  if (user) {
+    return { userId: user.id, authMethod: 'session' };
+  }
+
+  // Check for Bearer token in Authorization header
+  const authHeader = request.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    
+    // Verify Supabase token
+    try {
+      const { data: { user }, error } = await supabaseAuth.auth.getUser(token);
+      if (user && !error) {
+        return { userId: user.id, authMethod: 'bearer' };
+      }
+    } catch (e) {
+      console.error('Error verifying token:', e);
+    }
+  }
+
+  return null;
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user
+    const auth = await authenticateUser(request);
+    if (!auth) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { type, fid, data } = body;
 
@@ -101,6 +162,15 @@ export async function POST(request: NextRequest) {
 // GET endpoint to check notification status
 export async function GET(request: NextRequest) {
   try {
+    // Authenticate user
+    const auth = await authenticateUser(request);
+    if (!auth) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const fid = searchParams.get('fid');
 
