@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { createServerSupabaseClient } from '../../lib/supabase';
 
 // Force dynamic rendering since this route uses cookies
 export const dynamic = 'force-dynamic';
-
-// Create a single service role client for database operations
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,6 +33,7 @@ export async function GET(request: NextRequest) {
       }
     );
     
+    const supabase = createServerSupabaseClient();
     let userId: string | null = null;
     
     // First, check for Bearer token in Authorization header

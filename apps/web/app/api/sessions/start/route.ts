@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { StartSessionRequest, StartSessionResponse } from '@defeat-the-dragon/engine';
 import { actionForMinutes } from '@defeat-the-dragon/engine';
-
-// Initialize Supabase client for server-side operations (service role for bypassing RLS)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createServerSupabaseClient } from '../../lib/supabase';
 
 export async function POST(request: NextRequest) {
   console.log('API: POST /sessions/start called');
   try {
+    const supabase = createServerSupabaseClient();
+    
     // Get the authorization header
     const authHeader = request.headers.get('authorization');
     console.log('API: Auth header present:', !!authHeader);

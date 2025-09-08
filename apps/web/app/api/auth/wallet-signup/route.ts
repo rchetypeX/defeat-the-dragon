@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { authRateLimiter, getClientIdentifier } from '../../../../lib/rateLimiter';
 import crypto from 'crypto';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createServerSupabaseClient } from '../../../../lib/supabase';
 
 export async function POST(request: NextRequest) {
   let timeoutId: NodeJS.Timeout | undefined;
@@ -35,6 +30,8 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Wallet signup API called');
+    
+    const supabase = createServerSupabaseClient();
     
     // Test database connection
     console.log('Testing database connection...');

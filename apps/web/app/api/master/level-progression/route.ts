@@ -158,6 +158,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const supabase = createServerSupabaseClient();
     const body = await request.json();
     const { level, xp_to_next, cumulative_xp, description, rewards, is_active } = body;
 

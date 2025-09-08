@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import crypto from 'crypto';
 import { 
@@ -10,12 +9,7 @@ import {
   computeSparks
 } from '@defeat-the-dragon/engine';
 import { calculateLevel } from '../../../../lib/levelUtils';
-
-// Initialize Supabase client for server-side operations (service role for bypassing RLS)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createServerSupabaseClient } from '../../../../lib/supabase';
 
 // Helper function to determine session type based on duration
 function getSessionTypeFromDuration(durationMinutes: number): string {
@@ -94,6 +88,8 @@ async function calculateSessionRewards(sessionType: string, durationMinutes: num
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createServerSupabaseClient();
+    
     // Parse and validate request body using the CompleteSessionRequest schema
     const body = await request.json();
     console.log('Session complete: Received request body:', body);
