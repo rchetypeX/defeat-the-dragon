@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createServerSupabaseClient } from '../../../../lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,10 +31,7 @@ export async function POST(request: NextRequest) {
     );
     
     // Use service role client for database operations
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabase = createServerSupabaseClient();
     
     // Try to get user from session first
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { calculateLevel } from '../../../lib/levelUtils';
+import { createServerSupabaseClient } from '../../../lib/supabase';
 
 // Force dynamic rendering to prevent static generation errors
 export const dynamic = 'force-dynamic';
@@ -34,10 +34,7 @@ export async function GET(request: NextRequest) {
     );
     
     // Use service role client for database operations
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const supabase = createServerSupabaseClient();
     
     // Try to get user from session first
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();

@@ -24,7 +24,7 @@ export function MiniKitContextProvider({ children }: { children: ReactNode }) {
 
   return (
     <MiniKitProvider
-      apiKey=""
+      apiKey="tfuQu5OzVIwdrBhHTsDbcOmAjmyFtFj0"
       config={{
         appearance: {
           mode: 'auto',

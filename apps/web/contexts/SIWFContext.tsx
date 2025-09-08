@@ -85,8 +85,8 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
     setFrameReady = miniKitResult?.setFrameReady || null;
     isFrameReady = miniKitResult?.isFrameReady || false;
   } catch (error) {
-    // MiniKit not available - provide fallback values
-    console.warn('MiniKit not available during build:', error);
+    // MiniKit not available - provide fallback values (expected when not in Base App)
+    console.log('MiniKit not available (expected when not in Base App):', error.message);
     miniKitResult = null;
     context = null;
     setFrameReady = null;

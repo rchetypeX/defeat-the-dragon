@@ -50,12 +50,13 @@ function HomePageContent() {
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
   const [walletKey, setWalletKey] = useState(0); // Key to force remount of WalletLoginForm
   
-  // Call Farcaster SDK ready action
+  // Call Farcaster SDK ready action with gesture disable for Base App compatibility
   useEffect(() => {
     const initializeFarcaster = async () => {
       try {
-        await sdk.actions.ready();
-        console.log('✅ Farcaster Mini App ready');
+        // CRITICAL: Disable native gestures to prevent app dismissal conflicts
+        await sdk.actions.ready({ disableNativeGestures: true });
+        console.log('✅ Farcaster Mini App ready with gesture conflicts disabled');
       } catch (error) {
         console.error('❌ Farcaster SDK ready failed:', error);
       }
@@ -143,14 +144,14 @@ function HomePageContent() {
     if (isBaseAppAuthenticated && verifiedUser && !user) {
       console.log('🔐 Base App user detected, setting up user session:', verifiedUser);
       
-      // Create a user session for the Base App user
+      // Create a user session for the Base App user with safe FID access
       const baseAppUser = {
-        id: verifiedUser.fid.toString(),
-        email: `${verifiedUser.username}@baseapp.local`,
-        username: verifiedUser.username,
-        displayName: verifiedUser.displayName,
-        pfpUrl: verifiedUser.pfpUrl,
-        fid: verifiedUser.fid
+        id: verifiedUser?.fid?.toString() || 'unknown',
+        email: `${verifiedUser?.username || 'user'}@baseapp.local`,
+        username: verifiedUser?.username || 'user',
+        displayName: verifiedUser?.displayName || 'Base App User',
+        pfpUrl: verifiedUser?.pfpUrl || '',
+        fid: verifiedUser?.fid || 0
       };
       
       // Store the Base App user in localStorage for consistency

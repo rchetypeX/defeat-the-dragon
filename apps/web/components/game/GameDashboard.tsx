@@ -20,6 +20,7 @@ import { CharacterDialogue } from './CharacterDialogue';
 import { useDataSync } from '../../hooks/useDataSync';
 import { AdventurerNamePrompt } from '../auth/AdventurerNamePrompt';
 import { useAuth } from '../../contexts/AuthContext';
+import { useMobileErrorHandler } from '../error/MobileErrorBoundary';
 
 
 interface SessionResult {
@@ -40,6 +41,7 @@ export function GameDashboard() {
   
   const { isLoading, error, lastSyncTime, syncFocusSession, refreshData } = useDataSync();
   const { user } = useAuth();
+  const { handleError } = useMobileErrorHandler();
   
   // Debug logging for player loading state
   useEffect(() => {
@@ -50,6 +52,18 @@ export function GameDashboard() {
       lastSyncTime
     });
   }, [player, isLoading, error, lastSyncTime]);
+
+  // Mobile-specific error handling
+  useEffect(() => {
+    if (error) {
+      handleError(new Error(`GameDashboard error: ${error}`), {
+        component: 'GameDashboard',
+        player: !!player,
+        isLoading,
+        lastSyncTime
+      });
+    }
+  }, [error, handleError, player, isLoading, lastSyncTime]);
 
   // Sync character store when player data is loaded
   useEffect(() => {

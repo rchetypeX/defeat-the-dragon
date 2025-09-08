@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { apiRateLimiter, getClientIdentifier } from '../../../../lib/rateLimiter';
 import { requireAdmin } from '../../../../lib/adminAuth';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createServerSupabaseClient } from '../../../../lib/supabase';
 
 // Authentication helper function
 async function authenticateUser(request: NextRequest) {
@@ -97,6 +92,7 @@ export async function GET(request: NextRequest) {
     const sessionType = searchParams.get('session_type');
     const durationMinutes = searchParams.get('duration_minutes');
 
+    const supabase = createServerSupabaseClient();
     let query = supabase
       .from('level_progression_master')
       .select('*')
