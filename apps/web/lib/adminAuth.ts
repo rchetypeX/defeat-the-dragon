@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createServerSupabaseClient } from './supabase';
 
 export interface AdminCheckResult {
   isAdmin: boolean;
@@ -17,6 +12,9 @@ export interface AdminCheckResult {
  */
 export async function checkAdminRole(userId: string): Promise<AdminCheckResult> {
   try {
+    // Use centralized Supabase client to avoid multiple instances
+    const supabase = createServerSupabaseClient();
+    
     // Check if user exists in players table with admin role
     const { data: player, error } = await supabase
       .from('players')

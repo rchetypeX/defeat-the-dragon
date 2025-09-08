@@ -32,7 +32,7 @@ export function useBaseAppWallet(): BaseAppWalletState {
   // Use wagmi hooks for wallet connection (as recommended by Base App support)
   const { address, isConnected } = useAccount();
 
-  // Use MiniKit hooks for Base App context
+  // Use MiniKit hooks for Base App context with proper error handling
   let miniKitSignIn: any = null;
   let miniKitResult: any = null;
   let context: any = null;
@@ -45,9 +45,11 @@ export function useBaseAppWallet(): BaseAppWalletState {
     miniKitResult = useMiniKit();
     context = miniKitResult?.context || null;
     contextUser = context?.user || null;
-    contextFid = contextUser?.fid?.toString() || null;
+    // CRITICAL FIX: Add proper null safety for FID conversion
+    contextFid = contextUser?.fid ? contextUser.fid.toString() : null;
   } catch (error) {
-    console.warn('MiniKit not available:', error);
+    // This is expected when not in Base App environment
+    console.log('MiniKit not available (expected when not in Base App):', error.message);
     miniKitSignIn = null;
     miniKitResult = null;
     context = null;
