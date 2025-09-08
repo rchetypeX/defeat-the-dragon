@@ -136,6 +136,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Use centralized Supabase client to avoid multiple instances
+    const supabase = createServerSupabaseClient();
+
     const { data: newItem, error } = await supabase
       .from('shop_items_master')
       .insert({
@@ -202,6 +205,9 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Use centralized Supabase client to avoid multiple instances
+    const supabase = createServerSupabaseClient();
 
     const { data: updatedItem, error } = await supabase
       .from('shop_items_master')
