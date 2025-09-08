@@ -276,8 +276,29 @@ export function GameDashboard() {
             <h2 className="text-xl font-bold text-[#f2751a] mb-2">Loading Character...</h2>
             <p className="text-[#fbbf24]">Preparing your adventure...</p>
             {error && (
-              <p className="text-red-500 text-sm mt-2">Error: {error}</p>
+              <div className="mt-4">
+                <p className="text-red-500 text-sm mb-2">Error: {error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                >
+                  Retry
+                </button>
+              </div>
             )}
+            <div className="mt-4">
+              <button 
+                onClick={() => {
+                  // Clear all auth data and redirect to login
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.href = '/';
+                }} 
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+              >
+                Sign Out & Restart
+              </button>
+            </div>
           </div>
         </div>
       </div>

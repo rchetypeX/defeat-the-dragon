@@ -173,6 +173,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return null;
         }
         
+        // Validate that the Base App user has required fields
+        if (!baseAppUser.id || !baseAppUser.wallet_address) {
+          console.log('AuthContext: Base App user missing required fields, clearing...');
+          localStorage.removeItem('baseAppUser');
+          return null;
+        }
+        
         console.log('AuthContext: Found valid Base App user in localStorage:', baseAppUser);
         return baseAppUser;
       } catch (error) {
@@ -462,19 +469,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      console.log('AuthContext: Starting comprehensive sign out process...');
+      
       // Sign out from Supabase
       await supabase.auth.signOut();
       
-      // Clear all local storage
+      // Clear ALL authentication-related localStorage keys
       localStorage.removeItem('defeat-the-dragon-storage');
       localStorage.removeItem('defeat-the-dragon-store');
       localStorage.removeItem('walletUser');
+      localStorage.removeItem('baseAppUser'); // CRITICAL: This was missing!
+      localStorage.removeItem('playerData'); // Clear cached player data
+      localStorage.removeItem('farcasterUser'); // Clear Farcaster user data
+      localStorage.removeItem('siwfUser'); // Clear SIWF user data
       
       // Clear all session storage
       sessionStorage.clear();
       
+      // Clear all cookies (including wallet-user cookie)
+      document.cookie = 'wallet-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      document.cookie = 'base-app-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      document.cookie = 'farcaster-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      
+      // Reset all authentication states
+      setUser(null);
+      setSession(null);
+      setLoading(false);
+      
       // Reset game state
       resetGame();
+      
+      console.log('AuthContext: Sign out cleanup completed successfully');
       
       // Redirect to login page
       window.location.href = '/';

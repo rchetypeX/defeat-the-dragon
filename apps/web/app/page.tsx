@@ -93,6 +93,32 @@ function HomePageContent() {
     });
   }, [user, loading, verifiedUser, isBaseAppAuthenticated, isBaseApp]);
 
+  // Add timeout mechanism to detect stuck authentication states
+  useEffect(() => {
+    const authTimeout = setTimeout(() => {
+      // If we're still loading after 10 seconds, something might be wrong
+      if (loading || isBaseAppLoading || isSIWFLoading) {
+        console.warn('⚠️ Authentication loading timeout detected - possible stuck state');
+        
+        // Check for inconsistent authentication state
+        const hasStaleAuthData = 
+          localStorage.getItem('walletUser') || 
+          localStorage.getItem('baseAppUser') || 
+          localStorage.getItem('farcasterUser');
+        
+        if (hasStaleAuthData && !user && !verifiedUser) {
+          console.warn('⚠️ Detected stale authentication data - clearing and redirecting');
+          // Clear stale data and redirect
+          localStorage.clear();
+          sessionStorage.clear();
+          window.location.href = '/';
+        }
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(authTimeout);
+  }, [loading, isBaseAppLoading, isSIWFLoading, user, verifiedUser]);
+
   // Log context information for development
   useEffect(() => {
     console.log('🌍 Context Information:', {
