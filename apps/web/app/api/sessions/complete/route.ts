@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
 import { 
   CompleteSessionRequest, 
   CompleteSessionResponse,
