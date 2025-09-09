@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { StartSessionRequest, StartSessionResponse } from '@defeat-the-dragon/engine';
 import { actionForMinutes } from '@defeat-the-dragon/engine';
-import { createServerSupabaseClient } from '../../../../../lib/supabase';
+import { createServerSupabaseClient } from '../../../../lib/supabase';
 
 export async function POST(request: NextRequest) {
   console.log('API: POST /sessions/start called');

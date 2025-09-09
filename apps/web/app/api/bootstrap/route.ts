@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { calculateLevel } from '../../../lib/levelUtils';
-import { createServerSupabaseClient } from '../../../../../lib/supabase';
+import { createServerSupabaseClient } from '../../../../lib/supabase';
 
 // Force dynamic rendering to prevent static generation errors
 export const dynamic = 'force-dynamic';
