@@ -99,7 +99,7 @@ function HomePageContent() {
       user: user ? { id: user.id, email: user.email } : null,
       loading,
       isSIWFAuthenticated,
-      siwfUser: siwfUser ? { id: siwfUser.id, fid: siwfUser.fid } : null,
+      siwfUser: siwfUser ? { fid: siwfUser.fid, username: siwfUser.username, displayName: siwfUser.displayName } : null,
       isSIWFLoading,
       isSIWFBaseApp,
       isSIWFFarcaster,
