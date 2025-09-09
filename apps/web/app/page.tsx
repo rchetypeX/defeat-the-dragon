@@ -3,7 +3,7 @@
 // Force dynamic rendering to prevent static generation errors
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSIWF } from '../contexts/SIWFContext';
 import { useGameStore } from '../lib/store';
@@ -126,6 +126,9 @@ function HomePageContent() {
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
   const [walletKey, setWalletKey] = useState(0); // Key to force remount of WalletLoginForm
   
+  // Ref to prevent infinite loops in Base App authentication
+  const baseAppUserCreatedRef = useRef(false);
+  
   // Call Farcaster SDK ready action with gesture disable for Base App compatibility
   useEffect(() => {
     const initializeFarcaster = async () => {
@@ -224,8 +227,13 @@ function HomePageContent() {
       verifiedUserData: verifiedUser
     });
     
-    if (isBaseAppAuthenticated && verifiedUser && !user) {
+    // CRITICAL FIX: Only create Base App user session if we're actually in Base App
+    // This prevents infinite loops when wallet is connected but not in Base App
+    if (isBaseAppAuthenticated && verifiedUser && !user && isBaseApp && !baseAppUserCreatedRef.current) {
       console.log('🔐 Base App user detected, setting up user session:', verifiedUser);
+      
+      // Mark that we've created the Base App user to prevent infinite loops
+      baseAppUserCreatedRef.current = true;
       
       // Create a user session for the Base App user with safe FID access
       const baseAppUser = {
@@ -251,8 +259,17 @@ function HomePageContent() {
       console.log('🔐 Base App detected but not authenticated, user may need to sign in');
     } else if (!isBaseApp && !user) {
       console.log('ℹ️ Not in Base App environment, using standard authentication flow');
+    } else if (isBaseAppAuthenticated && verifiedUser && !user && !isBaseApp) {
+      console.log('🔐 Wallet connected but not in Base App - skipping Base App user creation to prevent infinite loop');
     }
   }, [isBaseAppAuthenticated, verifiedUser, user, isBaseApp]);
+
+  // Reset the Base App user creation flag when user changes
+  useEffect(() => {
+    if (user) {
+      baseAppUserCreatedRef.current = false;
+    }
+  }, [user]);
 
   // Auto-set auth mode based on environment
   useEffect(() => {
