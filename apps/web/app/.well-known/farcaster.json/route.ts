@@ -19,7 +19,7 @@ export async function GET(request: Request) {
           "0x1a9Fce96e04ba06D9190339DF817b43837fa0eA9"  // Your Base Account address for mini app ownership
         ]
       },
-      miniapp: withValidProperties({
+      frame: withValidProperties({
         version: '1',
         name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'Defeat the Dragon: Focus RPG',
         subtitle: process.env.NEXT_PUBLIC_APP_SUBTITLE || 'Focus RPG',

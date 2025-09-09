@@ -119,14 +119,21 @@ function HomePageContent() {
     const initializeFarcaster = async () => {
       try {
         // CRITICAL: Disable native gestures to prevent app dismissal conflicts
+        // This is required for Base App compatibility as per documentation
         await sdk.actions.ready({ disableNativeGestures: true });
         console.log('✅ Farcaster Mini App ready with gesture conflicts disabled');
       } catch (error) {
         console.error('❌ Farcaster SDK ready failed:', error);
+        // Don't throw the error - let the app continue to function
+        // The SDK ready failure shouldn't break the entire app
+        console.log('ℹ️ Continuing without Farcaster SDK ready (may be expected in some environments)');
       }
     };
     
-    initializeFarcaster();
+    // Only initialize if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      initializeFarcaster();
+    }
   }, []);
 
   // Base App Authentication
@@ -230,6 +237,8 @@ function HomePageContent() {
       console.log('✅ Base App user session created:', baseAppUser);
     } else if (isBaseApp && !isBaseAppAuthenticated && !user) {
       console.log('🔐 Base App detected but not authenticated, user may need to sign in');
+    } else if (!isBaseApp && !user) {
+      console.log('ℹ️ Not in Base App environment, using standard authentication flow');
     }
   }, [isBaseAppAuthenticated, verifiedUser, user, isBaseApp]);
 

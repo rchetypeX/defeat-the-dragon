@@ -60,7 +60,7 @@ export function useBaseAppWallet(): BaseAppWalletState {
   // Detect Base App environment
   useEffect(() => {
     const detectBaseApp = () => {
-      // Official Base App detection method
+      // Official Base App detection method (as per Base App documentation)
       const isBaseAppOfficial = context?.client?.clientFid === 309857;
       
       // Fallback detection methods
@@ -73,6 +73,13 @@ export function useBaseAppWallet(): BaseAppWalletState {
       
       setIsBaseApp(baseAppDetected);
       console.log('Base App detected:', baseAppDetected, 'Client FID:', context?.client?.clientFid);
+      
+      // Log detection details for debugging
+      if (baseAppDetected) {
+        console.log('✅ Base App environment confirmed');
+      } else {
+        console.log('ℹ️ Not in Base App environment');
+      }
     };
 
     detectBaseApp();
