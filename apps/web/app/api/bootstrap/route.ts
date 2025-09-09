@@ -197,9 +197,11 @@ export async function GET(request: NextRequest) {
       const levelCalculation = await calculateLevel(player?.xp || 0);
       correctLevel = levelCalculation.currentLevel;
       
-      // If the level is incorrect, update it in the database
-      if (correctLevel !== player?.level) {
-        console.log(`Bootstrap: Correcting level from ${player?.level} to ${correctLevel} for user ${userId}`);
+      // Only update level if there's a significant discrepancy (more than 1 level difference)
+      // This prevents the bootstrap from constantly "correcting" levels due to minor calculation differences
+      const levelDifference = Math.abs(correctLevel - (player?.level || 1));
+      if (levelDifference > 1) {
+        console.log(`Bootstrap: Significant level discrepancy detected - correcting level from ${player?.level} to ${correctLevel} for user ${userId} (XP: ${player?.xp})`);
         await supabase
           .from('players')
           .update({ 
@@ -207,6 +209,8 @@ export async function GET(request: NextRequest) {
             updated_at: new Date().toISOString()
           })
           .eq('user_id', userId);
+      } else if (levelDifference === 1) {
+        console.log(`Bootstrap: Minor level difference detected but not correcting to prevent constant updates - stored: ${player?.level}, calculated: ${correctLevel}, XP: ${player?.xp}`);
       }
     } catch (levelError) {
       console.warn('Bootstrap: Level calculation failed, using database level:', levelError);

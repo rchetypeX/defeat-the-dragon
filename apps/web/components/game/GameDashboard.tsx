@@ -502,7 +502,7 @@ export function GameDashboard() {
               <img 
                 src={getCharacterImage(equippedCharacter)} 
                 alt="Tiny Adventurer" 
-                className="character-dynamic size-small pixel-art drop-shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                className="character-dynamic size-medium pixel-art drop-shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={handleCharacterClick}
                 onError={(e) => {
                   // Fallback to CSS character if image fails to load

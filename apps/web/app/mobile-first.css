@@ -391,10 +391,10 @@ input:focus, textarea:focus, select:focus {
   object-position: center;
 }
 
-/* Character Dialogue Positioning - Moved closer to center */
+/* Character Dialogue Positioning - Moved higher to avoid obstructing larger character */
 .character-dialogue {
   position: absolute;
-  bottom: 6rem;  /* Moved up closer to center */
+  bottom: 8rem;  /* Moved higher to avoid obstructing the larger character */
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
@@ -404,21 +404,21 @@ input:focus, textarea:focus, select:focus {
 
 @media (min-width: 640px) {
   .character-dialogue {
-    bottom: 7rem;  /* Moved up on tablets */
+    bottom: 9rem;  /* Moved higher on tablets to avoid larger character */
     max-width: 80vw;
   }
 }
 
 @media (min-width: 768px) {
   .character-dialogue {
-    bottom: 8rem;  /* Moved up on desktop */
+    bottom: 10rem;  /* Moved higher on desktop to avoid larger character */
     max-width: 70vw;
   }
 }
 
 @media (min-width: 1024px) {
   .character-dialogue {
-    bottom: 9rem;  /* Moved up on large screens */
+    bottom: 11rem;  /* Moved higher on large screens to avoid larger character */
     max-width: 60vw;
   }
 }
