@@ -348,6 +348,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setGameUser(null);
             resetGame();
           }
+        }
         } else {
           console.log('AuthContext: Sign out in progress, skipping wallet/Base App user re-authentication');
           setUser(null);
