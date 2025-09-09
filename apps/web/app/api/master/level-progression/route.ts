@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { apiRateLimiter, getClientIdentifier } from '../../../../lib/rateLimiter';
 import { requireAdmin } from '../../../../lib/adminAuth';
-import { createServerSupabaseClient } from '../../../../lib/supabase';
+import { createServerSupabaseClient } from '@/lib/supabase';
 
 // Authentication helper function
 async function authenticateUser(request: NextRequest) {

@@ -9,7 +9,7 @@ import {
   computeSparks
 } from '@defeat-the-dragon/engine';
 import { calculateLevel } from '../../../../lib/levelUtils';
-import { createServerSupabaseClient } from '../../../../lib/supabase';
+import { createServerSupabaseClient } from '@/lib/supabase';
 
 // Helper function to determine session type based on duration
 function getSessionTypeFromDuration(durationMinutes: number): string {

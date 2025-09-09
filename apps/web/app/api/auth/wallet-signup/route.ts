@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authRateLimiter, getClientIdentifier } from '../../../../lib/rateLimiter';
 import crypto from 'crypto';
-import { createServerSupabaseClient } from '../../../../lib/supabase';
+import { createServerSupabaseClient } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   let timeoutId: NodeJS.Timeout | undefined;
