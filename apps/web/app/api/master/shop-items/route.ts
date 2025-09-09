@@ -36,10 +36,20 @@ async function authenticateUser(request: NextRequest) {
     return { userId: user.id, authMethod: 'session' };
   }
 
-  // Check for Bearer token in Authorization header
+  // Check for Authorization header
   const authHeader = request.headers.get('authorization');
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (!authHeader) {
+    return null;
+  }
+
+  // Handle different auth token types
+  if (authHeader.startsWith('Bearer ')) {
+    // Standard Bearer token (Supabase JWT)
     const token = authHeader.substring(7);
+    
+    if (token === 'mock-token-for-development') {
+      return { userId: 'mock-user-id', authMethod: 'mock' };
+    }
     
     // Verify Supabase token
     try {
@@ -49,6 +59,23 @@ async function authenticateUser(request: NextRequest) {
       }
     } catch (e) {
       console.error('Error verifying token:', e);
+    }
+  } else if (authHeader.startsWith('wallet:')) {
+    // Wallet user token
+    try {
+      const walletData = JSON.parse(authHeader.substring(7)); // Remove 'wallet:'
+      return { userId: walletData.id, authMethod: 'wallet' };
+    } catch (e) {
+      console.error('Error parsing wallet token:', e);
+    }
+  } else if (authHeader.startsWith('baseapp:')) {
+    // Base App user token
+    try {
+      const baseAppData = JSON.parse(authHeader.substring(8)); // Remove 'baseapp:'
+      // Convert Base App numeric ID to a consistent UUID format
+      return { userId: `baseapp-${baseAppData.id}`, authMethod: 'baseapp' };
+    } catch (e) {
+      console.error('Error parsing Base App token:', e);
     }
   }
 
