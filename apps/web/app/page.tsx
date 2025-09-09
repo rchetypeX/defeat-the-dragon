@@ -36,6 +36,54 @@ function HomePageLoading() {
 
 // Main component that uses useSearchParams
 function HomePageContent() {
+  // Mobile debugging setup with Eruda
+  useEffect(() => {
+    // Only load Eruda in development and not on localhost
+    if (typeof window !== 'undefined' && 
+        process.env.NODE_ENV === 'development' && 
+        !window.location.hostname.includes('localhost')) {
+      import('eruda').then((eruda) => {
+        eruda.default.init();
+        console.log('🔧 Eruda mobile console initialized for debugging');
+      }).catch((error) => {
+        console.error('Failed to load Eruda:', error);
+      });
+    }
+
+    // Enhanced error logging for mobile debugging
+    const handleError = (event: ErrorEvent) => {
+      console.error('🚨 Unhandled Error:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error,
+        stack: event.error?.stack,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      });
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('🚨 Unhandled Promise Rejection:', {
+        reason: event.reason,
+        promise: event.promise,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
+      });
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
   const { user, loading } = useAuth();
   const { 
     isAuthenticated: isSIWFAuthenticated, 
@@ -44,6 +92,22 @@ function HomePageContent() {
     isBaseApp: isSIWFBaseApp,
     isFarcaster: isSIWFFarcaster
   } = useSIWF();
+
+  // Debug logging for authentication state
+  useEffect(() => {
+    console.log('🔍 Authentication State Debug:', {
+      user: user ? { id: user.id, email: user.email } : null,
+      loading,
+      isSIWFAuthenticated,
+      siwfUser: siwfUser ? { id: siwfUser.id, fid: siwfUser.fid } : null,
+      isSIWFLoading,
+      isSIWFBaseApp,
+      isSIWFFarcaster,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href
+    });
+  }, [user, loading, isSIWFAuthenticated, siwfUser, isSIWFLoading, isSIWFBaseApp, isSIWFFarcaster]);
   
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet' | 'siwf'>('wallet');
   const [showOnboarding, setShowOnboarding] = useState(false);
