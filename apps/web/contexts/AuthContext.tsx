@@ -342,7 +342,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } catch (error) {
               console.error('Failed to load player data for Base App user after Supabase logout:', error);
             }
-            }
           } else {
             console.log('AuthContext: No wallet or Base App user found after Supabase logout');
             setUser(null);
