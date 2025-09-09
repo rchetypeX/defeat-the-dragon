@@ -111,12 +111,20 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       
       // Try to link with existing Supabase account or create new one
-      try {
-        await linkSupabaseAccount('', username);
-      } catch (err) {
-        console.error('❌ Failed to link Supabase account:', err);
-        setError('Authentication successful but account linking failed');
-      }
+      // Wrap in Promise.resolve to ensure proper error handling
+      Promise.resolve().then(async () => {
+        try {
+          await linkSupabaseAccount('', username);
+          console.log('✅ Supabase account linked successfully');
+        } catch (err) {
+          console.error('❌ Failed to link Supabase account:', err);
+          setError('Authentication successful but account linking failed');
+          // Don't re-throw to prevent unhandled promise rejection
+        }
+      }).catch((err) => {
+        console.error('❌ Unexpected error in SIWF success handler:', err);
+        setError('Authentication successful but account setup failed');
+      });
     },
     onError: (err) => {
       console.error('❌ SIWF Error:', err);

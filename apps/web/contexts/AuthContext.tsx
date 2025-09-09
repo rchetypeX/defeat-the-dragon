@@ -270,6 +270,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       }
+    }).catch((error) => {
+      console.error('AuthContext: Error during authentication initialization:', error);
+      setLoading(false);
+      setUser(null);
+      setGameUser(null);
+      // Don't throw the error to prevent unhandled promise rejection
     });
 
     // Listen for auth changes

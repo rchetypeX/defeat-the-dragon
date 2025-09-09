@@ -65,15 +65,27 @@ function HomePageContent() {
       });
     };
 
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('🚨 Unhandled Promise Rejection:', {
-        reason: event.reason,
-        promise: event.promise,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        url: window.location.href
-      });
-    };
+          const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+            console.error('🚨 Unhandled Promise Rejection:', {
+              reason: event.reason,
+              promise: event.promise,
+              timestamp: new Date().toISOString(),
+              userAgent: navigator.userAgent,
+              url: window.location.href
+            });
+            
+            // Prevent the default behavior (which would show an error in console)
+            event.preventDefault();
+            
+            // Log additional details for debugging
+            if (event.reason instanceof Error) {
+              console.error('🚨 Promise Rejection Error Details:', {
+                message: event.reason.message,
+                stack: event.reason.stack,
+                name: event.reason.name
+              });
+            }
+          };
 
     window.addEventListener('error', handleError);
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
