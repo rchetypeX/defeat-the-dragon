@@ -197,11 +197,12 @@ export async function GET(request: NextRequest) {
       const levelCalculation = await calculateLevel(player?.xp || 0);
       correctLevel = levelCalculation.currentLevel;
       
-      // Only update level if there's a significant discrepancy (more than 1 level difference)
-      // This prevents the bootstrap from constantly "correcting" levels due to minor calculation differences
-      const levelDifference = Math.abs(correctLevel - (player?.level || 1));
-      if (levelDifference > 1) {
-        console.log(`Bootstrap: Significant level discrepancy detected - correcting level from ${player?.level} to ${correctLevel} for user ${userId} (XP: ${player?.xp})`);
+      // Update level if there's a discrepancy (but only upgrade, not downgrade)
+      // This prevents level downgrades while allowing legitimate upgrades
+      const levelDifference = correctLevel - (player?.level || 1);
+      if (levelDifference > 0) {
+        // Level upgrade - always allow this
+        console.log(`Bootstrap: Level upgrade detected - updating level from ${player?.level} to ${correctLevel} for user ${userId} (XP: ${player?.xp})`);
         await supabase
           .from('players')
           .update({ 
@@ -209,8 +210,19 @@ export async function GET(request: NextRequest) {
             updated_at: new Date().toISOString()
           })
           .eq('user_id', userId);
-      } else if (levelDifference === 1) {
-        console.log(`Bootstrap: Minor level difference detected but not correcting to prevent constant updates - stored: ${player?.level}, calculated: ${correctLevel}, XP: ${player?.xp}`);
+      } else if (levelDifference < -1) {
+        // Significant level downgrade - only allow if more than 1 level difference
+        console.log(`Bootstrap: Significant level downgrade detected - correcting level from ${player?.level} to ${correctLevel} for user ${userId} (XP: ${player?.xp})`);
+        await supabase
+          .from('players')
+          .update({ 
+            level: correctLevel,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId);
+      } else if (levelDifference === -1) {
+        // Minor level downgrade - don't correct to prevent constant updates
+        console.log(`Bootstrap: Minor level downgrade detected but not correcting to prevent constant updates - stored: ${player?.level}, calculated: ${correctLevel}, XP: ${player?.xp}`);
       }
     } catch (levelError) {
       console.warn('Bootstrap: Level calculation failed, using database level:', levelError);

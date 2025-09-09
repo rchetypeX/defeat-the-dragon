@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<SupabaseSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   
   const { setUser: setGameUser, resetGame } = useGameStore();
 
@@ -303,34 +304,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('Failed to load player data:', error);
         }
       } else {
-        // No Supabase session - check for wallet user
-        const walletUser = checkWalletUser();
-        if (walletUser) {
-          setUser(walletUser);
-          setGameUser({
-            id: walletUser.id,
-            email: walletUser.email || `${walletUser.wallet_address}@wallet`,
-          });
-          // Load player data for wallet user
-          try {
-            const playerData = await getPlayerData();
-            if (playerData) {
-              useGameStore.getState().setPlayer(playerData);
-              console.log('AuthContext: Successfully loaded player data for wallet user after Supabase logout');
-            }
-          } catch (error) {
-            console.error('Failed to load player data for wallet user after Supabase logout:', error);
-          }
-        } else {
-          // Check for Base App user
-          const baseAppUser = checkBaseAppUser();
-          if (baseAppUser) {
-            setUser(baseAppUser);
+        // No Supabase session - check for wallet user only if not signing out
+        if (!isSigningOut) {
+          const walletUser = checkWalletUser();
+          if (walletUser) {
+            setUser(walletUser);
             setGameUser({
-              id: baseAppUser.id,
-              email: baseAppUser.email,
+              id: walletUser.id,
+              email: walletUser.email || `${walletUser.wallet_address}@wallet`,
             });
-            // Load player data for Base App user
+            // Load player data for wallet user
+            try {
+              const playerData = await getPlayerData();
+              if (playerData) {
+                useGameStore.getState().setPlayer(playerData);
+                console.log('AuthContext: Successfully loaded player data for wallet user after Supabase logout');
+              }
+            } catch (error) {
+              console.error('Failed to load player data for wallet user after Supabase logout:', error);
+            }
+          } else {
+            // Check for Base App user
+            const baseAppUser = checkBaseAppUser();
+            if (baseAppUser) {
+              setUser(baseAppUser);
+              setGameUser({
+                id: baseAppUser.id,
+                email: baseAppUser.email,
+              });
+              // Load player data for Base App user
             try {
               const playerData = await getPlayerData();
               if (playerData) {
@@ -346,6 +348,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setGameUser(null);
             resetGame();
           }
+        } else {
+          console.log('AuthContext: Sign out in progress, skipping wallet/Base App user re-authentication');
+          setUser(null);
+          setGameUser(null);
+          resetGame();
         }
       }
     });
@@ -477,6 +484,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('AuthContext: Starting comprehensive sign out process...');
       
+      // Set sign out flag to prevent re-authentication during cleanup
+      setIsSigningOut(true);
+      
       // Sign out from Supabase
       await supabase.auth.signOut();
       
@@ -507,10 +517,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       console.log('AuthContext: Sign out cleanup completed successfully');
       
+      // Reset sign out flag after cleanup
+      setIsSigningOut(false);
+      
       // Redirect to login page
       window.location.href = '/';
     } catch (error) {
       console.error('Error during sign out:', error);
+      // Reset sign out flag even on error
+      setIsSigningOut(false);
       // Even if there's an error, try to redirect
       window.location.href = '/';
     }
