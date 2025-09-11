@@ -387,7 +387,7 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
               {usdcBalance === null && (
                 <div className="mt-2 text-center">
                   <button
-                    onClick={() => checkWalletConnection()}
+                    onClick={() => walletAuth.refreshBalance()}
                     className="text-xs text-[#fbbf24] hover:text-white underline"
                     title="Retry USDC balance check"
                   >
