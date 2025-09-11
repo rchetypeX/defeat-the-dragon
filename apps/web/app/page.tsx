@@ -242,7 +242,8 @@ function HomePageContent() {
         username: verifiedUser?.username || 'user',
         displayName: verifiedUser?.displayName || 'Base App User',
         pfpUrl: verifiedUser?.pfpUrl || '',
-        fid: verifiedUser?.fid || 0
+        fid: verifiedUser?.fid || 0,
+        wallet_address: verifiedUser?.address || null // Include actual wallet address
       };
       
       // Store the Base App user in localStorage for consistency

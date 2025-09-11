@@ -28,6 +28,7 @@ export function useBaseAppWallet(): BaseAppWalletState {
   const [isLoading, setIsLoading] = useState(true);
   const [isBaseApp, setIsBaseApp] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [actualWalletAddress, setActualWalletAddress] = useState<string | null>(null);
 
   // Use wagmi hooks for wallet connection (as recommended by Base App support)
   const { address, isConnected } = useAccount();
@@ -84,6 +85,16 @@ export function useBaseAppWallet(): BaseAppWalletState {
 
     detectBaseApp();
   }, [context?.client?.clientFid]);
+
+  // Store actual wallet address when connected
+  useEffect(() => {
+    if (isConnected && address && isBaseApp) {
+      setActualWalletAddress(address);
+      console.log('Base App wallet connected:', address);
+    } else if (!isConnected) {
+      setActualWalletAddress(null);
+    }
+  }, [isConnected, address, isBaseApp]);
 
   // Authentication is based on wallet connection in Base App
   const isAuthenticated = isConnected && !!address;
@@ -184,7 +195,7 @@ export function useBaseAppWallet(): BaseAppWalletState {
 
   return {
     // Wallet connection state (cryptographically verified)
-    address,
+    address: actualWalletAddress || address, // Use actual wallet address for Base App
     isConnected,
     isConnecting,
     

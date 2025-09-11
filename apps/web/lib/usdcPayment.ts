@@ -125,12 +125,14 @@ export async function checkUSDCBalance(
     }
 
     // Create contract instance for balance check
+    // Properly pad the address to 32 bytes (64 hex characters)
+    const paddedAddress = userAddress.slice(2).toLowerCase().padStart(64, '0');
     const balanceData = await window.ethereum.request({
       method: 'eth_call',
       params: [
         {
           to: USDC_CONTRACT_ADDRESS,
-          data: '0x70a08231' + '000000000000000000000000' + userAddress.slice(2), // balanceOf(address)
+          data: '0x70a08231' + paddedAddress, // balanceOf(address) with properly padded address
         },
         'latest'
       ]

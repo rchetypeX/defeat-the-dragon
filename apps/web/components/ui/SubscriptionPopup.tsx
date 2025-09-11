@@ -86,6 +86,22 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
       return;
     }
     
+    // Check if user is a Base App user with wallet connection
+    if (user?.user_metadata?.fid && user?.user_metadata?.wallet_address) {
+      setIsWalletConnected(true);
+      setWalletAddress(user.user_metadata.wallet_address);
+      
+      // Check USDC balance for the Base App wallet
+      try {
+        const balanceCheck = await checkUSDCBalance(user.user_metadata.wallet_address, 0);
+        setUsdcBalance(balanceCheck.currentBalance);
+      } catch (error) {
+        console.error('Error checking USDC balance for Base App:', error);
+        setUsdcBalance(null);
+      }
+      return;
+    }
+    
     // Fallback to checking window.ethereum for web wallet connections
     if (typeof window !== 'undefined' && window.ethereum) {
       try {
