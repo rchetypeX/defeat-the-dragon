@@ -42,6 +42,13 @@ export class MobileErrorBoundary extends Component<Props, State> {
         componentStack: errorInfo.componentStack
       });
     }
+
+    // Handle specific error types
+    if (error.message.includes('Loading Character') || 
+        error.message.includes('bootstrap') ||
+        error.message.includes('authentication')) {
+      console.error('Authentication or data loading error detected:', error.message);
+    }
   }
 
   render() {

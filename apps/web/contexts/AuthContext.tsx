@@ -489,24 +489,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsSigningOut(true);
       
       // Sign out from Supabase
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+        console.log('AuthContext: Supabase sign out completed');
+      } catch (supabaseError) {
+        console.warn('AuthContext: Supabase sign out failed:', supabaseError);
+        // Continue with cleanup even if Supabase sign out fails
+      }
       
       // Clear ALL authentication-related localStorage keys
-      localStorage.removeItem('defeat-the-dragon-storage');
-      localStorage.removeItem('defeat-the-dragon-store');
-      localStorage.removeItem('walletUser');
-      localStorage.removeItem('baseAppUser'); // CRITICAL: This was missing!
-      localStorage.removeItem('playerData'); // Clear cached player data
-      localStorage.removeItem('farcasterUser'); // Clear Farcaster user data
-      localStorage.removeItem('siwfUser'); // Clear SIWF user data
+      const keysToRemove = [
+        'defeat-the-dragon-storage',
+        'defeat-the-dragon-store',
+        'walletUser',
+        'baseAppUser',
+        'playerData',
+        'farcasterUser',
+        'siwfUser',
+        'defeat-the-dragon-character-storage',
+        'background-store'
+      ];
+      
+      keysToRemove.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+          console.log(`AuthContext: Removed ${key} from localStorage`);
+        } catch (error) {
+          console.warn(`AuthContext: Failed to remove ${key}:`, error);
+        }
+      });
       
       // Clear all session storage
-      sessionStorage.clear();
+      try {
+        sessionStorage.clear();
+        console.log('AuthContext: Session storage cleared');
+      } catch (error) {
+        console.warn('AuthContext: Failed to clear session storage:', error);
+      }
       
       // Clear all cookies (including wallet-user cookie)
-      document.cookie = 'wallet-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      document.cookie = 'base-app-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-      document.cookie = 'farcaster-user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      const cookiesToClear = [
+        'wallet-user',
+        'base-app-user',
+        'farcaster-user',
+        'siwf-user'
+      ];
+      
+      cookiesToClear.forEach(cookieName => {
+        try {
+          document.cookie = `${cookieName}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+          console.log(`AuthContext: Cleared ${cookieName} cookie`);
+        } catch (error) {
+          console.warn(`AuthContext: Failed to clear ${cookieName} cookie:`, error);
+        }
+      });
       
       // Reset all authentication states
       setUser(null);
@@ -514,19 +550,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
       
       // Reset game state
-      resetGame();
+      try {
+        resetGame();
+        console.log('AuthContext: Game state reset');
+      } catch (error) {
+        console.warn('AuthContext: Failed to reset game state:', error);
+      }
       
       console.log('AuthContext: Sign out cleanup completed successfully');
       
       // Reset sign out flag after cleanup
       setIsSigningOut(false);
       
-      // Redirect to login page
-      window.location.href = '/';
+      // Small delay to ensure all cleanup is complete
+      setTimeout(() => {
+        // Redirect to login page
+        window.location.href = '/';
+      }, 100);
+      
     } catch (error) {
       console.error('Error during sign out:', error);
       // Reset sign out flag even on error
       setIsSigningOut(false);
+      
+      // Force cleanup even on error
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        setUser(null);
+        setSession(null);
+        setLoading(false);
+      } catch (cleanupError) {
+        console.error('Error during forced cleanup:', cleanupError);
+      }
+      
       // Even if there's an error, try to redirect
       window.location.href = '/';
     }

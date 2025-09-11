@@ -43,22 +43,40 @@ export function useDataSync() {
         // Clean up any old cached sync data that might contain removed fields
         syncService.cleanupOldSyncData();
 
-        // Load data from database
-        const syncResult = await syncService.loadUserData();
+        // Try to load data from database with timeout
+        let syncResult;
+        try {
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Bootstrap API timeout')), 8000)
+          );
+          
+          syncResult = await Promise.race([
+            syncService.loadUserData(),
+            timeoutPromise
+          ]);
+        } catch (timeoutError) {
+          console.warn('Bootstrap API timed out, trying fallback:', timeoutError);
+          syncResult = { success: false, error: 'Bootstrap API timeout' };
+        }
         
         if (syncResult.success && syncResult.data) {
           console.log('Data loaded from database:', syncResult.data);
         } else {
-          console.log('No data in database, loading from API');
-          // Fallback to API if no database data
-          await loadPlayerData();
+          console.log('No data in database or bootstrap failed, trying direct API call...');
+          // Fallback to direct API call
+          try {
+            await loadPlayerData();
+          } catch (apiError) {
+            console.error('Direct API call also failed:', apiError);
+            throw new Error(`Failed to load player data: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
+          }
         }
 
         // Double-check that player data is loaded
         const currentPlayer = useGameStore.getState().player;
         if (!currentPlayer) {
-          console.log('Player data still not loaded, trying direct API call...');
-          await loadPlayerData();
+          console.error('Player data still not loaded after all attempts');
+          throw new Error('Unable to load player data. Please try refreshing the page.');
         }
 
         setLastSyncTime(new Date());
@@ -66,7 +84,13 @@ export function useDataSync() {
         initializedRef.current = true;
       } catch (err) {
         console.error('Failed to initialize data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load data');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load data';
+        setError(errorMessage);
+        
+        // If it's a timeout or network error, suggest retry
+        if (errorMessage.includes('timeout') || errorMessage.includes('network')) {
+          console.log('Network/timeout error detected, suggesting retry');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -145,17 +169,42 @@ export function useDataSync() {
       }
       setError(null);
       
-      const result = await syncService.loadUserData();
+      // Try bootstrap API with timeout
+      let result;
+      try {
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Bootstrap API timeout')), 8000)
+        );
+        
+        result = await Promise.race([
+          syncService.loadUserData(),
+          timeoutPromise
+        ]);
+      } catch (timeoutError) {
+        console.warn('Bootstrap API timed out during refresh, trying direct API call...');
+        // Fallback to direct API call
+        try {
+          await loadPlayerData();
+          result = { success: true };
+        } catch (apiError) {
+          throw new Error(`Both bootstrap and direct API failed: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
+        }
+      }
+      
       if (result.success) {
         setLastSyncTime(new Date());
+        console.log('Data refresh successful');
       } else {
-        setError(result.error || 'Failed to refresh data');
+        const errorMsg = result.error || 'Failed to refresh data';
+        setError(errorMsg);
+        console.error('Data refresh failed:', errorMsg);
       }
       
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to refresh data';
       setError(errorMessage);
+      console.error('Data refresh error:', errorMessage);
       return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);

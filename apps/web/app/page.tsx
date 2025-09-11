@@ -237,7 +237,7 @@ function HomePageContent() {
       
       // Create a user session for the Base App user with safe FID access
       const baseAppUser = {
-        id: verifiedUser?.fid?.toString() || 'unknown',
+        id: `baseapp-${verifiedUser?.fid || 'unknown'}`,
         email: `${verifiedUser?.username || 'user'}@baseapp.local`,
         username: verifiedUser?.username || 'user',
         displayName: verifiedUser?.displayName || 'Base App User',

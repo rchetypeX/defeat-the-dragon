@@ -121,12 +121,63 @@ export function useBaseAppWallet(): BaseAppWalletState {
 
   const signOut = async () => {
     try {
-      console.log('Base App: Sign out requested');
-      // In Base App, wallet disconnection is handled by the wallet itself
-      // We just need to clear our local state
-      console.log('✅ Base App Sign Out completed');
+      console.log('Base App: Starting sign out process...');
+      
+      // Clear Base App user data and all related storage
+      if (typeof window !== 'undefined') {
+        const keysToRemove = [
+          'baseAppUser',
+          'defeat-the-dragon-storage',
+          'defeat-the-dragon-store',
+          'defeat-the-dragon-character-storage',
+          'background-store',
+          'playerData'
+        ];
+        
+        keysToRemove.forEach(key => {
+          try {
+            localStorage.removeItem(key);
+            console.log(`Base App: Removed ${key} from localStorage`);
+          } catch (error) {
+            console.warn(`Base App: Failed to remove ${key}:`, error);
+          }
+        });
+        
+        // Clear session storage
+        try {
+          sessionStorage.clear();
+          console.log('Base App: Session storage cleared');
+        } catch (error) {
+          console.warn('Base App: Failed to clear session storage:', error);
+        }
+        
+        // Clear cookies
+        const cookiesToClear = ['base-app-user', 'wallet-user'];
+        cookiesToClear.forEach(cookieName => {
+          try {
+            document.cookie = `${cookieName}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+            console.log(`Base App: Cleared ${cookieName} cookie`);
+          } catch (error) {
+            console.warn(`Base App: Failed to clear ${cookieName} cookie:`, error);
+          }
+        });
+      }
+      
+      // Reset states
+      setIsLoading(false);
+      
+      console.log('✅ Base App Sign Out successful');
     } catch (error) {
       console.error('❌ Base App Sign Out failed:', error);
+      // Even if there's an error, try to clear storage
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch (cleanupError) {
+          console.error('Base App: Failed to clear storage during error cleanup:', cleanupError);
+        }
+      }
       throw error;
     }
   };

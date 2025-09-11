@@ -21,6 +21,7 @@ import { useDataSync } from '../../hooks/useDataSync';
 import { AdventurerNamePrompt } from '../auth/AdventurerNamePrompt';
 import { useAuth } from '../../contexts/AuthContext';
 import { useMobileErrorHandler } from '../error/MobileErrorBoundary';
+import { MobileErrorBoundary } from '../error/MobileErrorBoundary';
 
 
 interface SessionResult {
@@ -43,6 +44,10 @@ export function GameDashboard() {
   const { user } = useAuth();
   const { handleError } = useMobileErrorHandler();
   
+  // Loading timeout state
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [loadingStartTime, setLoadingStartTime] = useState<number | null>(null);
+  
   // Debug logging for player loading state
   useEffect(() => {
     console.log('GameDashboard: Player loading state:', {
@@ -52,6 +57,31 @@ export function GameDashboard() {
       lastSyncTime
     });
   }, [player, isLoading, error, lastSyncTime]);
+
+  // Loading timeout logic
+  useEffect(() => {
+    if (!player && isLoading && !loadingStartTime) {
+      // Start loading timer
+      setLoadingStartTime(Date.now());
+      setLoadingTimeout(false);
+    } else if (player || !isLoading) {
+      // Reset loading timer when player loads or loading stops
+      setLoadingStartTime(null);
+      setLoadingTimeout(false);
+    }
+  }, [player, isLoading, loadingStartTime]);
+
+  // Set timeout after 10 seconds
+  useEffect(() => {
+    if (loadingStartTime && !player && isLoading) {
+      const timeoutId = setTimeout(() => {
+        setLoadingTimeout(true);
+        console.error('GameDashboard: Loading timeout after 10 seconds');
+      }, 10000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [loadingStartTime, player, isLoading]);
 
   // Mobile-specific error handling
   useEffect(() => {
@@ -271,51 +301,134 @@ export function GameDashboard() {
   // Don't show loading screen during active focus sessions to prevent interruption
   if (!player) {
     return (
-      <div className="min-h-screen relative overflow-hidden">
-        {/* Background Scene */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${getBackgroundImage(equippedBackground)})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        ></div>
-        
-        {/* Loading Content */}
-        <div className="relative z-10 min-h-screen flex items-center justify-center">
-          <div className="pixel-card p-8 text-center">
-            <div className="text-2xl mb-4">⚔️</div>
-            <h2 className="text-xl font-bold text-[#f2751a] mb-2">Loading Character...</h2>
-            <p className="text-[#fbbf24]">Preparing your adventure...</p>
-            {error && (
-              <div className="mt-4">
-                <p className="text-red-500 text-sm mb-2">Error: {error}</p>
-                <button 
-                  onClick={() => window.location.reload()} 
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                >
-                  Retry
-                </button>
+      <MobileErrorBoundary
+        fallback={
+          <div className="min-h-screen relative overflow-hidden">
+            <div className="relative z-10 min-h-screen flex items-center justify-center">
+              <div className="pixel-card p-8 text-center">
+                <div className="text-2xl mb-4">⚔️</div>
+                <h2 className="text-xl font-bold text-[#f2751a] mb-2">Loading Character...</h2>
+                <p className="text-[#fbbf24]">Preparing your adventure...</p>
+                <div className="mt-4">
+                  <button 
+                    onClick={() => {
+                      // Clear all auth data and redirect to login
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      window.location.href = '/';
+                    }} 
+                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                  >
+                    Sign Out & Restart
+                  </button>
+                </div>
               </div>
-            )}
-            <div className="mt-4">
-              <button 
-                onClick={() => {
-                  // Clear all auth data and redirect to login
-                  localStorage.clear();
-                  sessionStorage.clear();
-                  window.location.href = '/';
-                }} 
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
-              >
-                Sign Out & Restart
-              </button>
+            </div>
+          </div>
+        }
+      >
+        <div className="min-h-screen relative overflow-hidden">
+          {/* Background Scene */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url(${getBackgroundImage(equippedBackground)})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          ></div>
+          
+          {/* Loading Content */}
+          <div className="relative z-10 min-h-screen flex items-center justify-center">
+            <div className="pixel-card p-8 text-center">
+              <div className="text-2xl mb-4">⚔️</div>
+              <h2 className="text-xl font-bold text-[#f2751a] mb-2">Loading Character...</h2>
+              <p className="text-[#fbbf24]">Preparing your adventure...</p>
+              
+              {/* Loading progress indicator */}
+              {isLoading && !loadingTimeout && (
+                <div className="mt-4">
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="bg-[#f2751a] h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                  </div>
+                  <p className="text-sm text-gray-400 mt-2">Loading your character data...</p>
+                </div>
+              )}
+              
+              {/* Timeout error */}
+              {loadingTimeout && (
+                <div className="mt-4">
+                  <p className="text-red-500 text-sm mb-2">Loading is taking longer than expected</p>
+                  <p className="text-gray-400 text-xs mb-4">This might be due to network issues or authentication problems</p>
+                  <button 
+                    onClick={() => {
+                      setLoadingTimeout(false);
+                      setLoadingStartTime(null);
+                      window.location.reload();
+                    }} 
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm mr-2"
+                  >
+                    Retry
+                  </button>
+                  <button 
+                    onClick={() => {
+                      // Clear all auth data and redirect to login
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      window.location.href = '/';
+                    }} 
+                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                  >
+                    Sign Out & Restart
+                  </button>
+                </div>
+              )}
+              
+              {/* Regular error */}
+              {error && !loadingTimeout && (
+                <div className="mt-4">
+                  <p className="text-red-500 text-sm mb-2">Error: {error}</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm mr-2"
+                  >
+                    Retry
+                  </button>
+                  <button 
+                    onClick={() => {
+                      // Clear all auth data and redirect to login
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      window.location.href = '/';
+                    }} 
+                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                  >
+                    Sign Out & Restart
+                  </button>
+                </div>
+              )}
+              
+              {/* No error, no timeout - show sign out option */}
+              {!error && !loadingTimeout && (
+                <div className="mt-4">
+                  <button 
+                    onClick={() => {
+                      // Clear all auth data and redirect to login
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      window.location.href = '/';
+                    }} 
+                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                  >
+                    Sign Out & Restart
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </MobileErrorBoundary>
     );
   }
 
