@@ -155,6 +155,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   };
 
+  // Check if Base App user exists in database by FID
+  const checkBaseAppUserExists = async (fid: number) => {
+    try {
+      console.log('AuthContext: Checking if Base App user exists for FID:', fid);
+      const response = await fetch('/api/auth/check-baseapp-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fid }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('AuthContext: Base App user existence check result:', result);
+        return result.exists;
+      }
+      return false;
+    } catch (error) {
+      console.error('AuthContext: Error checking Base App user existence:', error);
+      return false;
+    }
+  };
+
   // Check for Base App user in localStorage
   const checkBaseAppUser = () => {
     console.log('AuthContext: Checking for Base App user in localStorage...');
@@ -182,11 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return null;
         }
         
-        // Handle temporary users (created while waiting for FID)
-        if (baseAppUser.isTemporary) {
-          console.log('AuthContext: Found temporary Base App user, allowing but with limited functionality');
-          return baseAppUser;
-        }
+        // No temporary users - all Base App users must have valid FID
         
         // Validate that the Base App user has required fields
         if (!baseAppUser.id || !baseAppUser.wallet_address) {

@@ -18,6 +18,7 @@ import { AudioProvider } from '../contexts/AudioContext';
 import { useBaseAppAuth } from '../hooks/useBaseAppAuth';
 import { useContextAware } from '../hooks/useContextAware';
 import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
+import { BaseAppSignupPrompt } from '../components/auth/BaseAppSignupPrompt';
 import { sdk } from '@farcaster/miniapp-sdk';
 
 import { EntryPointExperience } from '../components/context/EntryPointExperience';
@@ -125,6 +126,8 @@ function HomePageContent() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(0);
   const [walletKey, setWalletKey] = useState(0); // Key to force remount of WalletLoginForm
+  const [showBaseAppSignup, setShowBaseAppSignup] = useState(false);
+  const [baseAppUserExists, setBaseAppUserExists] = useState<boolean | null>(null);
   
   // Ref to prevent infinite loops in Base App authentication
   const baseAppUserCreatedRef = useRef(false);
@@ -232,57 +235,69 @@ function HomePageContent() {
     // CRITICAL FIX: Only create Base App user session if we're actually in Base App
     // This prevents infinite loops when wallet is connected but not in Base App
     if (isBaseAppAuthenticated && verifiedUser && !user && isBaseApp && !baseAppUserCreatedRef.current) {
-      console.log('🔐 Base App user detected, setting up user session:', verifiedUser);
+      console.log('🔐 Base App user detected, checking if user exists:', verifiedUser);
       
       // Mark that we've created the Base App user to prevent infinite loops
       baseAppUserCreatedRef.current = true;
       
-      // Create a user session for the Base App user with safe FID access
-      // Only create if we have a valid FID
+      // Only proceed if we have a valid FID
       if (!verifiedUser?.fid) {
         console.error('❌ Base App user has no FID, cannot create user session');
         return;
       }
       
-      const baseAppUser = {
-        id: `baseapp-${verifiedUser.fid}`,
-        email: `${verifiedUser?.username || 'user'}@baseapp.local`,
-        username: verifiedUser?.username || 'user',
-        displayName: verifiedUser?.displayName || 'Base App User',
-        pfpUrl: verifiedUser?.pfpUrl || '',
-        fid: verifiedUser.fid,
-        wallet_address: verifiedUser?.address || null // Include actual wallet address
+      // Check if user already exists in database
+      const checkUserExists = async () => {
+        try {
+          const response = await fetch('/api/auth/check-baseapp-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fid: verifiedUser.fid }),
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            setBaseAppUserExists(result.exists);
+            
+            if (result.exists) {
+              // User exists, create session
+              const baseAppUser = {
+                id: `baseapp-${verifiedUser.fid}`,
+                email: `${verifiedUser?.username || 'user'}@baseapp.local`,
+                username: verifiedUser?.username || 'user',
+                displayName: verifiedUser?.displayName || 'Base App User',
+                pfpUrl: verifiedUser?.pfpUrl || '',
+                fid: verifiedUser.fid,
+                wallet_address: verifiedUser?.address || null
+              };
+              
+              localStorage.setItem('baseAppUser', JSON.stringify(baseAppUser));
+              useGameStore.getState().setUser({
+                id: baseAppUser.id,
+                email: baseAppUser.email,
+              });
+              
+              console.log('✅ Base App user session created for existing user:', baseAppUser);
+            } else {
+              // User doesn't exist, show signup prompt
+              console.log('🔐 Base App user not found, showing signup prompt');
+              setShowBaseAppSignup(true);
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error checking Base App user existence:', error);
+          setShowBaseAppSignup(true); // Default to signup on error
+        }
       };
       
-      // Store the Base App user in localStorage for consistency
-      localStorage.setItem('baseAppUser', JSON.stringify(baseAppUser));
-      
-      // Set the user in the game store
-      useGameStore.getState().setUser({
-        id: baseAppUser.id,
-        email: baseAppUser.email,
-      });
-      
-      console.log('✅ Base App user session created:', baseAppUser);
+      checkUserExists();
     } else if (isBaseApp && !isBaseAppAuthenticated && !user) {
       console.log('🔐 Base App detected but not authenticated, user may need to sign in');
     } else if (isBaseApp && isBaseAppAuthenticated && verifiedUser && !verifiedUser.fid && !user) {
       console.log('🔐 Base App authenticated but FID not available yet, waiting...');
-      // Set a temporary user to prevent infinite loading
-      const tempUser = {
-        id: 'temp-baseapp-user',
-        email: 'temp@baseapp.local',
-        username: 'temp',
-        displayName: 'Base App User',
-        pfpUrl: '',
-        fid: 0,
-        wallet_address: verifiedUser?.address || null,
-        isTemporary: true
-      };
-      
-      // Store temporary user to prevent loading screen
-      localStorage.setItem('baseAppUser', JSON.stringify(tempUser));
-      console.log('🔐 Created temporary Base App user while waiting for FID');
+      // Don't create temporary users - just wait for FID to be available
     } else if (!isBaseApp && !user) {
       console.log('ℹ️ Not in Base App environment, using standard authentication flow');
     } else if (isBaseAppAuthenticated && verifiedUser && !user && !isBaseApp) {
@@ -328,6 +343,25 @@ function HomePageContent() {
   // Show loading state while authentication is being determined
   if (loading || isBaseAppLoading || isSIWFLoading) {
     return <HomePageLoading />;
+  }
+
+  // Show Base App signup prompt for new users
+  if (showBaseAppSignup) {
+    return (
+      <BaseAppSignupPrompt
+        onSuccess={() => {
+          setShowBaseAppSignup(false);
+          // Refresh the page to reload with new user data
+          window.location.reload();
+        }}
+        onCancel={() => {
+          setShowBaseAppSignup(false);
+          // Clear any stored data and go back to auth flow
+          localStorage.removeItem('baseAppUser');
+          baseAppUserCreatedRef.current = false;
+        }}
+      />
+    );
   }
 
   // User is not authenticated - show authentication options

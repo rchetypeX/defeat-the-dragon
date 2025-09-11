@@ -97,6 +97,15 @@ export async function GET(request: NextRequest) {
             // Use the consistent Base App ID format
             userId = baseAppData.id;
             console.log('Bootstrap: Found Base App user from header:', userId);
+            
+            // Validate that this is not a temporary user ID
+            if (userId && userId.includes('temp-')) {
+              console.error('Bootstrap: Rejecting temporary user ID:', userId);
+              return NextResponse.json(
+                { error: 'Invalid user ID format' },
+                { status: 401 }
+              );
+            }
           } catch (e) {
             console.error('Error parsing Base App user from header:', e);
           }
