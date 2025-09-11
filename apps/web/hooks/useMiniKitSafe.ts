@@ -51,9 +51,9 @@ export function useMiniKitSafe(): MiniKitSafeData {
     openUrl: null,
   };
 
-  try {
-    // Only run on client side
-    if (typeof window !== 'undefined') {
+  // Only call MiniKit hooks on client side
+  if (typeof window !== 'undefined') {
+    try {
       const { 
         useAuthenticate, 
         useMiniKit, 
@@ -86,10 +86,10 @@ export function useMiniKitSafe(): MiniKitSafeData {
         viewCast: viewCastResult || null,
         openUrl: openUrlResult || null,
       };
+    } catch (error) {
+      // Expected when not in Base App environment or MiniKit not available
+      console.log('MiniKit not available (expected when not in Base App):', error.message);
     }
-  } catch (error) {
-    // Expected when not in Base App environment or MiniKit not available
-    console.log('MiniKit not available (expected when not in Base App):', error.message);
   }
 
   // Update state when data changes

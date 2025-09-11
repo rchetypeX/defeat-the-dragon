@@ -361,7 +361,7 @@ export const BASE_APP_DEVELOPMENT_NOTES = {
   
   // Detection methods
   detection: {
-    primary: 'Check context.client.clientFid === 309857',
+    primary: 'Check context.client.clientFid === 795246',
     fallback: 'Check hostname, user agent, or URL parameters',
   },
 };

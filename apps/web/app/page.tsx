@@ -14,7 +14,6 @@ import { GameDashboard } from '../components/game/GameDashboard';
 import BackgroundMusic from '../components/audio/BackgroundMusic';
 import FocusSessionMusic from '../components/audio/FocusSessionMusic';
 import { AudioProvider } from '../contexts/AudioContext';
-import { useBaseAppAuth } from '../hooks/useBaseAppAuth';
 import { useContextAware } from '../hooks/useContextAware';
 import { ContextAwareLayout } from '../components/layout/ContextAwareLayout';
 import { BaseAppSignupPrompt } from '../components/auth/BaseAppSignupPrompt';
@@ -214,25 +213,26 @@ function HomePageContent() {
   // Handle Base App authentication
   useEffect(() => {
     console.log('🔐 Base App Auth Check:', {
-      isBaseAppAuthenticated,
-      verifiedUser: !!verifiedUser,
+      isAuthenticated,
       user: !!user,
       isBaseApp,
-      verifiedUserData: verifiedUser,
-      fid: verifiedUser?.fid,
-      address: verifiedUser?.address
+      isFarcaster,
+      primaryAuth: primaryAuth.type,
+      userData: user,
+      fid: user?.fid,
+      address: user?.address
     });
     
     // CRITICAL FIX: Only create Base App user session if we're actually in Base App
     // This prevents infinite loops when wallet is connected but not in Base App
-    if (isBaseAppAuthenticated && verifiedUser && !user && isBaseApp && !baseAppUserCreatedRef.current) {
-      console.log('🔐 Base App user detected, checking if user exists:', verifiedUser);
+    if (isAuthenticated && user && !baseAppUserCreatedRef.current && isBaseApp) {
+      console.log('🔐 Base App user detected, checking if user exists:', user);
       
       // Mark that we've created the Base App user to prevent infinite loops
       baseAppUserCreatedRef.current = true;
       
       // Only proceed if we have a valid FID
-      if (!verifiedUser?.fid) {
+      if (!user?.fid) {
         console.error('❌ Base App user has no FID, cannot create user session');
         return;
       }
@@ -245,7 +245,7 @@ function HomePageContent() {
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ fid: verifiedUser.fid }),
+            body: JSON.stringify({ fid: user.fid }),
           });
           
           if (response.ok) {
@@ -255,13 +255,13 @@ function HomePageContent() {
             if (result.exists) {
               // User exists, create session
               const baseAppUser = {
-                id: `baseapp-${verifiedUser.fid}`,
-                email: `${verifiedUser?.username || 'user'}@baseapp.local`,
-                username: verifiedUser?.username || 'user',
-                displayName: verifiedUser?.displayName || 'Base App User',
-                pfpUrl: verifiedUser?.pfpUrl || '',
-                fid: verifiedUser.fid,
-                wallet_address: verifiedUser?.address || null
+                id: `baseapp-${user.fid}`,
+                email: `${user?.username || 'user'}@baseapp.local`,
+                username: user?.username || 'user',
+                displayName: user?.displayName || 'Base App User',
+                pfpUrl: user?.pfpUrl || '',
+                fid: user.fid,
+                wallet_address: user?.address || null
               };
               
               localStorage.setItem('baseAppUser', JSON.stringify(baseAppUser));
@@ -284,17 +284,17 @@ function HomePageContent() {
       };
       
       checkUserExists();
-    } else if (isBaseApp && !isBaseAppAuthenticated && !user) {
+    } else if (isBaseApp && !isAuthenticated && !user) {
       console.log('🔐 Base App detected but not authenticated, user may need to sign in');
-    } else if (isBaseApp && isBaseAppAuthenticated && verifiedUser && !verifiedUser.fid && !user) {
+    } else if (isBaseApp && isAuthenticated && user && !user.fid && !user) {
       console.log('🔐 Base App authenticated but FID not available yet, waiting...');
       // Don't create temporary users - just wait for FID to be available
     } else if (!isBaseApp && !user) {
       console.log('ℹ️ Not in Base App environment, using standard authentication flow');
-    } else if (isBaseAppAuthenticated && verifiedUser && !user && !isBaseApp) {
+    } else if (isAuthenticated && user && !user && !isBaseApp) {
       console.log('🔐 Wallet connected but not in Base App - skipping Base App user creation to prevent infinite loop');
     }
-  }, [isBaseAppAuthenticated, verifiedUser, user, isBaseApp]);
+  }, [isAuthenticated, user, isBaseApp]);
 
   // Reset the Base App user creation flag when user changes
   useEffect(() => {
