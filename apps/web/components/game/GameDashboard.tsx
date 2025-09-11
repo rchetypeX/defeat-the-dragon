@@ -499,7 +499,7 @@ export function GameDashboard() {
                        />
                        {/* Name text overlay */}
                        <div className="absolute inset-0 flex items-center justify-start px-2 sm:px-3 pointer-events-none overflow-hidden">
-                         <span className="text-[#8B4513] font-bold text-[9px] sm:text-[11px] drop-shadow-sm whitespace-nowrap truncate">
+                         <span className="text-[#8B4513] font-bold text-[7px] sm:text-[9px] drop-shadow-sm whitespace-nowrap truncate">
                            {(player.display_name || 'Adventurer').substring(0, 20)}
                          </span>
                        </div>
