@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useUnifiedWalletAuth } from '../../hooks/useUnifiedWalletAuth';
 import { 
   transferUSDC, 
   checkUSDCBalance, 
@@ -37,12 +38,10 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   const [subscriptionType, setSubscriptionType] = useState<'monthly' | 'annual' | 'donate'>('monthly');
   const [donateAmount, setDonateAmount] = useState<number | ''>(1);
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const { user } = useAuth();
+  const walletAuth = useUnifiedWalletAuth();
   const [pricing, setPricing] = useState<Record<string, SubscriptionPricing>>({});
   const [isLoadingPricing, setIsLoadingPricing] = useState(false);
-  const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
-  const { user } = useAuth();
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Load subscription pricing from API
@@ -68,146 +67,23 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
     }
   };
 
-  // Check wallet connection
-  const checkWalletConnection = async () => {
-    // First check if user is authenticated with a wallet address
-    if (user?.user_metadata?.wallet_address) {
-      setIsWalletConnected(true);
-      setWalletAddress(user.user_metadata.wallet_address);
-      
-      // Check USDC balance for the authenticated wallet
-      try {
-        const balanceCheck = await checkUSDCBalance(user.user_metadata.wallet_address, 0);
-        setUsdcBalance(balanceCheck.currentBalance);
-      } catch (error) {
-        console.error('Error checking USDC balance:', error);
-        setUsdcBalance(null);
-      }
-      return;
-    }
-    
-    // Check if user is a Base App user with wallet connection
-    if (user?.user_metadata?.fid && user?.user_metadata?.wallet_address) {
-      setIsWalletConnected(true);
-      setWalletAddress(user.user_metadata.wallet_address);
-      
-      // Check USDC balance for the Base App wallet
-      try {
-        const balanceCheck = await checkUSDCBalance(user.user_metadata.wallet_address, 0);
-        setUsdcBalance(balanceCheck.currentBalance);
-      } catch (error) {
-        console.error('Error checking USDC balance for Base App:', error);
-        setUsdcBalance(null);
-      }
-      return;
-    }
-    
-    // Fallback to checking window.ethereum for web wallet connections
-    if (typeof window !== 'undefined' && window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length > 0) {
-          setIsWalletConnected(true);
-          setWalletAddress(accounts[0]);
-          
-          // Check USDC balance
-          try {
-            const balanceCheck = await checkUSDCBalance(accounts[0], 0);
-            setUsdcBalance(balanceCheck.currentBalance);
-          } catch (error) {
-            console.error('Error checking USDC balance:', error);
-            setUsdcBalance(null);
-          }
-        } else {
-          setIsWalletConnected(false);
-          setWalletAddress(null);
-          setUsdcBalance(null);
-        }
-      } catch (error) {
-        console.error('Error checking wallet connection:', error);
-        setIsWalletConnected(false);
-        setWalletAddress(null);
-        setUsdcBalance(null);
-      }
-    } else {
-      setIsWalletConnected(false);
-      setWalletAddress(null);
-      setUsdcBalance(null);
-    }
-  };
+  // Use unified wallet auth for connection state
+  const isWalletConnected = walletAuth.isConnected;
+  const walletAddress = walletAuth.address;
+  const usdcBalance = walletAuth.usdcBalance;
 
-  // Connect wallet function
+  // Connect wallet using unified auth
   const connectWallet = async () => {
-    // If user is already authenticated with a wallet, no need to connect
-    if (user?.user_metadata?.wallet_address) {
-      setIsWalletConnected(true);
-      setWalletAddress(user.user_metadata.wallet_address);
-      return;
-    }
+    if (walletAuth.isConnecting) return;
     
-    if (!window.ethereum) {
-      setError('Wallet not available. Please ensure you are using a compatible wallet.');
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
     try {
-      // Request account access
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-
-      if (accounts.length > 0) {
-        setIsWalletConnected(true);
-        setWalletAddress(accounts[0]);
-        
-        // Try to switch to Base Network after connecting
-        try {
-          await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x2105' }], // Base Mainnet
-          });
-        } catch (switchError: any) {
-          // If Base Network is not added, add it
-          if (switchError.code === 4902) {
-            try {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0x2105',
-                  chainName: 'Base',
-                  nativeCurrency: {
-                    name: 'Ether',
-                    symbol: 'ETH',
-                    decimals: 18,
-                  },
-                  rpcUrls: ['https://mainnet.base.org'],
-                  blockExplorerUrls: ['https://basescan.org'],
-                }],
-              });
-            } catch (addError) {
-              console.error('Failed to add Base network:', addError);
-              setError('Failed to add Base network. Please add it manually.');
-            }
-          } else {
-            console.error('Failed to switch to Base network:', switchError);
-            setError('Please switch to Base network manually.');
-          }
-        }
-      } else {
-        setError('No wallet account found. Please make sure your wallet is unlocked.');
-      }
-    } catch (error: any) {
-      console.error('Wallet connection error:', error);
-      if (error.code === 4001) {
-        setError('Wallet connection was rejected. Please try again.');
-      } else if (error.code === -32002) {
-        setError('Wallet connection request is already pending. Please check your wallet.');
-      } else {
-        setError('Failed to connect wallet. Please try again.');
-      }
+      await walletAuth.connect();
+    } catch (err: any) {
+      console.error('Wallet connection error:', err);
+      setError(err.message || 'Failed to connect wallet. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -216,28 +92,6 @@ export function SubscriptionPopup({ isOpen, onClose, onSuccess }: SubscriptionPo
   useEffect(() => {
     if (isOpen) {
       loadPricing();
-      checkWalletConnection();
-    }
-    
-    // Listen for account changes
-    if (typeof window !== 'undefined' && window.ethereum) {
-      const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts.length > 0) {
-          setIsWalletConnected(true);
-          setWalletAddress(accounts[0]);
-        } else {
-          setIsWalletConnected(false);
-          setWalletAddress(null);
-        }
-      };
-
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      
-      return () => {
-        if (window.ethereum && window.ethereum.removeListener) {
-          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        }
-      };
     }
   }, [isOpen]);
 

@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useUnifiedAuth } from '../hooks/useUnifiedAuth';
+import { useUnifiedWalletAuth } from '../hooks/useUnifiedWalletAuth';
 import { useGameStore } from '../lib/store';
 import { LoginForm } from '../components/auth/LoginForm';
 import { SignUpForm } from '../components/auth/SignUpForm';
@@ -105,6 +106,9 @@ function HomePageContent() {
     primaryAuth
   } = useUnifiedAuth();
 
+  // Use unified wallet authentication for wallet-specific functionality
+  const walletAuth = useUnifiedWalletAuth();
+
   // Debug logging for authentication state
   useEffect(() => {
     console.log('🔍 Authentication State Debug:', {
@@ -114,11 +118,20 @@ function HomePageContent() {
       isBaseApp,
       isFarcaster,
       primaryAuth: primaryAuth.type,
+      walletAuth: {
+        isConnected: walletAuth.isConnected,
+        address: walletAuth.address,
+        platform: walletAuth.platform,
+        hasWallet: walletAuth.hasWallet,
+        supportsUSDC: walletAuth.supportsUSDC,
+        usdcBalance: walletAuth.usdcBalance,
+        error: walletAuth.error
+      },
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href
     });
-  }, [user, isAuthenticated, authLoading, isBaseApp, isFarcaster, primaryAuth]);
+  }, [user, isAuthenticated, authLoading, isBaseApp, isFarcaster, primaryAuth, walletAuth]);
   
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet' | 'siwf'>('wallet');
   const [showOnboarding, setShowOnboarding] = useState(false);

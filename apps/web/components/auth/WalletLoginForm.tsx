@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useWalletAuth } from '../../hooks/useWalletAuth';
+import { useUnifiedWalletAuth } from '../../hooks/useUnifiedWalletAuth';
 import { WalletSignupForm } from './WalletSignupForm';
 
 export function WalletLoginForm() {
@@ -11,28 +11,19 @@ export function WalletLoginForm() {
     address,
     isConnected,
     isConnecting,
-    isCheckingAccount,
-    hasAccount,
-    authError,
-    availableAccounts,
-    isSwitchingWallet,
-    availableProviders,
-    selectedProvider,
-    showProviderSelection,
-    connectWallet,
-    disconnectWallet,
-    switchWallet,
-    switchToSpecificAccount,
-    signInWithWallet,
-    signUpWithWallet,
-    selectProvider,
-    cancelProviderSelection,
+    platform,
     isBaseApp,
-  } = useWalletAuth();
+    isFarcaster,
+    hasWallet,
+    canConnect,
+    error: authError,
+    connect,
+    disconnect,
+  } = useUnifiedWalletAuth();
 
   const handleConnect = async () => {
     try {
-      await connectWallet();
+      await connect();
     } catch (error) {
       console.error('Connection failed:', error);
     }
@@ -40,16 +31,7 @@ export function WalletLoginForm() {
 
   const handleDisconnect = async () => {
     console.log('Disconnecting wallet...');
-    await disconnectWallet();
-  };
-
-  const handleSwitchWallet = async () => {
-    console.log('Switching wallet...');
-    await switchWallet();
-  };
-
-  const handleSignIn = async () => {
-    await signInWithWallet();
+    await disconnect();
   };
 
   const handleSignUp = async () => {
@@ -58,10 +40,6 @@ export function WalletLoginForm() {
     setShowSignupForm(true);
   };
 
-  // Auto-detect if user should sign up or sign in based on account existence
-  const shouldShowSignUp = hasAccount === false;
-  const shouldShowSignIn = hasAccount === true;
-  
   // Check if the form is valid for submission
   const isFormValid = true;
 
@@ -72,7 +50,7 @@ export function WalletLoginForm() {
   return (
     <div className="max-w-md mx-auto pixel-card p-1 sm:p-2 wallet-login-form">
       <h2 className="text-sm sm:text-base font-bold text-center mb-1 sm:mb-2 text-[#f2751a]">
-        {shouldShowSignUp ? 'Create Account' : 'Sign In'}
+        {isConnected ? 'Wallet Connected' : 'Connect Wallet'}
       </h2>
       
       {authError && (
@@ -81,36 +59,6 @@ export function WalletLoginForm() {
         </div>
       )}
 
-      {/* Wallet Provider Selection Modal - Only show for external wallets */}
-      {showProviderSelection && shouldShowExternalWallets() && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a2e] border-2 border-[#654321] rounded-lg p-4 max-w-xs w-full pixel-card">
-            <h3 className="text-[#f2751a] font-bold text-sm mb-2 text-center">
-              Select Wallet Provider
-            </h3>
-            <p className="text-[#fbbf24] text-xs sm:text-sm mb-4 text-center">
-              Multiple wallet extensions detected. Please choose which one to use:
-            </p>
-            <div className="space-y-3">
-              {availableProviders.map((provider) => (
-                <button
-                  key={provider}
-                  onClick={() => selectProvider(provider)}
-                  className="w-full py-3 px-4 bg-[#2d1b0e] border border-[#654321] rounded hover:bg-[#3d2b1e] transition-colors text-[#fbbf24] text-sm"
-                >
-                  {provider}
-                </button>
-              ))}
-              <button
-                onClick={cancelProviderSelection}
-                className="w-full py-3 px-4 bg-[#654321] text-[#fbbf24] rounded hover:bg-[#543210] transition-colors text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       
       <div className="space-y-1">
         {!isConnected ? (
@@ -133,22 +81,22 @@ export function WalletLoginForm() {
                   <span>
                     {isBaseApp 
                       ? 'Connect Base App Wallet'
-                      : selectedProvider 
-                        ? `Connect ${selectedProvider}` 
+                      : isFarcaster
+                        ? 'Connect Farcaster Wallet'
                         : 'Connect your Web3 Wallet'
                     }
                   </span>
                 </>
               )}
             </button>
-            {selectedProvider && shouldShowExternalWallets() && (
-              <p className="text-xs text-[#fbbf24] mt-2 text-center">
-                Selected: {selectedProvider}
-              </p>
-            )}
             {isBaseApp && (
               <p className="text-xs text-[#fbbf24] mt-2 text-center">
                 Using Base App's built-in wallet
+              </p>
+            )}
+            {isFarcaster && (
+              <p className="text-xs text-[#fbbf24] mt-2 text-center">
+                Using Farcaster's built-in wallet
               </p>
             )}
           </div>
@@ -174,70 +122,17 @@ export function WalletLoginForm() {
                 </p>
               </div>
 
-              {/* Available accounts dropdown - only show if multiple accounts */}
-              {availableAccounts.length > 1 && (
-                <div className="mb-1">
-                  <label className="block text-xs text-[#fbbf24] mb-0.5">
-                    Switch to different wallet:
-                  </label>
-                  <select
-                    value={address || ''}
-                    onChange={(e) => {
-                      if (e.target.value !== address) {
-                        switchToSpecificAccount(e.target.value);
-                      }
-                    }}
-                    disabled={isSwitchingWallet}
-                    className="w-full bg-[#2d1b0e] border border-[#8b4513] rounded px-1 py-0.5 text-[#f5f5dc] text-xs wallet-address font-medium"
-                  >
-                    {availableAccounts.map((acc) => (
-                      <option key={acc} value={acc}>
-                        {acc.slice(0, 6)}...{acc.slice(-4)} {acc === address ? '(Current)' : ''}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
 
-              {/* Switch wallet button */}
-              <button
-                onClick={handleSwitchWallet}
-                disabled={isSwitchingWallet || isConnecting}
-                className="w-full px-2 py-1 bg-[#f2751a] text-white text-xs rounded hover:bg-[#e65a0a] disabled:opacity-50 flex items-center justify-center"
-              >
-                {isSwitchingWallet ? (
-                  <>
-                    <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Switching...
-                  </>
-                ) : (
-                  'Switch Wallet'
-                )}
-              </button>
             </div>
             
-            {/* Show appropriate action based on account status */}
-            {!isCheckingAccount && hasAccount !== null && (
-              <>
-                {shouldShowSignUp ? (
-                  <button
-                    onClick={() => setShowSignupForm(true)}
-                    disabled={isConnecting}
-                    className="w-full pixel-button disabled:opacity-50"
-                  >
-                    START ADVENTURE
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleSignIn}
-                    disabled={isConnecting || !isFormValid}
-                    className="w-full pixel-button disabled:opacity-50"
-                  >
-                    Sign In
-                  </button>
-                )}
-              </>
-            )}
+            {/* Show signup option for connected wallets */}
+            <button
+              onClick={() => setShowSignupForm(true)}
+              disabled={isConnecting}
+              className="w-full pixel-button disabled:opacity-50"
+            >
+              START ADVENTURE
+            </button>
           </div>
         )}
       </div>
