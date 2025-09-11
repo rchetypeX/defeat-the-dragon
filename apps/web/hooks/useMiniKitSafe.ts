@@ -35,14 +35,25 @@ export function useMiniKitSafe(): MiniKitSafeData {
     openUrl: null,
   });
 
-  useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') {
-      return;
-    }
+  // Call MiniKit hooks directly (they must be called at the top level)
+  // This will only work if we're inside a MiniKit provider
+  let miniKitData: MiniKitSafeData = {
+    isAvailable: false,
+    context: null,
+    user: null,
+    signIn: null,
+    setFrameReady: null,
+    isFrameReady: false,
+    isInMiniApp: false,
+    composeCast: null,
+    viewProfile: null,
+    viewCast: null,
+    openUrl: null,
+  };
 
-    try {
-      // Dynamically import MiniKit hooks to avoid SSR issues
+  try {
+    // Only run on client side
+    if (typeof window !== 'undefined') {
       const { 
         useAuthenticate, 
         useMiniKit, 
@@ -62,7 +73,7 @@ export function useMiniKitSafe(): MiniKitSafeData {
       const viewCastResult = useViewCast();
       const openUrlResult = useOpenUrl();
       
-      setData({
+      miniKitData = {
         isAvailable: true,
         context: miniKitResult?.context || null,
         user: authenticateResult?.user || null,
@@ -74,25 +85,17 @@ export function useMiniKitSafe(): MiniKitSafeData {
         viewProfile: viewProfileResult || null,
         viewCast: viewCastResult || null,
         openUrl: openUrlResult || null,
-      });
-    } catch (error) {
-      // Expected when not in Base App environment or MiniKit not available
-      console.log('MiniKit not available (expected when not in Base App):', error.message);
-      setData({
-        isAvailable: false,
-        context: null,
-        user: null,
-        signIn: null,
-        setFrameReady: null,
-        isFrameReady: false,
-        isInMiniApp: false,
-        composeCast: null,
-        viewProfile: null,
-        viewCast: null,
-        openUrl: null,
-      });
+      };
     }
-  }, []);
+  } catch (error) {
+    // Expected when not in Base App environment or MiniKit not available
+    console.log('MiniKit not available (expected when not in Base App):', error.message);
+  }
+
+  // Update state when data changes
+  useEffect(() => {
+    setData(miniKitData);
+  }, [miniKitData.context, miniKitData.user, miniKitData.isAvailable]);
 
   return data;
 }

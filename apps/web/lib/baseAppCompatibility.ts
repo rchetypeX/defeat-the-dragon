@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react';
 
 // Base App Client FID (official identifier)
-export const BASE_APP_CLIENT_FID = 309857;
+export const BASE_APP_CLIENT_FID = 795246;
 
 // Supported chains in Base App
 export const SUPPORTED_CHAINS = [
@@ -79,7 +79,7 @@ export function useBaseAppCompatibility(): BaseAppCompatibilityInfo {
   
   // Official Base App detection
   const clientFid = context?.client?.clientFid || null;
-  const isBaseApp = clientFid === BASE_APP_CLIENT_FID;
+  const isBaseApp = clientFid === 795246;
   
   // Environment detection
   const environment = process.env.NODE_ENV as 'development' | 'production';

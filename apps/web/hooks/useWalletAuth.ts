@@ -30,12 +30,8 @@ export function useWalletAuth() {
   const [isBaseApp, setIsBaseApp] = useState(false);
   const [baseAppUser, setBaseAppUser] = useState<any>(null);
   
-  // Use MiniKit hooks safely for SSR
-  let miniKitResult: any = null;
-  let baseAppContext: any = null;
-  
   // Use safe MiniKit hooks
-  const { isAvailable: miniKitAvailable, context: baseAppContext } = useMiniKitSafe();
+  const { isAvailable: miniKitAvailable, context: miniKitContext } = useMiniKitSafe();
   
   // Get SIWF auth for Base App
   const siwfAuth = useSIWF();
@@ -66,27 +62,27 @@ export function useWalletAuth() {
                                window.navigator.userAgent.includes('BaseApp') ||
                                window.location.search.includes('base_app=true');
       
-      if (hasBaseAppContext || baseAppContext) {
+      if (hasBaseAppContext || miniKitContext) {
         setIsBaseApp(true);
         console.log('🔍 Base App environment detected');
         
         // Use proper clientFid detection as per documentation
-        const isBaseAppClient = baseAppContext?.client?.clientFid === 309857;
+        const isBaseAppClient = miniKitContext?.client?.clientFid === 795246;
         if (isBaseAppClient) {
-          console.log('✅ Confirmed Base App via clientFid:', baseAppContext.client.clientFid);
+          console.log('✅ Confirmed Base App via clientFid:', miniKitContext.client.clientFid);
           
-          if (baseAppContext?.user) {
-            setBaseAppUser(baseAppContext.user);
-            console.log('🔐 Base App user detected:', baseAppContext.user);
+          if (miniKitContext?.user) {
+            setBaseAppUser(miniKitContext.user);
+            console.log('🔐 Base App user detected:', miniKitContext.user);
             
             // For Base App users, we'll use the user's FID as the identifier
             // The wallet connection will be handled by the Base App itself
-            console.log('🔐 Base App user authenticated:', baseAppContext.user.fid);
+            console.log('🔐 Base App user authenticated:', miniKitContext.user.fid);
           }
         } else {
           // Not actually Base App despite having MiniKit
           setIsBaseApp(false);
-          console.log('⚠️ MiniKit available but not Base App, clientFid:', baseAppContext?.client?.clientFid);
+          console.log('⚠️ MiniKit available but not Base App, clientFid:', miniKitContext?.client?.clientFid);
         }
       } else {
         // Regular browser environment
@@ -106,28 +102,28 @@ export function useWalletAuth() {
 
   // Watch for Base App context changes
   useEffect(() => {
-    if (baseAppContext?.user && !baseAppUser) {
-      setBaseAppUser(baseAppContext.user);
-      console.log('🔐 Base App user updated:', baseAppContext.user);
+    if (miniKitContext?.user && !baseAppUser) {
+      setBaseAppUser(miniKitContext.user);
+      console.log('🔐 Base App user updated:', miniKitContext.user);
       
       // If we have a Base App user, check if they have an account
-      if (baseAppContext.user.fid) {
-        checkAccountExistsForBaseApp(baseAppContext.user.fid.toString());
+      if (miniKitContext.user.fid) {
+        checkAccountExistsForBaseApp(miniKitContext.user.fid.toString());
       }
     }
-  }, [baseAppContext?.user, baseAppUser]);
+  }, [miniKitContext?.user, baseAppUser]);
 
   // Check if MetaMask is available
   const checkIfWalletIsConnected = async () => {
     try {
       if (typeof window !== 'undefined') {
         // For Base App users, we don't need to check external wallets
-        if (isBaseApp && baseAppContext?.user) {
-          console.log('🔐 Base App user already authenticated:', baseAppContext.user.fid);
+        if (isBaseApp && miniKitContext?.user) {
+          console.log('🔐 Base App user already authenticated:', miniKitContext.user.fid);
           setIsConnected(true);
           // Check if this Base App user has an account
-          if (baseAppContext.user?.fid) {
-            await checkAccountExistsForBaseApp(baseAppContext.user.fid.toString());
+          if (miniKitContext.user?.fid) {
+            await checkAccountExistsForBaseApp(miniKitContext.user.fid.toString());
           }
           return;
         }
@@ -246,7 +242,7 @@ export function useWalletAuth() {
 
   // Get Base App wallet provider for signing transactions
   const getBaseAppWalletProvider = () => {
-    if (!isBaseApp || !baseAppContext?.user) {
+    if (!isBaseApp || !miniKitContext?.user) {
       return null;
     }
     
@@ -1040,7 +1036,7 @@ export function useWalletAuth() {
     // Base App integration
     isBaseApp,
     baseAppUser,
-    baseAppContext,
+    miniKitContext,
     authenticateWithBaseApp,
     shouldShowExternalWallets,
     
