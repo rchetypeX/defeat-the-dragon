@@ -182,6 +182,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return null;
         }
         
+        // Handle temporary users (created while waiting for FID)
+        if (baseAppUser.isTemporary) {
+          console.log('AuthContext: Found temporary Base App user, allowing but with limited functionality');
+          return baseAppUser;
+        }
+        
         // Validate that the Base App user has required fields
         if (!baseAppUser.id || !baseAppUser.wallet_address) {
           console.log('AuthContext: Base App user missing required fields, clearing...');

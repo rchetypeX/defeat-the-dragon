@@ -268,6 +268,21 @@ function HomePageContent() {
       console.log('🔐 Base App detected but not authenticated, user may need to sign in');
     } else if (isBaseApp && isBaseAppAuthenticated && verifiedUser && !verifiedUser.fid && !user) {
       console.log('🔐 Base App authenticated but FID not available yet, waiting...');
+      // Set a temporary user to prevent infinite loading
+      const tempUser = {
+        id: 'temp-baseapp-user',
+        email: 'temp@baseapp.local',
+        username: 'temp',
+        displayName: 'Base App User',
+        pfpUrl: '',
+        fid: 0,
+        wallet_address: verifiedUser?.address || null,
+        isTemporary: true
+      };
+      
+      // Store temporary user to prevent loading screen
+      localStorage.setItem('baseAppUser', JSON.stringify(tempUser));
+      console.log('🔐 Created temporary Base App user while waiting for FID');
     } else if (!isBaseApp && !user) {
       console.log('ℹ️ Not in Base App environment, using standard authentication flow');
     } else if (isBaseAppAuthenticated && verifiedUser && !user && !isBaseApp) {

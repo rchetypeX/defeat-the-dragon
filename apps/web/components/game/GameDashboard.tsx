@@ -389,6 +389,9 @@ export function GameDashboard() {
               {error && !loadingTimeout && (
                 <div className="mt-4">
                   <p className="text-red-500 text-sm mb-2">Error: {error}</p>
+                  {error.includes('baseapp-unknown') && (
+                    <p className="text-yellow-500 text-xs mb-2">This appears to be a Base App authentication issue. Please try refreshing or signing out and back in.</p>
+                  )}
                   <button 
                     onClick={() => window.location.reload()} 
                     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm mr-2"
