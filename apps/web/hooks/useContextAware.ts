@@ -1,13 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { 
-  useMiniKit, 
-  useIsInMiniApp, 
-  useComposeCast, 
-  useViewProfile, 
-  useViewCast 
-} from '@coinbase/onchainkit/minikit';
+import { useMiniKitSafe } from './useMiniKitSafe';
 
 interface ContextAwareState {
   // Context data
@@ -68,42 +62,27 @@ export function useContextAware(): ContextAwareState {
   let viewProfileFn = null;
   let viewCastFn = null;
 
-  // Use MiniKit hooks with proper error handling
-  try {
-    const miniKitResult = useMiniKit();
-    const isInMiniAppResult = useIsInMiniApp();
-    const composeCastResult = useComposeCast();
-    const viewProfileResult = useViewProfile();
-    const viewCastResult = useViewCast();
+  // Use safe MiniKit hooks
+  const { 
+    isAvailable: miniKitAvailable,
+    context: miniKitContext,
+    isFrameReady: miniKitIsFrameReady,
+    setFrameReady: miniKitSetFrameReady,
+    isInMiniApp: miniKitIsInMiniApp,
+    composeCast: miniKitComposeCast,
+    viewProfile: miniKitViewProfile,
+    viewCast: miniKitViewCast,
+    openUrl: miniKitOpenUrl
+  } = useMiniKitSafe();
 
-    context = miniKitResult?.context || null;
-    isFrameReady = miniKitResult?.isFrameReady || false;
-    setFrameReady = miniKitResult?.setFrameReady || null;
-    isInMiniApp = isInMiniAppResult?.isInMiniApp || false;
-    
-    composeCastFn = (() => {
-      if (typeof composeCastResult === 'function') {
-        return composeCastResult;
-      }
-      if (composeCastResult && typeof composeCastResult.composeCast === 'function') {
-        return composeCastResult.composeCast;
-      }
-      return null;
-    })();
-    
-    viewProfileFn = viewProfileResult || null;
-    viewCastFn = viewCastResult || null;
-  } catch (error) {
-    // MiniKit not available - provide fallback values
-    console.warn('MiniKit hooks not available:', error);
-    context = null;
-    isFrameReady = false;
-    setFrameReady = null;
-    isInMiniApp = false;
-    composeCastFn = null;
-    viewProfileFn = null;
-    viewCastFn = null;
-  }
+  // Set values from safe hooks
+  context = miniKitContext;
+  isFrameReady = miniKitIsFrameReady;
+  setFrameReady = miniKitSetFrameReady;
+  isInMiniApp = miniKitIsInMiniApp;
+  composeCastFn = miniKitComposeCast;
+  viewProfileFn = miniKitViewProfile;
+  viewCastFn = miniKitViewCast;
 
   // Set frame ready when available
   useEffect(() => {

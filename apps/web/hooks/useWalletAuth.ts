@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAccount, useConnect } from 'wagmi';
+import { useSIWF } from '../contexts/SIWFContext';
 
 // Base App integration
-import { useAuthenticate, useMiniKit } from '@coinbase/onchainkit/minikit';
+import { useMiniKitSafe } from './useMiniKitSafe';
 
 export function useWalletAuth() {
   // Use wagmi hooks for wallet connection
@@ -33,16 +34,11 @@ export function useWalletAuth() {
   let miniKitResult: any = null;
   let baseAppContext: any = null;
   
-  // Use MiniKit hooks with proper error handling
-  try {
-    miniKitResult = useMiniKit();
-    baseAppContext = miniKitResult?.context || null;
-  } catch (error) {
-    // MiniKit not available - provide fallback values
-    console.warn('MiniKit not available during build:', error);
-    miniKitResult = null;
-    baseAppContext = null;
-  }
+  // Use safe MiniKit hooks
+  const { isAvailable: miniKitAvailable, context: baseAppContext } = useMiniKitSafe();
+  
+  // Get SIWF auth for Base App
+  const siwfAuth = useSIWF();
 
   // Sync wagmi state with local state
   useEffect(() => {
@@ -221,7 +217,7 @@ export function useWalletAuth() {
 
   // Base App authentication
   const authenticateWithBaseApp = async () => {
-    if (!useAuthenticate) {
+    if (!miniKitAvailable) {
       throw new Error('Base App authentication not available');
     }
     
@@ -231,14 +227,13 @@ export function useWalletAuth() {
       
       console.log('🔐 Starting Base App authentication...');
       
-      // Use MiniKit's authenticate method
-      const { signIn } = useAuthenticate();
-      await signIn();
-      
-      console.log('✅ Base App authentication successful');
-      
-      // The context will be updated automatically by MiniKit
-      // We'll handle the user data in the useEffect that watches baseAppContext
+      // Use SIWF for Base App authentication as per documentation
+      if (siwfAuth?.connect) {
+        await siwfAuth.connect();
+        console.log('✅ Base App SIWF authentication successful');
+      } else {
+        throw new Error('SIWF authentication not available in Base App');
+      }
       
     } catch (error) {
       console.error('❌ Base App authentication failed:', error);

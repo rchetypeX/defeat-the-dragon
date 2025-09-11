@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { AuthKitProvider, useProfile, useSignIn, useSignInMessage } from '@farcaster/auth-kit';
 import '@farcaster/auth-kit/styles.css';
 import { createClient } from '@supabase/supabase-js';
-import { useMiniKit } from '@coinbase/onchainkit/minikit';
+import { useMiniKitSafe } from '../hooks/useMiniKitSafe';
 
 // Supabase client
 const supabase = createClient(
@@ -72,26 +72,8 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
   // Base App hooks (for additional context and analytics)
   const [baseAppContext, setBaseAppContext] = useState<any>(null);
   
-  // Use MiniKit hooks safely for SSR
-  let miniKitResult: any = null;
-  let context: any = null;
-  let setFrameReady: any = null;
-  let isFrameReady: boolean = false;
-  
-  // Use MiniKit hooks with proper error handling
-  try {
-    miniKitResult = useMiniKit();
-    context = miniKitResult?.context || null;
-    setFrameReady = miniKitResult?.setFrameReady || null;
-    isFrameReady = miniKitResult?.isFrameReady || false;
-  } catch (error) {
-    // MiniKit not available - provide fallback values (expected when not in Base App)
-    console.log('MiniKit not available (expected when not in Base App):', error.message);
-    miniKitResult = null;
-    context = null;
-    setFrameReady = null;
-    isFrameReady = false;
-  }
+  // Use safe MiniKit hooks
+  const { isAvailable: miniKitAvailable, context, setFrameReady, isFrameReady } = useMiniKitSafe();
   
   // Initialize Base App frame when component mounts
   useEffect(() => {

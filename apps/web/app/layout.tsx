@@ -125,17 +125,17 @@ export default function RootLayout({
       <body className={inter.className}>
         <MobileErrorBoundary>
           <WagmiProvider>
-            <SIWFProvider>
-              <AuthProvider>
-                <InventoryProvider>
-                  <MiniKitContextProvider>
+            <MiniKitContextProvider>
+              <SIWFProvider>
+                <AuthProvider>
+                  <InventoryProvider>
                     <AudioProvider>
                       {children}
                     </AudioProvider>
-                  </MiniKitContextProvider>
-                </InventoryProvider>
-              </AuthProvider>
-            </SIWFProvider>
+                  </InventoryProvider>
+                </AuthProvider>
+              </SIWFProvider>
+            </MiniKitContextProvider>
           </WagmiProvider>
         </MobileErrorBoundary>
       </body>

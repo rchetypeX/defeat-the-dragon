@@ -2,7 +2,7 @@
 
 import { useAccount } from 'wagmi';
 import { useEffect, useState } from 'react';
-import { useAuthenticate, useMiniKit } from '@coinbase/onchainkit/minikit';
+import { useMiniKitSafe } from './useMiniKitSafe';
 
 interface BaseAppWalletState {
   // Wallet connection state
@@ -33,36 +33,18 @@ export function useBaseAppWallet(): BaseAppWalletState {
   // Use wagmi hooks for wallet connection (as recommended by Base App support)
   const { address, isConnected } = useAccount();
 
-  // Use MiniKit hooks for Base App context with proper error handling
-  let miniKitSignIn: any = null;
-  let miniKitResult: any = null;
-  let context: any = null;
-  let contextUser: any = null;
-  let contextFid: string | null = null;
+  // Use safe MiniKit hooks for Base App context
+  const { isAvailable: miniKitAvailable, context, user: miniKitUser, signIn: miniKitSignIn } = useMiniKitSafe();
   
-  try {
-    const { signIn } = useAuthenticate();
-    miniKitSignIn = signIn;
-    miniKitResult = useMiniKit();
-    context = miniKitResult?.context || null;
-    contextUser = context?.user || null;
-    // CRITICAL FIX: Add proper null safety for FID conversion
-    contextFid = contextUser?.fid ? contextUser.fid.toString() : null;
-  } catch (error) {
-    // This is expected when not in Base App environment
-    console.log('MiniKit not available (expected when not in Base App):', error.message);
-    miniKitSignIn = null;
-    miniKitResult = null;
-    context = null;
-    contextUser = null;
-    contextFid = null;
-  }
+  // Extract user data safely
+  const contextUser = context?.user || null;
+  const contextFid = contextUser?.fid ? contextUser.fid.toString() : null;
 
   // Detect Base App environment
   useEffect(() => {
     const detectBaseApp = () => {
       // Official Base App detection method (as per Base App documentation)
-      const isBaseAppOfficial = context?.client?.clientFid === 309857;
+      const isBaseAppOfficial = context?.client?.clientFid === 795246;
       
       // Fallback detection methods
       const fallbackDetection = typeof window !== 'undefined' && 
@@ -116,11 +98,12 @@ export function useBaseAppWallet(): BaseAppWalletState {
       setIsConnecting(true);
       console.log('Base App: Starting sign in process...');
       
-      if (miniKitSignIn) {
+      if (miniKitAvailable && miniKitSignIn) {
         await miniKitSignIn();
         console.log('✅ Base App Sign In successful');
       } else {
-        console.warn('MiniKit sign in not available');
+        console.warn('MiniKit sign in not available - not in Base App environment');
+        throw new Error('Base App authentication not available');
       }
     } catch (error) {
       console.error('❌ Base App Sign In failed:', error);

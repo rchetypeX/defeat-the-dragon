@@ -4,8 +4,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useRef, Suspense } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { useSIWF } from '../contexts/SIWFContext';
+import { useUnifiedAuth } from '../hooks/useUnifiedAuth';
 import { useGameStore } from '../lib/store';
 import { LoginForm } from '../components/auth/LoginForm';
 import { SignUpForm } from '../components/auth/SignUpForm';
@@ -97,30 +96,30 @@ function HomePageContent() {
     };
   }, []);
 
-  const { user, loading } = useAuth();
+  // Use unified authentication that prioritizes SIWF for Base App
   const { 
-    isAuthenticated: isSIWFAuthenticated, 
-    user: siwfUser, 
-    isLoading: isSIWFLoading,
-    isBaseApp: isSIWFBaseApp,
-    isFarcaster: isSIWFFarcaster
-  } = useSIWF();
+    isAuthenticated, 
+    user, 
+    isLoading: authLoading,
+    isBaseApp,
+    isFarcaster,
+    primaryAuth
+  } = useUnifiedAuth();
 
   // Debug logging for authentication state
   useEffect(() => {
     console.log('🔍 Authentication State Debug:', {
-      user: user ? { id: user.id, email: user.email } : null,
-      loading,
-      isSIWFAuthenticated,
-      siwfUser: siwfUser ? { fid: siwfUser.fid, username: siwfUser.username, displayName: siwfUser.displayName } : null,
-      isSIWFLoading,
-      isSIWFBaseApp,
-      isSIWFFarcaster,
+      user: user ? { id: user.id, email: user.email, fid: user.fid } : null,
+      isAuthenticated,
+      authLoading,
+      isBaseApp,
+      isFarcaster,
+      primaryAuth: primaryAuth.type,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href
     });
-  }, [user, loading, isSIWFAuthenticated, siwfUser, isSIWFLoading, isSIWFBaseApp, isSIWFFarcaster]);
+  }, [user, isAuthenticated, authLoading, isBaseApp, isFarcaster, primaryAuth]);
   
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'wallet' | 'siwf'>('wallet');
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -154,15 +153,6 @@ function HomePageContent() {
     }
   }, []);
 
-  // Base App Authentication
-  const {
-    verifiedUser,
-    isAuthenticated: isBaseAppAuthenticated,
-    contextFid,
-    isBaseApp,
-    isLoading: isBaseAppLoading,
-  } = useBaseAppAuth();
-
   // Context-aware features
   const {
     entryType,
@@ -176,18 +166,19 @@ function HomePageContent() {
   useEffect(() => {
     console.log('🔐 Authentication Status:', {
       user: !!user,
-      loading: loading || false,
-      verifiedUser: !!verifiedUser,
-      isBaseAppAuthenticated: isBaseAppAuthenticated || false,
-      isBaseApp: isBaseApp || false,
+      isAuthenticated,
+      authLoading,
+      isBaseApp,
+      isFarcaster,
+      primaryAuth: primaryAuth.type,
     });
-  }, [user, loading, verifiedUser, isBaseAppAuthenticated, isBaseApp]);
+  }, [user, isAuthenticated, authLoading, isBaseApp, isFarcaster, primaryAuth]);
 
   // Add timeout mechanism to detect stuck authentication states
   useEffect(() => {
     const authTimeout = setTimeout(() => {
       // If we're still loading after 10 seconds, something might be wrong
-      if (loading || isBaseAppLoading || isSIWFLoading) {
+      if (authLoading) {
         console.warn('⚠️ Authentication loading timeout detected - possible stuck state');
         
         // Check for inconsistent authentication state
@@ -196,7 +187,7 @@ function HomePageContent() {
           localStorage.getItem('baseAppUser') || 
           localStorage.getItem('farcasterUser');
         
-        if (hasStaleAuthData && !user && !verifiedUser) {
+        if (hasStaleAuthData && !user && !isAuthenticated) {
           console.warn('⚠️ Detected stale authentication data - clearing and redirecting');
           // Clear stale data and redirect
           localStorage.clear();
@@ -207,7 +198,7 @@ function HomePageContent() {
     }, 10000); // 10 second timeout
 
     return () => clearTimeout(authTimeout);
-  }, [loading, isBaseAppLoading, isSIWFLoading, user, verifiedUser]);
+  }, [authLoading, user, isAuthenticated]);
 
   // Log context information for development
   useEffect(() => {
@@ -315,33 +306,33 @@ function HomePageContent() {
   // Auto-set auth mode based on environment
   useEffect(() => {
     if (isBaseApp) {
-      console.log('🔐 Base App detected, setting auth mode to wallet');
-      setAuthMode('wallet');
-    } else if (isSIWFFarcaster) {
+      console.log('🔐 Base App detected, setting auth mode to siwf (SIWF preferred)');
+      setAuthMode('siwf');
+    } else if (isFarcaster) {
       console.log('🔮 Farcaster detected, setting auth mode to siwf');
       setAuthMode('siwf');
     }
-  }, [isBaseApp || false, isSIWFFarcaster || false]);
+  }, [isBaseApp, isFarcaster]);
 
   // Handle SIWF authentication and platform detection
   useEffect(() => {
     // Auto-detect platform and set auth mode
-    if (isSIWFBaseApp || isSIWFFarcaster) {
-      console.log('🔍 Platform detected:', { isSIWFBaseApp, isSIWFFarcaster });
+    if (isBaseApp || isFarcaster) {
+      console.log('🔍 Platform detected:', { isBaseApp, isFarcaster });
       setAuthMode('siwf');
     }
-  }, [isSIWFBaseApp || false, isSIWFFarcaster || false]);
+  }, [isBaseApp, isFarcaster]);
 
   // Redirect SIWF users to dedicated auth page
   useEffect(() => {
-    if ((isSIWFBaseApp || isSIWFFarcaster) && !isSIWFAuthenticated && !user) {
-      console.log('🔄 Redirecting SIWF user to auth page');
+    if ((isBaseApp || isFarcaster) && !isAuthenticated && !user) {
+      console.log('🔄 Redirecting user to auth page');
       window.location.href = '/auth/siwf';
     }
-  }, [isSIWFBaseApp || false, isSIWFFarcaster || false, isSIWFAuthenticated || false, user]);
+  }, [isBaseApp, isFarcaster, isAuthenticated, user]);
 
   // Show loading state while authentication is being determined
-  if (loading || isBaseAppLoading || isSIWFLoading) {
+  if (authLoading) {
     return <HomePageLoading />;
   }
 
@@ -365,7 +356,7 @@ function HomePageContent() {
   }
 
   // User is not authenticated - show authentication options
-  if (!user && !verifiedUser && !isBaseAppAuthenticated && !isSIWFAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <ContextAwareLayout>
         <EntryPointExperience>
@@ -440,7 +431,7 @@ function HomePageContent() {
                     >
                       Sign Up
                     </button>
-                    {(isSIWFBaseApp || isSIWFFarcaster) && (
+                    {(isBaseApp || isFarcaster) && (
                       <button
                         onClick={() => setAuthMode('siwf')}
                         className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
@@ -479,7 +470,7 @@ function HomePageContent() {
                           Sign in with Farcaster
                         </h3>
                         <p className="text-gray-300 text-sm mb-6">
-                          {isSIWFBaseApp ? 'Base App detected' : 'Farcaster detected'}
+                          {isBaseApp ? 'Base App detected' : 'Farcaster detected'}
                         </p>
                       </div>
                       
