@@ -224,8 +224,8 @@ export function useWalletAuth() {
       console.log('🔐 Starting Base App authentication...');
       
       // Use SIWF for Base App authentication as per documentation
-      if (siwfAuth?.connect) {
-        await siwfAuth.connect();
+      if (siwfAuth?.signIn) {
+        await siwfAuth.signIn();
         console.log('✅ Base App SIWF authentication successful');
       } else {
         throw new Error('SIWF authentication not available in Base App');

@@ -99,9 +99,9 @@ export function useUnifiedAuth(): UnifiedAuthState {
   const signIn = async () => {
     if (baseAppAuth.isBaseApp) {
       // In Base App, try SIWF first, then fallback to wallet
-      if (siwfAuth.connect) {
+      if (siwfAuth.signIn) {
         try {
-          await siwfAuth.connect();
+          await siwfAuth.signIn();
           return;
         } catch (error) {
           console.warn('SIWF sign in failed, trying wallet auth:', error);
@@ -115,8 +115,8 @@ export function useUnifiedAuth(): UnifiedAuthState {
       }
     } else {
       // Outside Base App, use traditional methods
-      if (siwfAuth.connect) {
-        await siwfAuth.connect();
+      if (siwfAuth.signIn) {
+        await siwfAuth.signIn();
       }
     }
   };
