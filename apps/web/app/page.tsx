@@ -224,7 +224,9 @@ function HomePageContent() {
       verifiedUser: !!verifiedUser,
       user: !!user,
       isBaseApp,
-      verifiedUserData: verifiedUser
+      verifiedUserData: verifiedUser,
+      fid: verifiedUser?.fid,
+      address: verifiedUser?.address
     });
     
     // CRITICAL FIX: Only create Base App user session if we're actually in Base App
@@ -236,13 +238,19 @@ function HomePageContent() {
       baseAppUserCreatedRef.current = true;
       
       // Create a user session for the Base App user with safe FID access
+      // Only create if we have a valid FID
+      if (!verifiedUser?.fid) {
+        console.error('❌ Base App user has no FID, cannot create user session');
+        return;
+      }
+      
       const baseAppUser = {
-        id: `baseapp-${verifiedUser?.fid || 'unknown'}`,
+        id: `baseapp-${verifiedUser.fid}`,
         email: `${verifiedUser?.username || 'user'}@baseapp.local`,
         username: verifiedUser?.username || 'user',
         displayName: verifiedUser?.displayName || 'Base App User',
         pfpUrl: verifiedUser?.pfpUrl || '',
-        fid: verifiedUser?.fid || 0,
+        fid: verifiedUser.fid,
         wallet_address: verifiedUser?.address || null // Include actual wallet address
       };
       
@@ -258,6 +266,8 @@ function HomePageContent() {
       console.log('✅ Base App user session created:', baseAppUser);
     } else if (isBaseApp && !isBaseAppAuthenticated && !user) {
       console.log('🔐 Base App detected but not authenticated, user may need to sign in');
+    } else if (isBaseApp && isBaseAppAuthenticated && verifiedUser && !verifiedUser.fid && !user) {
+      console.log('🔐 Base App authenticated but FID not available yet, waiting...');
     } else if (!isBaseApp && !user) {
       console.log('ℹ️ Not in Base App environment, using standard authentication flow');
     } else if (isBaseAppAuthenticated && verifiedUser && !user && !isBaseApp) {

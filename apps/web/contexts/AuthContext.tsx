@@ -174,6 +174,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return null;
         }
         
+        // Check for invalid Base App user IDs that contain 'unknown'
+        if (baseAppUser.id && baseAppUser.id.includes('unknown')) {
+          console.log('AuthContext: Found invalid Base App user ID with "unknown", clearing...');
+          localStorage.removeItem('baseAppUser');
+          localStorage.removeItem('defeat-the-dragon-storage');
+          return null;
+        }
+        
         // Validate that the Base App user has required fields
         if (!baseAppUser.id || !baseAppUser.wallet_address) {
           console.log('AuthContext: Base App user missing required fields, clearing...');
