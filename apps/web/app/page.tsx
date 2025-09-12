@@ -234,8 +234,38 @@ function HomePageContent() {
       primaryAuth: primaryAuth.type,
       userData: user,
       fid: user?.fid,
-      address: user?.address
+      address: user?.address,
+      baseAppUserCreated: baseAppUserCreatedRef.current
     });
+    
+    // Check if we have a Base App user in localStorage first
+    const storedBaseAppUser = localStorage.getItem('baseAppUser');
+    if (storedBaseAppUser && isBaseApp && !baseAppUserCreatedRef.current) {
+      try {
+        const baseAppUser = JSON.parse(storedBaseAppUser);
+        console.log('🔐 Found stored Base App user:', baseAppUser);
+        
+        // If we have a stored user and they're authenticated, create the session
+        if (isAuthenticated && user && user.fid === baseAppUser.fid) {
+          console.log('🔐 Matching stored user with authenticated user, creating session...');
+          
+          // Update game store
+          useGameStore.getState().setUser({
+            id: baseAppUser.id,
+            email: baseAppUser.email,
+          });
+          
+          // Mark that we've created the Base App user to prevent infinite loops
+          baseAppUserCreatedRef.current = true;
+          
+          console.log('✅ Base App user session restored from localStorage:', baseAppUser);
+          return;
+        }
+      } catch (error) {
+        console.error('❌ Error parsing stored Base App user:', error);
+        localStorage.removeItem('baseAppUser');
+      }
+    }
     
     // CRITICAL FIX: Only create Base App user session if we're actually in Base App
     // This prevents infinite loops when wallet is connected but not in Base App
@@ -304,7 +334,22 @@ function HomePageContent() {
       
       checkUserExists();
     } else if (isBaseApp && !isAuthenticated && !user) {
-      console.log('🔐 Base App detected but not authenticated, user may need to sign in');
+      console.log('🔐 Base App detected but not authenticated, checking for stored user...');
+      
+      // Check if we have a stored Base App user
+      const storedBaseAppUser = localStorage.getItem('baseAppUser');
+      if (storedBaseAppUser) {
+        try {
+          const baseAppUser = JSON.parse(storedBaseAppUser);
+          console.log('🔐 Found stored Base App user, but not authenticated. User may need to reconnect wallet.');
+          
+          // Show a message to reconnect wallet
+          console.log('🔐 Please reconnect your wallet to continue with your existing account.');
+        } catch (error) {
+          console.error('❌ Error parsing stored Base App user:', error);
+          localStorage.removeItem('baseAppUser');
+        }
+      }
     } else if (isBaseApp && isAuthenticated && user && !user.fid && !user) {
       console.log('🔐 Base App authenticated but FID not available yet, waiting...');
       // Don't create temporary users - just wait for FID to be available
@@ -393,6 +438,28 @@ function HomePageContent() {
     }
   }, [user]);
 
+  // Force authentication state refresh on page load
+  useEffect(() => {
+    const handlePageLoad = () => {
+      console.log('🔄 Page loaded, checking authentication state...');
+      
+      // Check if we have a stored Base App user but no authentication
+      const storedBaseAppUser = localStorage.getItem('baseAppUser');
+      if (storedBaseAppUser && isBaseApp && !isAuthenticated) {
+        console.log('🔐 Page reloaded with stored Base App user but not authenticated');
+        console.log('🔐 This might indicate an authentication state issue');
+      }
+    };
+
+    // Run immediately
+    handlePageLoad();
+
+    // Also run after a short delay to catch any async state updates
+    const timeoutId = setTimeout(handlePageLoad, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [isBaseApp, isAuthenticated]);
+
   // Auto-set auth mode based on environment
   useEffect(() => {
     if (isBaseApp) {
@@ -431,18 +498,9 @@ function HomePageContent() {
     return (
       <BaseAppSignupPrompt
         onSuccess={() => {
-          console.log('✅ Base App signup successful, establishing user session...');
+          console.log('✅ Base App signup successful, page will reload to refresh authentication state...');
           setShowBaseAppSignup(false);
-          setJustCreatedAccount(true);
-          
-          // Reset the ref to allow re-checking the user
-          baseAppUserCreatedRef.current = false;
-          
-          // Force a re-check of the authentication state
-          setTimeout(() => {
-            console.log('🔄 Forcing authentication state refresh...');
-            // The useEffect will re-run and detect the authenticated user
-          }, 100);
+          // The WalletSignupForm will handle the page reload
         }}
         onCancel={() => {
           setShowBaseAppSignup(false);

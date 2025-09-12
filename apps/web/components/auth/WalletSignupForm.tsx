@@ -114,7 +114,8 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
         throw new Error(errorData.error || 'Signup failed');
       }
 
-      console.log('✅ Account created successfully');
+      const result = await response.json();
+      console.log('✅ Account created successfully:', result);
       
       // For Base App users, establish the user session immediately
       if (isBaseApp && user) {
@@ -127,7 +128,8 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
           displayName: user.displayName || displayName,
           pfpUrl: user.pfpUrl || '',
           fid: user.fid,
-          wallet_address: address
+          wallet_address: address,
+          supabase_user_id: result.user?.id // Store the Supabase user ID
         };
         
         // Store in localStorage
@@ -140,6 +142,18 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
         });
         
         console.log('✅ Base App user session established:', baseAppUser);
+        
+        // Force a page reload to refresh all authentication state
+        setTimeout(() => {
+          console.log('🔄 Reloading page to refresh authentication state...');
+          window.location.reload();
+        }, 1000);
+      } else {
+        // For non-Base App users, also reload to refresh state
+        setTimeout(() => {
+          console.log('🔄 Reloading page to refresh authentication state...');
+          window.location.reload();
+        }, 1000);
       }
       
       onSuccess?.();
