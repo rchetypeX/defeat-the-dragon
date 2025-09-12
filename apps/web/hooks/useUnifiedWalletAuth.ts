@@ -197,6 +197,7 @@ export function useUnifiedWalletAuth(): UnifiedWalletState {
     try {
       const balanceCheck = await checkUSDCBalance(address, 0);
       setUsdcBalance(balanceCheck.currentBalance);
+      setError(null); // Clear any previous errors
     } catch (err: any) {
       console.error('Failed to check USDC balance:', err);
       setUsdcBalance(null);
@@ -208,6 +209,10 @@ export function useUnifiedWalletAuth(): UnifiedWalletState {
         setError('Wallet not connected. Please connect your wallet first.');
       } else if (err.message?.includes('Invalid response from blockchain')) {
         setError('Blockchain error. Please try again in a moment.');
+      } else if (err.message?.includes('Ethereum provider not available')) {
+        // Don't show error for missing provider - this is expected in some environments
+        console.warn('Ethereum provider not available, skipping USDC balance check');
+        setError(null);
       } else {
         setError(`Failed to check USDC balance: ${err.message || 'Unknown error'}`);
       }

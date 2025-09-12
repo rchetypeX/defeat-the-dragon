@@ -35,7 +35,17 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
   // Validate email format
   useEffect(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    setIsEmailValid(emailRegex.test(email));
+    const trimmedEmail = email?.trim() || '';
+    const isValid = trimmedEmail.length > 0 && emailRegex.test(trimmedEmail);
+    
+    console.log('📧 Email validation:', {
+      email,
+      trimmedEmail,
+      isValid,
+      length: trimmedEmail.length
+    });
+    
+    setIsEmailValid(isValid);
   }, [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +56,18 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
       return;
     }
 
-    if (!email || !isEmailValid) {
+    if (!email || !email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    if (!isEmailValid) {
+      setError('Please enter a valid email address (e.g., user@example.com)');
+      return;
+    }
+
+    // Additional validation for common issues
+    if (email.includes('..') || email.startsWith('.') || email.endsWith('.')) {
       setError('Please enter a valid email address');
       return;
     }

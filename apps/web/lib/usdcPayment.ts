@@ -114,8 +114,21 @@ export async function checkUSDCBalance(
   userAddress: string,
   requiredAmount: number
 ): Promise<{ hasBalance: boolean; currentBalance: number; requiredAmount: number }> {
-  if (typeof window === 'undefined' || !window.ethereum) {
-    throw new Error('Ethereum provider not available');
+  // Check for various Ethereum providers (Base App, Farcaster, MetaMask, etc.)
+  const ethereumProvider = 
+    window?.ethereum || 
+    window?.parent?.ethereum || 
+    window?.parent?.parent?.ethereum ||
+    (window as any)?.coinbaseWalletExtension ||
+    (window as any)?.phantom?.ethereum;
+  
+  if (typeof window === 'undefined' || !ethereumProvider) {
+    console.warn('Ethereum provider not available, returning default balance');
+    return {
+      hasBalance: false,
+      currentBalance: 0,
+      requiredAmount
+    };
   }
 
   try {
@@ -127,7 +140,7 @@ export async function checkUSDCBalance(
     // Create contract instance for balance check
     // Properly pad the address to 32 bytes (64 hex characters)
     const paddedAddress = userAddress.slice(2).toLowerCase().padEnd(64, '0');
-    const balanceData = await window.ethereum.request({
+    const balanceData = await ethereumProvider.request({
       method: 'eth_call',
       params: [
         {
@@ -182,7 +195,15 @@ export async function checkUSDCBalance(
  * Transfer USDC tokens
  */
 export async function transferUSDC(params: USDCTransferParams): Promise<string> {
-  if (typeof window === 'undefined' || !window.ethereum) {
+  // Check for various Ethereum providers (Base App, Farcaster, MetaMask, etc.)
+  const ethereumProvider = 
+    window?.ethereum || 
+    window?.parent?.ethereum || 
+    window?.parent?.parent?.ethereum ||
+    (window as any)?.coinbaseWalletExtension ||
+    (window as any)?.phantom?.ethereum;
+  
+  if (typeof window === 'undefined' || !ethereumProvider) {
     throw new Error('Ethereum provider not available');
   }
 
@@ -198,12 +219,12 @@ export async function transferUSDC(params: USDCTransferParams): Promise<string> 
       amountInSmallestUnit.toString(16).padStart(64, '0'); // amount (padded)
 
     // Get current gas price
-    const gasPrice = await window.ethereum.request({
+    const gasPrice = await ethereumProvider.request({
       method: 'eth_gasPrice',
     });
 
     // Estimate gas for the transaction
-    const gasEstimate = await window.ethereum.request({
+    const gasEstimate = await ethereumProvider.request({
       method: 'eth_estimateGas',
       params: [{
         from: from,
@@ -221,7 +242,7 @@ export async function transferUSDC(params: USDCTransferParams): Promise<string> 
       gasPrice: gasPrice,
     };
 
-    const txHash = await window.ethereum.request({
+    const txHash = await ethereumProvider.request({
       method: 'eth_sendTransaction',
       params: [transactionParameters],
     });
@@ -275,13 +296,22 @@ export function formatUSDC(amount: number): string {
  * Get USDC token info
  */
 export async function getUSDCInfo(): Promise<{ symbol: string; decimals: number }> {
-  if (typeof window === 'undefined' || !window.ethereum) {
-    throw new Error('Ethereum provider not available');
+  // Check for various Ethereum providers (Base App, Farcaster, MetaMask, etc.)
+  const ethereumProvider = 
+    window?.ethereum || 
+    window?.parent?.ethereum || 
+    window?.parent?.parent?.ethereum ||
+    (window as any)?.coinbaseWalletExtension ||
+    (window as any)?.phantom?.ethereum;
+  
+  if (typeof window === 'undefined' || !ethereumProvider) {
+    console.warn('Ethereum provider not available, returning default USDC info');
+    return { symbol: 'USDC', decimals: 6 };
   }
 
   try {
     // Get symbol
-    const symbolData = await window.ethereum.request({
+    const symbolData = await ethereumProvider.request({
       method: 'eth_call',
       params: [
         {
@@ -293,7 +323,7 @@ export async function getUSDCInfo(): Promise<{ symbol: string; decimals: number 
     });
 
     // Get decimals
-    const decimalsData = await window.ethereum.request({
+    const decimalsData = await ethereumProvider.request({
       method: 'eth_call',
       params: [
         {
