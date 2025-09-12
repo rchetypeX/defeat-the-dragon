@@ -3,6 +3,7 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useSIWF } from '../contexts/SIWFContext';
 import { useBaseAppWallet } from './useBaseAppWallet';
+import { useMiniKitSafe } from './useMiniKitSafe';
 
 interface UnifiedAuthState {
   // Primary authentication method
@@ -36,15 +37,17 @@ export function useUnifiedAuth(): UnifiedAuthState {
   const supabaseAuth = useAuth();
   const siwfAuth = useSIWF();
   const baseAppAuth = useBaseAppWallet();
+  const miniKitData = useMiniKitSafe();
 
   // Determine primary authentication method based on Base App documentation
   const getPrimaryAuth = () => {
-    // In Base App, prioritize SIWF for authentication
-    if (baseAppAuth.isBaseApp) {
-      if (siwfAuth.isAuthenticated && siwfAuth.user) {
-        return { type: 'siwf' as const, data: siwfAuth };
+    // In Base App, use native SIWF authentication via useAuthenticate
+    if (baseAppAuth.isBaseApp && miniKitData.isAvailable) {
+      // Use Base App's native SIWF authentication (cryptographically verified)
+      if (miniKitData.user) {
+        return { type: 'baseapp' as const, data: { user: miniKitData.user, context: miniKitData.context } };
       }
-      // Fallback to wallet auth only if SIWF is not available
+      // Fallback to wallet connection if no SIWF user
       if (baseAppAuth.isAuthenticated && baseAppAuth.address) {
         return { type: 'baseapp' as const, data: baseAppAuth };
       }
@@ -73,15 +76,31 @@ export function useUnifiedAuth(): UnifiedAuthState {
   // Get user data from primary auth method
   const getUserData = () => {
     switch (primaryAuth.type) {
+      case 'baseapp':
+        // Use Base App's native SIWF user data (cryptographically verified)
+        const baseAppUser = (primaryAuth.data as any)?.user;
+        if (baseAppUser && typeof baseAppUser === 'object' && 'fid' in baseAppUser) {
+          return {
+            user: {
+              fid: baseAppUser.fid,
+              username: baseAppUser.username,
+              displayName: baseAppUser.displayName,
+              pfpUrl: baseAppUser.pfpUrl,
+              address: baseAppUser.address || baseAppAuth.address,
+              platform: 'baseapp'
+            },
+            userId: baseAppUser.fid ? `baseapp-${baseAppUser.fid}` : null,
+          };
+        }
+        // Fallback to wallet-only auth
+        return {
+          user: { address: baseAppAuth.address, fid: baseAppAuth.contextFid },
+          userId: baseAppAuth.address ? `baseapp-${baseAppAuth.address}` : null,
+        };
       case 'siwf':
         return {
           user: siwfAuth.user,
           userId: siwfAuth.user?.fid ? `siwf-${siwfAuth.user.fid}` : null,
-        };
-      case 'baseapp':
-        return {
-          user: { address: baseAppAuth.address, fid: baseAppAuth.contextFid },
-          userId: baseAppAuth.address ? `baseapp-${baseAppAuth.address}` : null,
         };
       case 'supabase':
         return {
@@ -97,14 +116,14 @@ export function useUnifiedAuth(): UnifiedAuthState {
 
   // Unified sign in method
   const signIn = async () => {
-    if (baseAppAuth.isBaseApp) {
-      // In Base App, try SIWF first, then fallback to wallet
-      if (siwfAuth.signIn) {
+    if (baseAppAuth.isBaseApp && miniKitData.isAvailable) {
+      // In Base App, use native SIWF authentication
+      if (miniKitData.signIn) {
         try {
-          await siwfAuth.signIn();
+          await miniKitData.signIn();
           return;
         } catch (error) {
-          console.warn('SIWF sign in failed, trying wallet auth:', error);
+          console.warn('Base App SIWF sign in failed, trying wallet auth:', error);
         }
       }
       

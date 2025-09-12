@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useWalletAuth } from '../../hooks/useWalletAuth';
+import { useUnifiedWalletAuth } from '../../hooks/useUnifiedWalletAuth';
+import { useUnifiedAuth } from '../../hooks/useUnifiedAuth';
 
 interface WalletSignupFormProps {
   onSuccess?: () => void;
@@ -17,12 +18,16 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
   const {
     address,
     isConnected,
-    signUpWithWallet,
-    authError: walletAuthError,
+    platform,
     isBaseApp,
-    baseAppUser,
-    authenticateWithBaseApp
-  } = useWalletAuth();
+    error: walletAuthError
+  } = useUnifiedWalletAuth();
+  
+  const {
+    user,
+    isAuthenticated,
+    signIn
+  } = useUnifiedAuth();
 
   // Auto-generate display name from wallet address
   const displayName = `Player_${address?.slice(2, 8) || '000000'}`;
@@ -50,51 +55,46 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
     setError(null);
 
     try {
-      // Call the enhanced signup function with email
-      await signUpWithWallet(email, displayName);
+      // For Base App, ensure we're authenticated with native SIWF
+      if (isBaseApp && !isAuthenticated) {
+        console.log('🔐 Base App: Authenticating with native SIWF...');
+        await signIn();
+      }
+      
+      // Call the API to create the account
+      const response = await fetch('/api/auth/wallet-signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          displayName,
+          walletAddress: address,
+          platform: platform,
+          fid: user?.fid || null,
+          username: user?.username || null,
+          userDisplayName: user?.displayName || displayName
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Signup failed');
+      }
+
+      console.log('✅ Account created successfully');
       onSuccess?.();
     } catch (err: any) {
+      console.error('❌ Signup failed:', err);
       setError(err.message || 'Signup failed');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleBaseAppAuth = async () => {
-    if (!isBaseApp) {
-      setError('Base App authentication not available');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      console.log('🔐 Starting Base App authentication...');
-      await authenticateWithBaseApp();
-      console.log('✅ Base App authentication successful');
-      
-      // If we have a baseAppUser after authentication, proceed with signup
-      if (baseAppUser) {
-        console.log('🔐 Base App user authenticated, proceeding with signup...');
-        // For Base App users, we'll use their Farcaster ID as the identifier
-        // The email will be used for the account creation
-        await signUpWithWallet(email, displayName);
-        // Only call onSuccess if signup was actually successful
-        // The signUpWithWallet function will handle errors and throw if failed
-        console.log('✅ Base App signup successful');
-        onSuccess?.();
-      } else {
-        setError('Base App authentication completed but no user data received');
-      }
-    } catch (err: any) {
-      console.error('❌ Base App authentication or signup failed:', err);
-      // Don't close the modal on error - let the user see the error and try again
-      setError(err.message || 'Base App authentication or signup failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Base App authentication is now handled by the unified auth system
+  // No need for separate Base App auth function
 
   const handleCancel = () => {
     onCancel?.();
@@ -177,40 +177,24 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
           >
             Cancel
           </button>
-          {isBaseApp ? (
-            // Base App users get a special authentication flow
-            <button
-              type="button"
-              onClick={handleBaseAppAuth}
-              disabled={isLoading || !isEmailValid}
-              className="flex-1 px-4 py-2 bg-[#f2751a] text-white rounded hover:bg-[#e0650a] disabled:opacity-50 transition-colors font-semibold"
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Authenticating...
-                </span>
-              ) : (
-                'Authenticate with Base App'
-              )}
-            </button>
-          ) : (
-            // Regular wallet users use the standard flow
-            <button
-              type="submit"
-              disabled={isLoading || !isEmailValid}
-              className="flex-1 px-4 py-2 bg-[#8B4513] text-white rounded hover:bg-[#654321] disabled:opacity-50 transition-colors font-semibold"
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Creating Account...
-                </span>
-              ) : (
-                'Create Account'
-              )}
-            </button>
-          )}
+          <button
+            type="submit"
+            disabled={isLoading || !isEmailValid}
+            className={`flex-1 px-4 py-2 text-white rounded disabled:opacity-50 transition-colors font-semibold ${
+              isBaseApp 
+                ? 'bg-[#f2751a] hover:bg-[#e0650a]' 
+                : 'bg-[#8B4513] hover:bg-[#654321]'
+            }`}
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                {isBaseApp ? 'Authenticating...' : 'Creating Account...'}
+              </span>
+            ) : (
+              isBaseApp ? 'Authenticate & Create Account' : 'Create Account'
+            )}
+          </button>
         </div>
       </form>
 

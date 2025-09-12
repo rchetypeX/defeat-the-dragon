@@ -124,8 +124,15 @@ export function useUnifiedWalletAuth(): UnifiedWalletState {
   
   // Determine wallet address based on platform
   const address = (() => {
-    if (platform === 'baseapp' && miniKitData.user?.address) {
-      return miniKitData.user.address;
+    if (platform === 'baseapp') {
+      // In Base App, prioritize native SIWF user address, then wallet connection
+      if (miniKitData.user?.address) {
+        return miniKitData.user.address;
+      }
+      // Fallback to connected wallet address
+      if (wagmiAddress) {
+        return wagmiAddress;
+      }
     } else if (platform === 'farcaster' && wagmiAddress) {
       // For Farcaster, use the connected wallet address from Wagmi
       return wagmiAddress;
@@ -140,13 +147,14 @@ export function useUnifiedWalletAuth(): UnifiedWalletState {
   // Determine user data based on platform
   const user = (() => {
     if (platform === 'baseapp' && miniKitData.user) {
+      // Use Base App's native SIWF user data (cryptographically verified)
       return {
         id: `baseapp-${miniKitData.user.fid || 'unknown'}`,
         email: `${miniKitData.user.username || 'user'}@baseapp.local`,
         username: miniKitData.user.username,
         displayName: miniKitData.user.displayName,
         fid: miniKitData.user.fid,
-        address: miniKitData.user.address,
+        address: miniKitData.user.address || wagmiAddress, // Use SIWF address or fallback to wallet
         platform: 'baseapp'
       };
     } else if (platform === 'farcaster' && siwfAuth.user) {
