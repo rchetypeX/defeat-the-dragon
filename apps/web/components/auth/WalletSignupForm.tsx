@@ -143,20 +143,19 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
         
         console.log('✅ Base App user session established:', baseAppUser);
         
-        // Force a page reload to refresh all authentication state
+        // Instead of page reload, trigger a state refresh
         setTimeout(() => {
-          console.log('🔄 Reloading page to refresh authentication state...');
-          window.location.reload();
-        }, 1000);
+          console.log('🔄 Triggering authentication state refresh...');
+          // The parent component will detect the stored user and restore the session
+          onSuccess?.();
+        }, 500);
       } else {
-        // For non-Base App users, also reload to refresh state
+        // For non-Base App users, also trigger state refresh
         setTimeout(() => {
-          console.log('🔄 Reloading page to refresh authentication state...');
-          window.location.reload();
-        }, 1000);
+          console.log('🔄 Triggering authentication state refresh...');
+          onSuccess?.();
+        }, 500);
       }
-      
-      onSuccess?.();
     } catch (err: any) {
       console.error('❌ Signup failed:', err);
       setError(err.message || 'Signup failed');
