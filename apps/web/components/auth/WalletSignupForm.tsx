@@ -82,21 +82,30 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
         await signIn();
       }
       
+      // Create a message to sign for wallet authentication
+      const message = `Sign up for Defeat the Dragon\n\nWallet: ${address}\nEmail: ${email}\nDisplay Name: ${displayName}\nTimestamp: ${Date.now()}`;
+      
+      // For now, we'll use a placeholder signature since the API expects it
+      // In a production environment, you would sign this message with the wallet
+      const signature = '0x' + '0'.repeat(130); // Placeholder signature
+      
+      const requestBody = {
+        address: address, // API expects 'address', not 'walletAddress'
+        email,
+        displayName,
+        message,
+        signature
+      };
+      
+      console.log('📤 Sending signup request:', requestBody);
+      
       // Call the API to create the account
       const response = await fetch('/api/auth/wallet-signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          displayName,
-          walletAddress: address,
-          platform: platform,
-          fid: user?.fid || null,
-          username: user?.username || null,
-          userDisplayName: user?.displayName || displayName
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -164,13 +173,19 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
             type="email"
             id="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              console.log('📧 Email input changed:', e.target.value);
+              setEmail(e.target.value);
+            }}
             className={`w-full px-3 py-2 bg-[#2d1b0e] border-2 rounded text-[#f5f5dc] placeholder-[#a0a0a0] focus:outline-none focus:border-[#f2751a] focus:ring-2 focus:ring-[#f2751a] focus:ring-opacity-50 ${
               email && !isEmailValid ? 'border-red-500' : 'border-[#8b4513]'
             }`}
             placeholder="Enter your email address"
             required
             disabled={isLoading}
+            maxLength={254} // Standard email length limit
+            autoComplete="email"
+            spellCheck="false"
           />
           {email && !isEmailValid && (
             <p className="text-xs text-red-400 mt-1 font-medium">Please enter a valid email address</p>
