@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUnifiedWalletAuth } from '../../hooks/useUnifiedWalletAuth';
 import { useUnifiedAuth } from '../../hooks/useUnifiedAuth';
+import { useGameStore } from '../../lib/store';
 
 interface WalletSignupFormProps {
   onSuccess?: () => void;
@@ -114,6 +115,33 @@ export function WalletSignupForm({ onSuccess, onCancel }: WalletSignupFormProps)
       }
 
       console.log('✅ Account created successfully');
+      
+      // For Base App users, establish the user session immediately
+      if (isBaseApp && user) {
+        console.log('🔐 Establishing Base App user session after signup...');
+        
+        const baseAppUser = {
+          id: `baseapp-${user.fid}`,
+          email: email,
+          username: user.username || 'user',
+          displayName: user.displayName || displayName,
+          pfpUrl: user.pfpUrl || '',
+          fid: user.fid,
+          wallet_address: address
+        };
+        
+        // Store in localStorage
+        localStorage.setItem('baseAppUser', JSON.stringify(baseAppUser));
+        
+        // Update game store
+        useGameStore.getState().setUser({
+          id: baseAppUser.id,
+          email: baseAppUser.email,
+        });
+        
+        console.log('✅ Base App user session established:', baseAppUser);
+      }
+      
       onSuccess?.();
     } catch (err: any) {
       console.error('❌ Signup failed:', err);

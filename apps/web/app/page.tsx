@@ -139,6 +139,7 @@ function HomePageContent() {
   const [walletKey, setWalletKey] = useState(0); // Key to force remount of WalletLoginForm
   const [showBaseAppSignup, setShowBaseAppSignup] = useState(false);
   const [baseAppUserExists, setBaseAppUserExists] = useState<boolean | null>(null);
+  const [justCreatedAccount, setJustCreatedAccount] = useState(false);
   
   // Ref to prevent infinite loops in Base App authentication
   const baseAppUserCreatedRef = useRef(false);
@@ -241,9 +242,6 @@ function HomePageContent() {
     if (isAuthenticated && user && !baseAppUserCreatedRef.current && isBaseApp) {
       console.log('🔐 Base App user detected, checking if user exists:', user);
       
-      // Mark that we've created the Base App user to prevent infinite loops
-      baseAppUserCreatedRef.current = true;
-      
       // Only proceed if we have a valid FID
       if (!user?.fid) {
         console.error('❌ Base App user has no FID, cannot create user session');
@@ -283,7 +281,15 @@ function HomePageContent() {
                 email: baseAppUser.email,
               });
               
+              // Mark that we've created the Base App user to prevent infinite loops
+              baseAppUserCreatedRef.current = true;
+              
               console.log('✅ Base App user session created for existing user:', baseAppUser);
+              
+              // Force a small delay to ensure the state is properly updated
+              setTimeout(() => {
+                console.log('🔄 Authentication state should now be properly synchronized');
+              }, 100);
             } else {
               // User doesn't exist, show signup prompt
               console.log('🔐 Base App user not found, showing signup prompt');
@@ -308,6 +314,77 @@ function HomePageContent() {
       console.log('🔐 Wallet connected but not in Base App - skipping Base App user creation to prevent infinite loop');
     }
   }, [isAuthenticated, user, isBaseApp]);
+
+  // Handle post-signup authentication state refresh
+  useEffect(() => {
+    if (justCreatedAccount && isAuthenticated && user && isBaseApp) {
+      console.log('🔄 Account was just created, refreshing authentication state...');
+      console.log('🔄 Current auth state:', { isAuthenticated, user, isBaseApp, fid: user?.fid });
+      
+      // Reset the flag
+      setJustCreatedAccount(false);
+      
+      // Force a re-check of the user existence
+      if (user.fid) {
+        const checkUserExists = async () => {
+          try {
+            console.log('🔄 Checking if user exists in database for FID:', user.fid);
+            const response = await fetch('/api/auth/check-baseapp-user', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ fid: user.fid }),
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              console.log('🔄 User existence check result:', result);
+              
+              if (result.exists) {
+                // User exists, create session
+                const baseAppUser = {
+                  id: `baseapp-${user.fid}`,
+                  email: `${user?.username || 'user'}@baseapp.local`,
+                  username: user?.username || 'user',
+                  displayName: user?.displayName || 'Base App User',
+                  pfpUrl: user?.pfpUrl || '',
+                  fid: user.fid,
+                  wallet_address: user?.address || null
+                };
+                
+                localStorage.setItem('baseAppUser', JSON.stringify(baseAppUser));
+                useGameStore.getState().setUser({
+                  id: baseAppUser.id,
+                  email: baseAppUser.email,
+                });
+                
+                // Mark that we've created the Base App user to prevent infinite loops
+                baseAppUserCreatedRef.current = true;
+                
+                console.log('✅ Base App user session created after signup:', baseAppUser);
+                
+                // Force a small delay to ensure the state is properly updated
+                setTimeout(() => {
+                  console.log('🔄 Authentication state should now be properly synchronized');
+                }, 100);
+              } else {
+                console.log('❌ User not found in database after signup, this should not happen');
+              }
+            } else {
+              console.error('❌ Failed to check user existence:', response.status, response.statusText);
+            }
+          } catch (error) {
+            console.error('❌ Error checking Base App user existence after signup:', error);
+          }
+        };
+        
+        checkUserExists();
+      } else {
+        console.error('❌ No FID available for user after signup');
+      }
+    }
+  }, [justCreatedAccount, isAuthenticated, user, isBaseApp]);
 
   // Reset the Base App user creation flag when user changes
   useEffect(() => {
@@ -354,9 +431,18 @@ function HomePageContent() {
     return (
       <BaseAppSignupPrompt
         onSuccess={() => {
+          console.log('✅ Base App signup successful, establishing user session...');
           setShowBaseAppSignup(false);
-          // Refresh the page to reload with new user data
-          window.location.reload();
+          setJustCreatedAccount(true);
+          
+          // Reset the ref to allow re-checking the user
+          baseAppUserCreatedRef.current = false;
+          
+          // Force a re-check of the authentication state
+          setTimeout(() => {
+            console.log('🔄 Forcing authentication state refresh...');
+            // The useEffect will re-run and detect the authenticated user
+          }, 100);
         }}
         onCancel={() => {
           setShowBaseAppSignup(false);
