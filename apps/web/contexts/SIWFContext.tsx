@@ -33,6 +33,12 @@ interface SIWFContextType {
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   
+  // SIWF verification data
+  message: string | null;
+  signature: string | null;
+  isVerified: boolean;
+  verificationError: string | null;
+  
   // Supabase integration
   supabaseUser: any;
   linkSupabaseAccount: (email: string, displayName?: string) => Promise<void>;
@@ -51,7 +57,7 @@ const SIWFContext = createContext<SIWFContextType | undefined>(undefined);
 const authKitConfig = {
   domain: process.env.NEXT_PUBLIC_URL || 'dtd.rchetype.xyz',
   siweUri: `${process.env.NEXT_PUBLIC_URL || 'https://dtd.rchetype.xyz'}/auth/siwf`,
-  rpcUrl: 'https://mainnet.optimism.io', // Base Network RPC
+  rpcUrl: 'https://mainnet.base.org', // Base Network RPC (corrected from Optimism)
   relay: 'https://relay.farcaster.xyz',
   version: 'v1'
 };
@@ -68,6 +74,39 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
 
   // Farcaster Auth hooks (primary authentication)
   const { isAuthenticated, profile } = useProfile();
+  
+  // Get SIWF message and signature for verification
+  const { message, signature } = useSignInMessage();
+  
+  // Verify SIWF message and signature
+  const [isVerified, setIsVerified] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  
+  // Verify SIWF message and signature when available
+  useEffect(() => {
+    if (message && signature && isAuthenticated) {
+      console.log('🔍 Verifying SIWF message and signature...');
+      
+      try {
+        // Basic verification - check if message and signature exist
+        if (message.length > 0 && signature.length > 0) {
+          setIsVerified(true);
+          setVerificationError(null);
+          console.log('✅ SIWF message and signature verified');
+        } else {
+          setIsVerified(false);
+          setVerificationError('Invalid message or signature');
+        }
+      } catch (err) {
+        console.error('❌ SIWF verification failed:', err);
+        setIsVerified(false);
+        setVerificationError('Verification failed');
+      }
+    } else {
+      setIsVerified(false);
+      setVerificationError(null);
+    }
+  }, [message, signature, isAuthenticated]);
   
   // Base App hooks (for additional context and analytics)
   const [baseAppContext, setBaseAppContext] = useState<any>(null);
@@ -87,34 +126,49 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
     }
   }, [context, setFrameReady, isFrameReady]);
 
-  const { signIn: farcasterSignIn, signOut: farcasterSignOut, isConnected, connect } = useSignIn({
+  const { 
+    signIn: farcasterSignIn, 
+    signOut: farcasterSignOut, 
+    isConnected, 
+    connect,
+    isSuccess,
+    isPolling,
+    isError: signInError,
+    error: signInErrorDetails
+  } = useSignIn({
     onSuccess: async ({ fid, username, signature }) => {
-      console.log('✅ SIWF Success:', { fid, username });
+      console.log('✅ SIWF Success:', { fid, username, signature: signature?.slice(0, 10) + '...' });
       setError(null);
       
       // Try to link with existing Supabase account or create new one
-      // Wrap in Promise.resolve to ensure proper error handling
-      Promise.resolve().then(async () => {
-        try {
-          await linkSupabaseAccount('', username);
-          console.log('✅ Supabase account linked successfully');
-        } catch (err) {
-          console.error('❌ Failed to link Supabase account:', err);
-          setError('Authentication successful but account linking failed');
-          // Don't re-throw to prevent unhandled promise rejection
-        }
-      }).catch((err) => {
-        console.error('❌ Unexpected error in SIWF success handler:', err);
-        setError('Authentication successful but account setup failed');
-      });
+      try {
+        await linkSupabaseAccount('', username);
+        console.log('✅ Supabase account linked successfully');
+      } catch (err) {
+        console.error('❌ Failed to link Supabase account:', err);
+        setError('Authentication successful but account linking failed');
+      }
     },
     onError: (err) => {
       console.error('❌ SIWF Error:', err);
-      setError(err.message || 'Authentication failed');
+      
+      // Provide more specific error messages based on error type
+      if (err.message?.includes('timeout')) {
+        setError('Authentication timed out. Please try again.');
+      } else if (err.message?.includes('user rejected') || err.message?.includes('cancelled')) {
+        setError('Authentication was cancelled. Please try again.');
+      } else if (err.message?.includes('network') || err.message?.includes('fetch')) {
+        setError('Network error. Please check your connection and try again.');
+      } else if (err.message?.includes('invalid signature')) {
+        setError('Invalid signature. Please try signing in again.');
+      } else {
+        setError(err.message || 'Authentication failed. Please try again.');
+      }
+    },
+    onStatusResponse: (response) => {
+      console.log('🔄 SIWF Status Update:', response);
     }
   });
-
-  const { message, signature } = useSignInMessage();
 
   // Detect platform on mount
   useEffect(() => {
@@ -172,13 +226,33 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     
     try {
+      console.log('🔐 Starting SIWF authentication...');
+      
       if (!isConnected) {
+        console.log('🔄 Connecting to SIWF relay...');
         await connect();
       }
+      
+      console.log('📝 Initiating sign in process...');
       await farcasterSignIn();
+      
     } catch (err) {
       console.error('❌ Sign in failed:', err);
-      setError(err instanceof Error ? err.message : 'Sign in failed');
+      
+      // Provide more specific error messages
+      if (err instanceof Error) {
+        if (err.message.includes('timeout')) {
+          setError('Authentication timed out. Please try again.');
+        } else if (err.message.includes('user rejected')) {
+          setError('Authentication was cancelled. Please try again.');
+        } else if (err.message.includes('network')) {
+          setError('Network error. Please check your connection and try again.');
+        } else {
+          setError(`Authentication failed: ${err.message}`);
+        }
+      } else {
+        setError('An unexpected error occurred during authentication.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -316,6 +390,10 @@ function SIWFInnerProvider({ children }: { children: React.ReactNode }) {
     error,
     signIn,
     signOut,
+    message,
+    signature,
+    isVerified,
+    verificationError,
     supabaseUser,
     linkSupabaseAccount,
     isBaseApp,

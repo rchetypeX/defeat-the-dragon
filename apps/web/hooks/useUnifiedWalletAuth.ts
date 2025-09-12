@@ -126,8 +126,9 @@ export function useUnifiedWalletAuth(): UnifiedWalletState {
   const address = (() => {
     if (platform === 'baseapp' && miniKitData.user?.address) {
       return miniKitData.user.address;
-    } else if (platform === 'farcaster' && siwfAuth.user?.address) {
-      return siwfAuth.user.address;
+    } else if (platform === 'farcaster' && wagmiAddress) {
+      // For Farcaster, use the connected wallet address from Wagmi
+      return wagmiAddress;
     } else if (wagmiAddress) {
       return wagmiAddress;
     } else if (supabaseAuth.user?.user_metadata?.wallet_address) {
@@ -155,7 +156,7 @@ export function useUnifiedWalletAuth(): UnifiedWalletState {
         username: siwfAuth.user.username,
         displayName: siwfAuth.user.displayName,
         fid: siwfAuth.user.fid,
-        address: siwfAuth.user.address,
+        address: wagmiAddress, // Use the connected wallet address
         platform: 'farcaster'
       };
     } else if (supabaseAuth.user) {
