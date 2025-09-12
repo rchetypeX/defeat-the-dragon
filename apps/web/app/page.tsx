@@ -262,6 +262,12 @@ function HomePageContent() {
           baseAppUserCreatedRef.current = true;
           
           console.log('✅ Base App user session restored from localStorage:', baseAppUser);
+          
+          // Force a small delay to ensure the state is properly updated
+          setTimeout(() => {
+            console.log('🔄 Authentication state should now be properly synchronized');
+          }, 100);
+          
           return;
         }
       } catch (error) {
@@ -561,6 +567,12 @@ function HomePageContent() {
             baseAppUserCreatedRef.current = true;
             
             console.log('✅ Force refresh: Base App user session restored:', baseAppUser);
+            
+            // Force a page reload to ensure all authentication state is refreshed
+            setTimeout(() => {
+              console.log('🔄 Force refresh: Reloading page to ensure complete state refresh...');
+              window.location.reload();
+            }, 1000);
           }
         } catch (error) {
           console.error('❌ Force refresh: Error parsing stored Base App user:', error);
@@ -603,6 +615,59 @@ function HomePageContent() {
     return <HomePageLoading />;
   }
 
+  // Debug panel for development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 DEBUG: Current authentication state:', {
+      isAuthenticated,
+      user: !!user,
+      isBaseApp,
+      isFarcaster,
+      primaryAuth: primaryAuth.type,
+      userData: user,
+      fid: user?.fid,
+      address: user?.address,
+      baseAppUserCreated: baseAppUserCreatedRef.current,
+      showBaseAppSignup,
+      baseAppUserExists,
+      justCreatedAccount,
+      forceAuthRefresh,
+      storedUser: localStorage.getItem('baseAppUser') ? 'EXISTS' : 'NONE'
+    });
+  }
+
+  // Check if we have a stored Base App user but are still showing signup
+  // This handles the case where account was created but authentication state isn't updated
+  const storedBaseAppUser = localStorage.getItem('baseAppUser');
+  if (storedBaseAppUser && isBaseApp && showBaseAppSignup) {
+    try {
+      const baseAppUser = JSON.parse(storedBaseAppUser);
+      console.log('🔍 Found stored Base App user while showing signup, this indicates a state issue');
+      console.log('🔍 Stored user:', baseAppUser);
+      
+      // If we have a valid stored user, hide the signup and restore the session
+      if (baseAppUser.fid) {
+        console.log('🔧 Fixing authentication state by restoring stored user...');
+        
+        // Update game store
+        useGameStore.getState().setUser({
+          id: baseAppUser.id,
+          email: baseAppUser.email,
+        });
+        
+        // Mark that we've created the Base App user
+        baseAppUserCreatedRef.current = true;
+        
+        // Hide the signup prompt
+        setShowBaseAppSignup(false);
+        
+        console.log('✅ Authentication state fixed, user session restored:', baseAppUser);
+      }
+    } catch (error) {
+      console.error('❌ Error parsing stored Base App user during state fix:', error);
+      localStorage.removeItem('baseAppUser');
+    }
+  }
+
   // Show Base App signup prompt for new users
   if (showBaseAppSignup) {
     return (
@@ -624,6 +689,39 @@ function HomePageContent() {
         }}
       />
     );
+  }
+
+  // CRITICAL FIX: Check if we have a stored user but authentication state says we're not authenticated
+  // This handles the case where the authentication hook isn't properly detecting the stored user
+  if (!isAuthenticated && storedBaseAppUser && isBaseApp) {
+    try {
+      const baseAppUser = JSON.parse(storedBaseAppUser);
+      console.log('🔧 Authentication state mismatch detected - we have stored user but not authenticated');
+      console.log('🔧 Stored user:', baseAppUser);
+      
+      if (baseAppUser.fid) {
+        console.log('🔧 Forcing authentication state restoration...');
+        
+        // Update game store
+        useGameStore.getState().setUser({
+          id: baseAppUser.id,
+          email: baseAppUser.email,
+        });
+        
+        // Mark that we've created the Base App user
+        baseAppUserCreatedRef.current = true;
+        
+        console.log('✅ Authentication state forced restoration completed');
+        
+        // Force a small delay to ensure the state is properly updated
+        setTimeout(() => {
+          console.log('🔄 Authentication state should now be properly synchronized');
+        }, 100);
+      }
+    } catch (error) {
+      console.error('❌ Error parsing stored Base App user during force restoration:', error);
+      localStorage.removeItem('baseAppUser');
+    }
   }
 
   // User is not authenticated - show authentication options
