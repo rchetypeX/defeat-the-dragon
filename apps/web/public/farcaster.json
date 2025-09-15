@@ -1,0 +1,20 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjc5NTI0NiwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDFhRTk2MDE1QjYxQ0RmMTA2NzRhZWREODE4RDAyNDUwYjIzOTIyNDMifQ",
+    "payload": "eyJkb21haW4iOiJkdGQucmNoZXR5cGUueHl6In0", 
+    "signature": "/1Z9ekGeTPj5yQ/YGOhdN/954gBR0g7IaS5wnSYA9+Zp8a/T4eA+UnTygsR9FvEZuUBo3CQS+BIKHW4/k5XsRBs="
+  },
+  "baseBuilder": {
+    "allowedAddresses": ["0x1a9Fce96e04ba06D9190339DF817b43837fa0eA9"]
+  },
+  "frame": {
+    "name": "Defeat the Dragon: Focus RPG",
+    "iconUrl": "https://dtd.rchetype.xyz/icon.png",
+    "homeUrl": "https://dtd.rchetype.xyz",
+    "imageUrl": "https://dtd.rchetype.xyz/og-image.webp",
+    "buttonTitle": "Launch App", 
+    "description": "A Pomodoro-style Focus RPG that gamifies productivity",
+    "primaryCategory": "games",
+    "tags": ["productivity", "rpg", "focus", "pomodoro", "gamification"]
+  }
+}

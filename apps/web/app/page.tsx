@@ -42,12 +42,7 @@ function HomePageContent() {
     if (typeof window !== 'undefined' && 
         process.env.NODE_ENV === 'development' && 
         !window.location.hostname.includes('localhost')) {
-      import('eruda').then((eruda) => {
-        eruda.default.init();
-        console.log('🔧 Eruda mobile console initialized for debugging');
-      }).catch((error) => {
-        console.error('Failed to load Eruda:', error);
-      });
+      import('eruda').then((eruda) => eruda.default.init());
     }
 
     // Enhanced error logging for mobile debugging
