@@ -21,6 +21,7 @@
     "db:seed": "cd apps/web && npm run db:seed"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "^8.40.0",
     "@types/node": "^20.0.0",
     "turbo": "^1.10.0",
     "husky": "^8.0.0",

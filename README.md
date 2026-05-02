@@ -27,7 +27,7 @@ Defeat the Dragon is a Progressive Web App (PWA) that transforms focus sessions 
 - **State Management**: Zustand, TanStack Query
 - **Backend**: Supabase (Auth, Postgres, Edge Functions)
 - **Payments**: Stripe Checkout + Customer Portal
-- **PWA**: Workbox service worker, Web Push (VAPID)
+- **PWA**: Static service worker, Web Push (VAPID)
 - **Testing**: Vitest, Playwright
 
 ### Project Structure
@@ -79,6 +79,7 @@ Copy `apps/web/env.example` to `apps/web/.env.local` and fill in your values:
 
 ```bash
 # Supabase
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
@@ -86,6 +87,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 # Stripe
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
+STRIPE_INSPIRATION_PRICE_ID=price_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 
 # Push Notifications
@@ -98,6 +100,7 @@ VAPID_PRIVATE_KEY=your_vapid_private_key
 1. Create a webhook endpoint in your Stripe dashboard
 2. Point it to: `https://your-domain.com/api/stripe/webhook`
 3. Add these events:
+   - `checkout.session.completed`
    - `customer.subscription.created`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
@@ -228,6 +231,7 @@ Ensure all environment variables are set in your production environment:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_INSPIRATION_PRICE_ID`
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `VAPID_PUBLIC_KEY`
 - `VAPID_PRIVATE_KEY`

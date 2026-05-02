@@ -13,6 +13,15 @@
     "module": "esnext",
     "esModuleInterop": true,
     "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@defeat-the-dragon/engine": [
+        "../../packages/engine/src"
+      ],
+      "@defeat-the-dragon/ui-tokens": [
+        "../../packages/ui-tokens/src"
+      ]
+    },
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",

@@ -7,7 +7,6 @@ import { Action } from '@defeat-the-dragon/engine';
 import { createSoftShield } from '../../lib/softShield';
 import { SoftShieldWarning } from '../ui/SoftShieldWarning';
 import { showSoftShieldWarningNotification } from '../../lib/notifications';
-import { useAudio } from '../../contexts/AudioContext';
 import { useCharacterStore } from '../../lib/characterStore';
 import FocusSessionAudioControls from '../audio/FocusSessionAudioControls';
 
@@ -18,17 +17,20 @@ interface SessionProgressProps {
 
 export function SessionProgress({ onSessionComplete, onSessionFail }: SessionProgressProps) {
   const { currentSession, sessionProgress, updateSessionProgress, player } = useGameStore();
-  const { isBackgroundPlaying, toggleBackgroundPlayPause } = useAudio();
   const { equippedCharacter, getCharacterImage } = useCharacterStore();
   const [timeLeft, setTimeLeft] = useState(0);
   const [isDisturbed, setIsDisturbed] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [warningTimeLeft, setWarningTimeLeft] = useState(0);
-  const [warningStartTime, setWarningStartTime] = useState<number | null>(null);
   const [showStopConfirmation, setShowStopConfirmation] = useState(false);
   const [showAudioControls, setShowAudioControls] = useState(false);
   const [currentDialogMessage, setCurrentDialogMessage] = useState<string>("");
   const softShieldRef = useRef<any>(null);
+  const showWarningRef = useRef(showWarning);
+
+  useEffect(() => {
+    showWarningRef.current = showWarning;
+  }, [showWarning]);
 
   // Get action info from currentSession or use a default
   const action = currentSession?.action as Action || 'Train';
@@ -179,9 +181,8 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
           },
                      onWarning: (remainingTime: number) => {
              console.log(`SoftShield: Warning triggered - ${remainingTime}s remaining`);
-             if (!showWarning) {
+             if (!showWarningRef.current) {
                setShowWarning(true);
-               setWarningStartTime(Date.now());
                showSoftShieldWarningNotification(remainingTime);
                console.log('SessionProgress: Warning state set to true');
              }
@@ -227,7 +228,6 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
         console.log('SessionProgress: User returned, clearing warning');
         setShowWarning(false);
         setWarningTimeLeft(0);
-        setWarningStartTime(null);
       }
     }
   }, [sessionProgress.isActive, isDisturbed, updateSessionProgress, showWarning]);
@@ -288,7 +288,6 @@ export function SessionProgress({ onSessionComplete, onSessionFail }: SessionPro
       console.log('SessionProgress: Warning time expired, dismissing warning');
       setShowWarning(false);
       setWarningTimeLeft(0);
-      setWarningStartTime(null);
       // Small delay to ensure UI updates before potential session failure
       setTimeout(() => {
         if (softShieldRef.current) {

@@ -58,7 +58,7 @@ export const AudioManager: React.FC<AudioManagerProps> = ({
       });
       audioRefs.current = {};
     };
-  }, [tracks, isMounted]);
+  }, [tracks, isMounted, globalVolume, isMuted]);
 
   // Handle track changes
   useEffect(() => {

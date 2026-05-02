@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createStripeCheckoutSession } from '../../lib/api';
 
 interface ShopItem {
   id: string;
@@ -31,6 +32,8 @@ const shopItems: Record<'character' | 'background', ShopItem[]> = {
 
 export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   const [activeTab, setActiveTab] = useState<'character' | 'background'>('character');
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,14 +61,20 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
   }, [isOpen, onClose]);
 
   const handlePurchase = (item: ShopItem) => {
-    // TODO: Implement purchase logic
-    console.log(`Purchasing ${item.name} for ${item.price} ${item.currency}`);
+    setCheckoutError(`${item.name} cosmetic purchases are not available yet.`);
   };
 
-  const handleSubscription = () => {
-    // TODO: Implement Inspiration Boon purchase logic
-    console.log('Inspiration Boon purchase clicked');
-    alert('Inspiration Boon purchase coming soon! This will allow you to earn Sparks from successful focus sessions.');
+  const handleSubscription = async () => {
+    setIsCheckingOut(true);
+    setCheckoutError(null);
+
+    try {
+      const { url } = await createStripeCheckoutSession();
+      window.location.assign(url);
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : 'Unable to start Stripe checkout.');
+      setIsCheckingOut(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -91,10 +100,14 @@ export function ShopPopup({ isOpen, onClose }: ShopPopupProps) {
            <div className="mb-3 sm:mb-6 flex-shrink-0">
              <button
                onClick={handleSubscription}
+               disabled={isCheckingOut}
                className="w-full bg-gradient-to-r from-[#FFD700] to-[#FFA500] border-2 border-[#8B4513] text-[#8B4513] font-bold py-2 sm:py-3 px-3 sm:px-4 rounded hover:from-[#FFA500] hover:to-[#FF8C00] transition-all duration-200 shadow-lg text-xs sm:text-sm"
              >
-                               ✨ Inspiration Boon! Earn Sparks from Focus Sessions!
+                               {isCheckingOut ? 'Opening Stripe Checkout...' : '✨ Inspiration Boon! Earn Sparks from Focus Sessions!'}
              </button>
+             {checkoutError && (
+               <p className="mt-2 text-xs text-[#ef4444] text-center">{checkoutError}</p>
+             )}
            </div>
 
                  {/* Tabs */}

@@ -73,7 +73,7 @@ export const FocusSessionMusic: React.FC<FocusSessionMusicProps> = ({
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('error', handleError);
     };
-  }, [src, loop, onLoad, onError, isMounted]);
+  }, [src, loop, onLoad, onError, isMounted, focusSessionVolume]);
 
   // Handle session state changes and focus session music state
   useEffect(() => {
@@ -95,7 +95,7 @@ export const FocusSessionMusic: React.FC<FocusSessionMusicProps> = ({
       audio.pause();
       // Don't reset currentTime to allow resuming from where it left off
     }
-  }, [isSessionActive, isFocusSessionPlaying, isLoaded, isMounted]);
+  }, [isSessionActive, isFocusSessionPlaying, isLoaded, isMounted, isPlaying]);
 
   // Handle manual play/pause controls for focus session music
   useEffect(() => {

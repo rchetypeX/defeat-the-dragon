@@ -7,9 +7,7 @@ import {
   computeXP,
   computeCoins,
   computeSparks,
-  computeLevel,
-  xpForNextLevel,
-  xpProgressToNextLevel
+  computeLevel
 } from '@defeat-the-dragon/engine';
 
 // Initialize Supabase client for server-side operations
@@ -31,20 +29,13 @@ export async function POST(request: NextRequest) {
 
     // Extract the JWT token
     const token = authHeader.substring(7);
-    
-    // Check if this is a mock token for development
-    if (token === 'mock-token-for-development') {
-      console.log('API: Using mock token, skipping Supabase auth');
-      // Continue with mock user data
-    } else {
-      // Verify the JWT token and get user info
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-      if (authError || !user) {
-        return NextResponse.json(
-          { error: 'Invalid or expired token' },
-          { status: 401 }
-        );
-      }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Invalid or expired token' },
+        { status: 401 }
+      );
     }
 
     // Create an authenticated client for this request
@@ -71,86 +62,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { session_id, actual_duration_minutes, disturbed_seconds, outcome } = validationResult.data;
+    const { session_id, disturbed_seconds, outcome } = validationResult.data;
 
-    let session;
-    let player;
-    let user = null;
+    // Get the session from the database.
+    const { data: session, error: sessionError } = await authenticatedSupabase
+      .from('sessions')
+      .select('*')
+      .eq('id', session_id)
+      .eq('user_id', user.id)
+      .single();
 
-    if (token === 'mock-token-for-development') {
-      // Use mock data for development
-      session = {
-        id: session_id,
-        user_id: 'mock-user-id',
-        action: 'Train',
-        started_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
-        ended_at: null,
-        disturbed_seconds: disturbed_seconds,
-        dungeon_floor: 0,
-        boss_tier: 'none'
-      };
-      player = {
-        id: 'mock-player-id',
-        user_id: 'mock-user-id',
-        level: 1,
-        xp: 0,
-        coins: 3,
-        sparks: 0,
-        is_inspired: false, // Mock player is NOT inspired (no subscription)
-        bond_score: 50,
-        mood_state: 'Happy',
-        day_streak: 0,
-        created_at: new Date().toISOString()
-      };
-    } else {
-      // Verify the JWT token and get user info first
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token);
-      if (authError || !authUser) {
-        return NextResponse.json(
-          { error: 'Invalid or expired token' },
-          { status: 401 }
-        );
-      }
-      user = authUser;
+    if (sessionError || !session) {
+      return NextResponse.json(
+        { error: 'Session not found or access denied' },
+        { status: 404 }
+      );
+    }
 
-      // Get the session from the database
-      const { data: dbSession, error: sessionError } = await authenticatedSupabase
-        .from('sessions')
-        .select('*')
-        .eq('id', session_id)
-        .eq('user_id', user.id)
-        .single();
+    if (session.ended_at) {
+      return NextResponse.json(
+        { error: 'Session already completed' },
+        { status: 400 }
+      );
+    }
 
-      if (sessionError || !dbSession) {
-        return NextResponse.json(
-          { error: 'Session not found or access denied' },
-          { status: 404 }
-        );
-      }
-      session = dbSession;
+    const startedAtMs = new Date(session.started_at).getTime();
+    if (!Number.isFinite(startedAtMs)) {
+      return NextResponse.json(
+        { error: 'Session has an invalid start time' },
+        { status: 500 }
+      );
+    }
 
-      // Check if session is already completed
-      if (session.ended_at) {
-        return NextResponse.json(
-          { error: 'Session already completed' },
-          { status: 400 }
-        );
-      }
+    const serverDurationMinutes = Math.floor((Date.now() - startedAtMs) / (1000 * 60));
+    const rewardedDurationMinutes = Math.min(Math.max(serverDurationMinutes, 0), 120);
 
-      // Get current player data
-      const { data: dbPlayer, error: playerError } = await authenticatedSupabase
-        .from('players')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+    if (outcome === 'success' && rewardedDurationMinutes < 5) {
+      return NextResponse.json(
+        { error: 'Session has not reached the minimum completion duration' },
+        { status: 400 }
+      );
+    }
 
-      if (playerError || !dbPlayer) {
-        return NextResponse.json(
-          { error: 'Player data not found' },
-          { status: 404 }
-        );
-      }
-      player = dbPlayer;
+    // Get current player data.
+    const { data: player, error: playerError } = await authenticatedSupabase
+      .from('players')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (playerError || !player) {
+      return NextResponse.json(
+        { error: 'Player data not found' },
+        { status: 404 }
+      );
     }
 
     // Calculate rewards based on outcome
@@ -163,28 +128,19 @@ export async function POST(request: NextRequest) {
     let newStreak = player.day_streak;
 
     if (outcome === 'success') {
-      // Calculate XP based on actual duration and action
-      xpGained = computeXP(actual_duration_minutes, session.action, player.day_streak);
-      coinsGained = computeCoins(actual_duration_minutes);
+      xpGained = computeXP(rewardedDurationMinutes, session.action, player.day_streak);
+      coinsGained = computeCoins(rewardedDurationMinutes);
       
       // Sparks only for subscribers (check if user has active subscription)
-      if (token === 'mock-token-for-development') {
-        // For mock tokens, check player's is_inspired status
-        if (player.is_inspired) {
-          sparksGained = computeSparks(actual_duration_minutes, true);
-        }
-      } else {
-        // For real tokens, check subscription status
-        const { data: subscription } = await authenticatedSupabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user?.id)
-          .eq('status', 'active')
-          .single();
+      const { data: subscription } = await authenticatedSupabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle();
 
-        if (subscription) {
-          sparksGained = computeSparks(actual_duration_minutes, true);
-        }
+      if (subscription) {
+        sparksGained = computeSparks(rewardedDurationMinutes, true);
       }
 
       // Check for level up
@@ -199,48 +155,43 @@ export async function POST(request: NextRequest) {
       streakUpdated = true;
     }
 
-    // Update session and player data
-    if (token === 'mock-token-for-development') {
-      // For mock tokens, just simulate the update
-      console.log('API: Mock session completion - simulating database updates');
-    } else {
-      // Update session with completion data
-      const { error: updateSessionError } = await authenticatedSupabase
-        .from('sessions')
-        .update({
-          ended_at: new Date().toISOString(),
-          outcome,
-          disturbed_seconds
-        })
-        .eq('id', session_id);
+    // Update session with completion data.
+    const { error: updateSessionError } = await authenticatedSupabase
+      .from('sessions')
+      .update({
+        ended_at: new Date().toISOString(),
+        outcome,
+        disturbed_seconds
+      })
+      .eq('id', session_id)
+      .eq('user_id', user.id);
 
-      if (updateSessionError) {
-        console.error('Error updating session:', updateSessionError);
-        return NextResponse.json(
-          { error: 'Failed to update session' },
-          { status: 500 }
-        );
-      }
+    if (updateSessionError) {
+      console.error('Error updating session:', updateSessionError);
+      return NextResponse.json(
+        { error: 'Failed to update session' },
+        { status: 500 }
+      );
+    }
 
-      // Update player data
-      const { error: updatePlayerError } = await authenticatedSupabase
-        .from('players')
-        .update({
-          xp: player.xp + xpGained,
-          coins: player.coins + coinsGained,
-          sparks: player.sparks + sparksGained,
-          level: newLevel,
-          day_streak: newStreak
-        })
-        .eq('user_id', user?.id);
+    // Update player data.
+    const { error: updatePlayerError } = await authenticatedSupabase
+      .from('players')
+      .update({
+        xp: player.xp + xpGained,
+        coins: player.coins + coinsGained,
+        sparks: player.sparks + sparksGained,
+        level: newLevel,
+        day_streak: newStreak
+      })
+      .eq('user_id', user.id);
 
-      if (updatePlayerError) {
-        console.error('Error updating player:', updatePlayerError);
-        return NextResponse.json(
-          { error: 'Failed to update player data' },
-          { status: 500 }
-        );
-      }
+    if (updatePlayerError) {
+      console.error('Error updating player:', updatePlayerError);
+      return NextResponse.json(
+        { error: 'Failed to update player data' },
+        { status: 500 }
+      );
     }
 
     // Prepare the response

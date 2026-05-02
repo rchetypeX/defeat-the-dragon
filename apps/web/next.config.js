@@ -23,22 +23,6 @@ const nextConfig = {
       },
     ];
   },
-  // Workbox PWA configuration
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      const { GenerateSW } = require('workbox-webpack-plugin');
-      
-      config.plugins.push(
-        new GenerateSW({
-          swDest: 'sw.js',
-          clientsClaim: true,
-          skipWaiting: true,
-        })
-      );
-    }
-    
-    return config;
-  },
 };
 
 module.exports = nextConfig;

@@ -139,7 +139,7 @@ export function CharacterDialogue({ isVisible, triggerQuoteChangeCount }: Charac
     if (isVisible) {
       setCurrentQuote(getRandomQuote());
     }
-  }, []);
+  }, [isVisible]);
 
   // Handle click-triggered quote changes
   useEffect(() => {
