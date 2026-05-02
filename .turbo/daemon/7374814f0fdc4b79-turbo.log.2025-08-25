@@ -1,0 +1,210 @@
+2025-08-25T00:00:09.041450Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\lib\\syncService.ts")}
+2025-08-25T00:00:09.041473Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:00:18.440229Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\lib\\syncService.ts")}
+2025-08-25T00:00:18.440240Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:00:28.842074Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\hooks\\useDataSync.ts")}
+2025-08-25T00:00:28.842089Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:00:37.836211Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\lib\\cleanupOldData.ts")}
+2025-08-25T00:00:37.836242Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:00:37.967071Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\lib")}
+2025-08-25T00:00:37.967081Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:00:37.967130Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T00:00:39.735297Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\lib\\cleanupOldData.ts")}
+2025-08-25T00:00:39.735308Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:00:48.138864Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\layout.tsx")}
+2025-08-25T00:00:48.138875Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:01:01.028597Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\layout.tsx"), AnchoredSystemPathBuf("apps\\web\\lib\\syncService.ts"), AnchoredSystemPathBuf("apps\\web\\hooks\\useDataSync.ts"), AnchoredSystemPathBuf("apps\\web\\app\\api\\user\\sync\\route.ts"), AnchoredSystemPathBuf("apps\\web\\lib\\cleanupOldData.ts")}
+2025-08-25T00:01:01.028609Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:01:01.028680Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T00:05:14.935433Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\shop\\purchase\\route.ts")}
+2025-08-25T00:05:14.935450Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:05:24.229144Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\shop\\purchase\\route.ts")}
+2025-08-25T00:05:24.229158Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:05:38.535636Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\shop\\purchase\\route.ts")}
+2025-08-25T00:05:38.535647Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:05:38.586451Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T00:11:30.242615Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\layout.tsx")}
+2025-08-25T00:11:30.242633Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:11:54.231884Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\layout.tsx")}
+2025-08-25T00:11:54.231895Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:11:54.277977Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T00:18:38.834962Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\hooks\\useWalletAuth.ts")}
+2025-08-25T00:18:38.835011Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:19:01.341714Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\hooks\\useWalletAuth.ts")}
+2025-08-25T00:19:01.341725Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:19:26.240644Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\hooks\\useWalletAuth.ts")}
+2025-08-25T00:19:26.240670Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:19:26.397268Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T00:24:23.335640Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\page.tsx")}
+2025-08-25T00:24:23.335662Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:24:31.035260Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\page.tsx")}
+2025-08-25T00:24:31.035298Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:24:38.630893Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\auth\\reset-password\\page.tsx")}
+2025-08-25T00:24:38.630971Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:24:48.832807Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\page.tsx"), AnchoredSystemPathBuf("apps\\web\\app\\auth\\reset-password\\page.tsx")}
+2025-08-25T00:24:48.832859Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:24:48.920707Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T00:25:11.532965Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\ui\\SettingsPopup.tsx")}
+2025-08-25T00:25:11.533005Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:25:35.037085Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\ui\\SettingsPopup.tsx")}
+2025-08-25T00:25:35.037137Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:25:35.093392Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T00:28:05.729532Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\sessions\\complete\\route.ts")}
+2025-08-25T00:28:05.729558Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:28:17.330870Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\sessions\\complete\\route.ts")}
+2025-08-25T00:28:17.330881Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:28:27.437960Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\sessions\\complete\\route.ts")}
+2025-08-25T00:28:27.437974Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:28:34.229486Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\sessions\\complete\\route.ts")}
+2025-08-25T00:28:34.229498Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:29:01.634090Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\subscriptions\\create\\route.ts")}
+2025-08-25T00:29:01.634102Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:29:14.237083Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase\\migrations\\20250101_remove_shelved_features.sql")}
+2025-08-25T00:29:14.237100Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-08-25T00:29:25.131994Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\subscriptions\\create\\route.ts"), AnchoredSystemPathBuf("supabase\\migrations\\20250101_remove_shelved_features.sql"), AnchoredSystemPathBuf("apps\\web\\app\\api\\sessions\\complete\\route.ts")}
+2025-08-25T00:29:25.132009Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }, WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-08-25T00:29:25.181045Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T00:30:20.327564Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase\\migrations\\20250101_restore_inspired_status.sql")}
+2025-08-25T00:30:20.327584Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-08-25T00:30:20.834024Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase\\migrations")}
+2025-08-25T00:30:20.834035Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-08-25T00:30:22.138727Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase\\migrations\\20250101_restore_inspired_status.sql")}
+2025-08-25T00:30:22.138760Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-08-25T00:30:29.238881Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\sessions\\complete\\route.ts")}
+2025-08-25T00:30:29.238892Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:30:37.441928Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\sessions\\complete\\route.ts")}
+2025-08-25T00:30:37.441941Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:30:46.037996Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\subscriptions\\create\\route.ts")}
+2025-08-25T00:30:46.038006Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:30:53.531063Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase\\migrations\\20250101_remove_shelved_features.sql")}
+2025-08-25T00:30:53.531153Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-08-25T00:31:02.842022Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\lib\\syncService.ts")}
+2025-08-25T00:31:02.842033Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:31:15.231286Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\user\\sync\\route.ts")}
+2025-08-25T00:31:15.231295Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:31:15.333831Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\user\\sync\\route.ts")}
+2025-08-25T00:31:15.333842Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:31:15.333892Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T00:35:37.528503Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase\\migrations\\20250101_restore_inspired_status.sql")}
+2025-08-25T00:35:37.528521Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }}))
+2025-08-25T00:35:37.634797Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("supabase\\migrations\\20250101_remove_shelved_features.sql"), AnchoredSystemPathBuf("apps\\web\\app\\api\\subscriptions\\create\\route.ts"), AnchoredSystemPathBuf("supabase\\migrations\\20250101_restore_inspired_status.sql"), AnchoredSystemPathBuf("apps\\web\\lib\\syncService.ts"), AnchoredSystemPathBuf("apps\\web\\app\\api\\user\\sync\\route.ts"), AnchoredSystemPathBuf("apps\\web\\app\\api\\sessions\\complete\\route.ts")}
+2025-08-25T00:35:37.634869Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Root, path: AnchoredSystemPathBuf("") }, WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T00:35:37.634926Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T11:11:25.423831Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\admin\\alpha-codes\\page.tsx")}
+2025-08-25T11:11:25.423857Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:11:32.835249Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\alpha\\verify\\route.ts")}
+2025-08-25T11:11:32.835262Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:11:40.128026Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx")}
+2025-08-25T11:11:40.128038Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:11:46.926436Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\alpha\\finalize\\route.ts")}
+2025-08-25T11:11:46.926448Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:13:10.526576Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\admin\\alpha-codes\\page.tsx")}
+2025-08-25T11:13:10.526588Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:13:17.226786Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\admin\\alpha-codes\\page.tsx")}
+2025-08-25T11:13:17.226797Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:13:29.525625Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx")}
+2025-08-25T11:13:29.525637Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:13:36.423732Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx")}
+2025-08-25T11:13:36.423746Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:13:43.123049Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\alpha\\verify\\route.ts")}
+2025-08-25T11:13:43.123060Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:13:51.922478Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\alpha\\verify\\route.ts")}
+2025-08-25T11:13:51.922496Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:14:01.824471Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\alpha\\finalize\\route.ts")}
+2025-08-25T11:14:01.824484Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:14:11.129042Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\alpha\\finalize\\route.ts")}
+2025-08-25T11:14:11.129054Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:14:54.030657Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\alpha\\verify\\route.ts"), AnchoredSystemPathBuf("apps\\web\\app\\admin\\alpha-codes\\page.tsx"), AnchoredSystemPathBuf("apps\\web\\app\\api\\alpha\\finalize\\route.ts"), AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx")}
+2025-08-25T11:14:54.030676Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:14:54.030743Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T11:28:07.124636Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\page.tsx")}
+2025-08-25T11:28:07.124663Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:28:25.225763Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css")}
+2025-08-25T11:28:25.225773Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:28:38.531731Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\page.tsx")}
+2025-08-25T11:28:38.531742Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:28:57.335785Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\contexts\\AudioContext.tsx")}
+2025-08-25T11:28:57.335796Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:29:07.828251Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\contexts\\AudioContext.tsx")}
+2025-08-25T11:29:07.828262Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:29:23.822870Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\audio\\BackgroundMusic.tsx")}
+2025-08-25T11:29:23.822881Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:29:57.723846Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\ui\\SoundToggle.tsx")}
+2025-08-25T11:29:57.723928Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:32:02.922335Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\page.tsx")}
+2025-08-25T11:32:02.922376Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:32:03.003804Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T11:32:03.035206Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\audio\\BackgroundMusic.tsx"), AnchoredSystemPathBuf("apps\\web\\components\\ui\\SoundToggle.tsx"), AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css"), AnchoredSystemPathBuf("apps\\web\\contexts\\AudioContext.tsx")}
+2025-08-25T11:32:03.035245Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:32:03.035525Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T11:44:48.331139Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\page.tsx")}
+2025-08-25T11:44:48.331157Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:45:02.622918Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css")}
+2025-08-25T11:45:02.622930Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:45:13.326002Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css")}
+2025-08-25T11:45:13.326021Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:45:23.429296Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css")}
+2025-08-25T11:45:23.429336Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:45:33.431008Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css")}
+2025-08-25T11:45:33.431020Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:45:42.226620Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css")}
+2025-08-25T11:45:42.226631Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:46:40.425567Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css"), AnchoredSystemPathBuf("apps\\web\\app\\page.tsx")}
+2025-08-25T11:46:40.425577Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:46:40.457911Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T11:54:00.030676Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx")}
+2025-08-25T11:54:00.030719Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:54:23.530280Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx")}
+2025-08-25T11:54:23.530319Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:54:23.646291Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx")}
+2025-08-25T11:54:23.646336Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:54:23.646531Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T11:54:38.925282Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T11:54:38.925295Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:54:47.637218Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T11:54:47.637230Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:54:57.534090Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T11:54:57.534100Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:55:07.024738Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T11:55:07.024750Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:55:25.425410Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T11:55:25.425422Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:55:35.229681Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T11:55:35.229694Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:55:56.721667Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx"), AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T11:55:56.721683Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:55:56.788439Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T11:58:50.124953Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\hooks\\useWalletAuth.ts")}
+2025-08-25T11:58:50.124969Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:58:56.925008Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T11:58:56.925020Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:59:09.527017Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\api\\auth\\wallet-signup\\route.ts")}
+2025-08-25T11:59:09.527028Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:59:52.426339Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx"), AnchoredSystemPathBuf("apps\\web\\app\\api\\auth\\wallet-signup\\route.ts"), AnchoredSystemPathBuf("apps\\web\\hooks\\useWalletAuth.ts")}
+2025-08-25T11:59:52.426351Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T11:59:52.460552Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
+2025-08-25T12:30:07.541411Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\page.tsx")}
+2025-08-25T12:30:07.541466Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:31:07.547105Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css")}
+2025-08-25T12:31:07.547144Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:31:23.745286Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T12:31:23.745330Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:31:44.447075Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T12:31:44.447275Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:31:56.550027Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T12:31:56.550089Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:32:10.050500Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T12:32:10.050546Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:32:22.746168Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T12:32:22.746613Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:32:40.639210Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T12:32:40.639254Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:33:02.345899Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx")}
+2025-08-25T12:33:02.345941Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:33:15.543041Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx")}
+2025-08-25T12:33:15.543090Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:33:32.438942Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx")}
+2025-08-25T12:33:32.438986Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:34:41.846647Z  WARN turborepo_lib::package_changes_watcher: changed_files: {AnchoredSystemPathBuf("apps\\web\\app\\page.tsx"), AnchoredSystemPathBuf("apps\\web\\components\\auth\\AlphaCodeInput.tsx"), AnchoredSystemPathBuf("apps\\web\\components\\auth\\WalletLoginForm.tsx"), AnchoredSystemPathBuf("apps\\web\\app\\mobile-first.css")}
+2025-08-25T12:34:41.846754Z  WARN turborepo_lib::package_changes_watcher: changed_packages: Ok(Some({WorkspacePackage { name: Other("@defeat-the-dragon/web"), path: AnchoredSystemPathBuf("apps\\web") }}))
+2025-08-25T12:34:41.874851Z  WARN turborepo_lib::package_changes_watcher: hashes are the same, no need to rerun
